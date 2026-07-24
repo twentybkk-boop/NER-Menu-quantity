@@ -26,13 +26,13 @@
   <div id="loading" class="text-center py-20 text-slate-400 font-medium">กำลังโหลดเมนู...</div>
   <div id="app" class="space-y-6"></div>
 
-  <!-- Modal สำหรับเลือกเงื่อนไข (แบ่งซ้าย-ขวา) -->
+  <!-- Modal สำหรับเลือกเงื่อนไข (แบ่งซ้าย-ขวา ป้องกันการเลือกซ้ำ) -->
   <div id="customModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl p-6 w-full max-w-2xl shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
         <div>
           <h2 id="modalMenuName" class="text-lg font-bold text-slate-900">ชื่อเมนู</h2>
-          <p class="text-xs text-slate-500">ซ้าย: ติ๊กวัตถุดิบที่ "ไม่เอา" | ขวา: เลือกสิ่งที่ต้องการเพิ่มแทน (ไม่บังคับ)</p>
+          <p class="text-xs text-slate-500">ซ้าย: ติ๊กวัตถุดิบที่ "ไม่เอา" | ขวา: เลือกสิ่งที่ต้องการเพิ่มแทน (ไม่สามารถเลือกตัวที่ถูกตัดได้)</p>
         </div>
         <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold">✕</button>
       </div>
@@ -45,12 +45,10 @@
           <div id="leftExcludeList" class="space-y-2"></div>
         </div>
 
-        <!-- ฝั่งขวา: เพิ่มแทน (Optional & Locked จนกว่าจะเลือกฝั่งซ้าย) -->
+        <!-- ฝั่งขวา: เพิ่มแทน (สัมพันธ์กับฝั่งซ้าย) -->
         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
           <h3 class="font-bold text-slate-800 text-sm mb-3 pb-1 border-b border-slate-200">➕ สิ่งที่ต้องการเพิ่มแทน (Optional)</h3>
-          <div id="rightAddList" class="space-y-2 opacity-50 pointer-events-none transition">
-            <p class="text-xs text-slate-400 italic mb-2">กรุณาเลือก "สิ่งที่ไม่เอา" ฝั่งซ้ายก่อน จึงจะสามารถเลือกช่องนี้ได้</p>
-          </div>
+          <div id="rightAddList" class="space-y-2"></div>
         </div>
       </div>
 
@@ -108,7 +106,6 @@
         document.getElementById('loading').innerText = 'ไม่สามารถโหลดข้อมูลได้ กรุณาตรวจสอบไฟล์ data.json';
       });
 
-    // 1. เรนเดอร์หน้าจอแรก จัดกลุ่มตามหมวดหมู่ถูกต้อง ไม่เป็น NaN
     function renderMenuSelector(menuData) {
       document.getElementById('loading').style.display = 'none';
       const app = document.getElementById('app');
@@ -139,7 +136,6 @@
       });
     }
 
-    // 2. เปิดหน้า Modal แบ่งซ้าย-ขวา
     function openCustomModal(index) {
       selectedItem = globalMenuData[index];
       document.getElementById('modalMenuName').innerText = selectedItem.name;
@@ -148,8 +144,7 @@
       const rightList = document.getElementById('rightAddList');
       
       leftList.innerHTML = '';
-      rightList.innerHTML = '<p class="text-xs text-slate-400 italic mb-2">กรุณาเลือก "สิ่งที่ไม่เอา" ฝั่งซ้ายก่อน จึงจะสามารถเลือกช่องนี้ได้</p>';
-      rightList.classList.add('opacity-50', 'pointer-events-none');
+      rightList.innerHTML = '';
 
       const validEntries = Object.entries(selectedItem.ingredients);
       if (validEntries.length === 0) {
@@ -160,16 +155,16 @@
           leftList.innerHTML += `
             <label class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200/80 hover:bg-slate-100 cursor-pointer transition">
               <span class="font-semibold text-slate-700 text-xs">${ingName} <span class="text-slate-400 font-normal">(${val})</span></span>
-              <input type="checkbox" name="excludeIng" value="${ingName}" onchange="checkLeftSelection()" class="w-4 h-4 accent-slate-900 rounded">
+              <input type="checkbox" name="excludeIng" value="${ingName}" onchange="handleExcludeChange(this)" class="w-4 h-4 accent-slate-900 rounded">
             </label>
           `;
 
-          // ฝั่งขวา (สิ่งที่จะเพิ่มแทน - เป็นรายการวัตถุดิบทั้งหมดในเซ็ตให้เลือกเพิ่ม)
+          // ฝั่งขวา (สิ่งที่จะเพิ่มแทน - ผูก ID ไว้เช็คตัดออก)
           rightList.innerHTML += `
-            <label class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200/80 hover:bg-slate-100 cursor-pointer transition">
+            <div id="right-item-${CSS.escape(ingName)}" class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200/80 transition">
               <span class="font-semibold text-slate-700 text-xs">${ingName}</span>
               <input type="checkbox" name="addIng" value="${ingName}" class="w-4 h-4 accent-slate-900 rounded">
-            </label>
+            </div>
           `;
         });
       }
@@ -177,17 +172,21 @@
       document.getElementById('customModal').classList.remove('hidden');
     }
 
-    // ฟังก์ชันเช็คว่าฝั่งซ้ายถูกติ๊กเลือกหรือยัง ถ้าติ๊กแล้วถึงปลดล็อกฝั่งขวา
-    function checkLeftSelection() {
-      const checkedLeft = document.querySelectorAll('input[name="excludeIng"]:checked');
-      const rightList = document.getElementById('rightAddList');
-      
-      if (checkedLeft.length > 0) {
-        rightList.classList.remove('opacity-50', 'pointer-events-none');
+    // ฟังก์ชันจัดการเมื่อติ๊กซ้าย: ห้ามฝั่งขวาเลือกตัวเดียวกัน และถ้าติ๊กซ้ายให้ฝั่งขวาจางและกดไม่ได้ทันที
+    function handleExcludeChange(checkbox) {
+      const ingName = checkbox.value;
+      const rightItem = document.getElementById(`right-item-${CSS.escape(ingName)}`);
+      if (!rightItem) return;
+
+      const rightCheckbox = rightItem.querySelector('input[type="checkbox"]');
+
+      if (checkbox.checked) {
+        // ถ้าฝั่งซ้ายเลือก "ไม่เอา" ตัวนี้ ให้ปิดการใช้งานฝั่งขวาของตัวนี้ทันที และเอาติ๊กออก
+        rightCheckbox.checked = false;
+        rightItem.classList.add('opacity-30', 'pointer-events-none', 'bg-slate-100');
       } else {
-        rightList.classList.add('opacity-50', 'pointer-events-none');
-        // เคลียร์ค่าฝั่งขวาถ้าเอาติ๊กซ้ายออกหมด
-        document.querySelectorAll('input[name="addIng"]').forEach(cb => cb.checked = false);
+        // ถ้าเอาติ๊กซ้ายออก คืนสถานะฝั่งขวาปกติ
+        rightItem.classList.remove('opacity-30', 'pointer-events-none', 'bg-slate-100');
       }
     }
 
@@ -195,7 +194,6 @@
       document.getElementById('customModal').classList.add('hidden');
     }
 
-    // 3. คำนวณผลลัพธ์
     function calculateAndShowResult() {
       const excludedCheckboxes = document.querySelectorAll('input[name="excludeIng"]:checked');
       const addedCheckboxes = document.querySelectorAll('input[name="addIng"]:checked');
@@ -207,31 +205,30 @@
       addedCheckboxes.forEach(cb => addedSet.add(cb.value));
 
       let adjustedIngredients = {};
-      let extraPorkAmount = 0;
+      let extraWeight = 0;
 
-      // ตัวอย่างกฎหลังบ้าน: ถ้าไม่เอาสามชั้น เพิ่มหมูหมัก 20 กรัม / ไม่เอาตับ เพิ่มหมูหมัก 10 กรัม
+      // กฎคำนวณตามเงื่อนไข
       excludedSet.forEach(item => {
-        if (item === 'สามชั้นหมูสไลซ์') extraPorkAmount += 20;
-        if (item === 'ตับหมู') extraPorkAmount += 10;
+        if (item === 'สามชั้นหมูสไลซ์') extraWeight += 20;
+        if (item === 'ตับหมู') extraWeight += 10;
       });
 
-      // ถ้ามีการเลือกฝั่งขวา (เพิ่มแทนเฉพาะเจาะจง) สามารถคำนวณเพิ่มได้ที่นี่
       addedSet.forEach(item => {
-        extraPorkAmount += 15; // ตัวอย่างการเพิ่มน้ำหนักเสริมเมื่อลูกค้าเจาะจงขอเพิ่มสิ่งนั้น
+        extraWeight += 15; // ตัวอย่างเพิ่มน้ำหนักเมื่อเลือกเพิ่มเฉพาะเจาะจง
       });
 
       Object.entries(selectedItem.ingredients).forEach(([ingName, valStr]) => {
         if (excludedSet.has(ingName)) {
-          return; // ตัดตัวที่ไม่เอาออก
+          return; // ข้ามตัวที่ไม่เอา
         }
 
         let parts = valStr.split(' ');
         let num = parseFloat(parts[0]);
         let unit = parts[1] || '';
 
-        // ถ้าเป็นวัตถุดิบหลัก ให้บวกเพิ่มตามเงื่อนไข
+        // เพิ่มน้ำหนักให้วัตถุดิบหลัก (เช่น หมูหมัก) ตามเงื่อนไข
         if (ingName === 'หมูหมัก') {
-          num += extraPorkAmount;
+          num += extraWeight;
         }
 
         adjustedIngredients[ingName] = `${num} ${unit}`;
@@ -277,7 +274,7 @@
       } else {
         alert('รหัสผ่านไม่ถูกต้อง');
         document.getElementById('pinInput').value = '';
-        document.getElementById('pinInput').focus();
+        document.getElementById('pinInput'].focus();
       }
     }
   </script>
