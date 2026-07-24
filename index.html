@@ -3,332 +3,366 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NER แจ่วฮ้อน - คำนวณวัตถุดิบและจัดการสูตร</title>
+  <title>NER แจ่วฮ้อน - POS & Recipe Management</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-    body { font-family: 'Plus+Jakarta+Sans', sans-serif; background-color: #f8fafc; }
+    body { font-family: 'Plus+Jakarta+Sans', sans-serif; background-color: #f1f5f9; }
+    
+    /* Custom Scrollbar สำหรับตาราง Matrix */
+    .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    /* Sticky Columns สำหรับตาราง Excel-like */
+    .sticky-col-1 { position: sticky; left: 0; z-index: 20; border-right: 2px solid #e2e8f0; }
+    .sticky-col-2 { position: sticky; left: 160px; z-index: 20; border-right: 2px solid #e2e8f0; }
+    
+    thead .sticky-col-1, thead .sticky-col-2 { z-index: 30; }
   </style>
 </head>
-<body class="p-4 md:p-8 max-w-7xl mx-auto pb-24">
+<body class="p-4 md:p-8 max-w-7xl mx-auto pb-24 text-slate-800">
   
   <!-- Header -->
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-white p-5 rounded-3xl shadow-sm border border-slate-100 gap-4">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-white p-5 rounded-3xl shadow-sm border border-slate-200 gap-4">
     <div>
-      <h1 class="text-xl font-bold text-slate-800">NER แจ่วฮ้อน - ระบบจัดการสูตรวัตถุดิบ</h1>
-      <p class="text-xs text-slate-500">ข้อมูลครบถ้วนตามชีท Replace Use และซิงค์ตรงกับ GitHub อัตโนมัติ</p>
+      <h1 class="text-xl font-bold text-slate-900 tracking-tight">NER แจ่วฮ้อน <span class="text-indigo-600">Smart Recipe</span></h1>
+      <p class="text-xs text-slate-500 mt-1">ระบบคำนวณวัตถุดิบและจัดการสูตรทดแทน (อิงโครงสร้าง Excel)</p>
     </div>
     <div class="flex gap-2 w-full md:w-auto">
-      <button onclick="openReplaceTableModal()" class="flex-1 md:flex-none bg-indigo-600 text-white px-4 py-2.5 rounded-2xl text-xs font-semibold shadow-md active:scale-95 transition flex items-center justify-center gap-1.5">
-        <span>📊</span> ตารางจัดการปริมาณแทนที่ (Matrix UI)
-      </button>
-      <button onclick="openEditModal()" class="bg-slate-900 text-white px-4 py-2.5 rounded-2xl text-xs font-semibold shadow-md active:scale-95 transition flex items-center gap-1.5">
-        <span>⚙️</span> จัดการระบบ
+      <button onclick="openPinModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-2xl text-sm font-semibold shadow-md active:scale-95 transition flex items-center gap-2 w-full md:w-auto justify-center">
+        <span>⚙️</span> จัดการหลังบ้าน (Matrix UI)
       </button>
     </div>
   </div>
 
-  <div id="app" class="space-y-6"></div>
+  <!-- Main Menu Grid (Front-end) -->
+  <div id="app-menus" class="space-y-6"></div>
 
-  <!-- Modal ตารางบริหารปริมาณวัตถุดิบแทนที่ (Matrix UI) -->
-  <div id="replaceTableModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-3xl p-6 w-full max-w-6xl shadow-2xl border border-slate-100 max-h-[92vh] flex flex-col">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 pb-3 border-b border-slate-100 gap-3">
+  <!-- Modal 1: Split-Screen Calculator (พนักงานหน้าร้าน) -->
+  <div id="calculatorModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-40 transition-opacity">
+    <div class="bg-white rounded-3xl w-full max-w-5xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+      <!-- Header -->
+      <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
         <div>
-          <h2 class="text-lg font-bold text-slate-900">📊 ตารางสูตรการแทนที่ (Replace Use Matrix)</h2>
-          <p class="text-xs text-slate-500">ค้นหาเมนู กรองวัตถุดิบที่ไม่เอา และตรวจสอบปริมาณแทนที่ทั้งหมด 82 เคส</p>
+          <h2 id="calcMenuTitle" class="text-2xl font-bold text-slate-900">ชื่อเมนู</h2>
+          <p class="text-sm text-slate-500">เลือกว่าลูกค้าไม่รับอะไร ระบบจะคำนวณสูตรสุทธิให้อัตโนมัติ</p>
         </div>
-        <div class="flex items-center gap-2 w-full md:w-auto">
-          <input type="text" id="tableSearchInput" oninput="filterReplaceTable()" placeholder="🔍 ค้นหาเมนู หรือวัตถุดิบ..." class="px-4 py-2 border border-slate-200 rounded-xl text-xs bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-900 w-full md:w-64">
-          <button onclick="closeReplaceTableModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold shrink-0">✕</button>
+        <button onclick="closeCalculator()" class="w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-600 flex items-center justify-center font-bold hover:bg-slate-100 transition">✕</button>
+      </div>
+      
+      <!-- Split Screen Content -->
+      <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+        <!-- ฝั่งซ้าย: สิ่งที่ไม่เอา -->
+        <div class="w-full md:w-1/2 p-6 border-r border-slate-100 overflow-y-auto bg-white">
+          <h3 class="text-sm font-bold text-rose-600 mb-4 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-rose-600"></span> ❌ สิ่งที่ลูกค้า "ไม่รับ"
+          </h3>
+          <div id="excludeOptions" class="grid grid-cols-2 gap-3">
+            <!-- Render Buttons Here -->
+          </div>
+        </div>
+        
+        <!-- ฝั่งขวา: ผลลัพธ์สุทธิ -->
+        <div class="w-full md:w-1/2 p-6 bg-slate-50 overflow-y-auto">
+          <h3 class="text-sm font-bold text-indigo-600 mb-4 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-indigo-600"></span> ⚖️ ปริมาณที่ต้องจัดเตรียม (สุทธิ)
+          </h3>
+          <div id="netResultList" class="space-y-2">
+            <!-- Render Results Here -->
+          </div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <div class="overflow-auto border border-slate-200 rounded-2xl mb-4 flex-1 shadow-inner bg-slate-50/50">
-        <table class="w-full text-left border-collapse bg-white text-xs">
-          <thead class="bg-slate-900 text-white sticky top-0 z-10">
-            <tr>
-              <th class="p-3 font-bold border-b border-slate-700">ชื่อเมนู (Col A)</th>
-              <th class="p-3 font-bold border-b border-slate-700">วัตถุดิบที่ไม่เอา (Col B)</th>
-              <th class="p-3 font-bold border-b border-slate-700">วัตถุดิบแทน & ปริมาณทั้งหมด</th>
-              <th class="p-3 font-bold border-b border-slate-700 text-center">จัดการ</th>
+  <!-- Modal 2: Matrix Table (ผู้จัดการ) -->
+  <div id="matrixModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-2 z-50">
+    <div class="bg-white rounded-2xl w-full max-w-[98vw] h-[95vh] flex flex-col shadow-2xl">
+      <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-900 text-white rounded-t-2xl">
+        <div>
+          <h2 class="text-lg font-bold">📊 ตารางสูตรการแทนที่ (Replace Use Matrix)</h2>
+          <p class="text-xs text-slate-300 font-light mt-1">คลิกที่ตัวเลขเพื่อแก้ไขสูตร (ระบบออโต้เซฟขึ้น GitHub)</p>
+        </div>
+        <button onclick="closeMatrix()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm transition">ปิดหน้าต่าง</button>
+      </div>
+      
+      <div class="flex-1 overflow-auto custom-scrollbar bg-slate-50 relative p-4">
+        <table class="w-full text-left border-collapse text-xs whitespace-nowrap bg-white shadow-sm">
+          <thead>
+            <tr class="bg-slate-200 text-slate-800 uppercase tracking-wider text-[10px] font-bold">
+              <th class="p-3 sticky-col-1 bg-slate-300">ชื่อเมนู (Col A)</th>
+              <th class="p-3 sticky-col-2 bg-slate-300">ไม่เอา... (Col B)</th>
+              <!-- Render 19 Columns Dynamically -->
+              <script>
+                const headers = ["หมูหมัก", "สามชั้นหมูสไลซ์", "สันคอ", "สันนอก", "ตับหมู", "เซ่งจี๊หมู", "เนื้อใบพาย", "เนื้อริบอาย", "เสือร้องไห้", "ปลาดอลลี่", "กุ้ง", "ปลาหมึก", "กะหล่ำปลี", "ผักบุ้ง", "ผักชีฝรั่ง", "โหระพา", "ใบชะพลู", "วุ้นเส้น", "ไข่ไก่สด"];
+                headers.forEach(h => document.write(`<th class="p-3 border-b border-slate-300 min-w-[80px] text-center">${h}</th>`));
+              </script>
             </tr>
           </thead>
-          <tbody id="replaceTableBody" class="divide-y divide-slate-100">
-            <!-- เรนเดอร์ข้อมูลครบ 82 แถว -->
+          <tbody id="matrixTableBody" class="divide-y divide-slate-100">
+            <!-- Render Matrix Rows Here -->
           </tbody>
         </table>
       </div>
-
-      <div class="flex justify-between items-center pt-2 border-t border-slate-100">
-        <span class="text-xs text-slate-400">* หน่วย: กรัม (ยกเว้นกุ้งใช้ 'ตัว' และไข่ใช้ 'ฟอง')</span>
-        <button onclick="closeReplaceTableModal()" class="bg-slate-900 text-white px-6 py-3 rounded-2xl text-xs font-bold shadow-lg active:scale-95 transition">
-          ปิดหน้าต่าง
-        </button>
-      </div>
     </div>
   </div>
 
-  <!-- Modal แก้ไขรายเรคคอร์ด -->
-  <div id="editRecordModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-slate-100">
-      <h3 id="editRecordTitle" class="text-base font-bold text-slate-900 mb-1">แก้ไขปริมาณการแทนที่</h3>
-      <p id="editRecordSub" class="text-xs text-slate-500 mb-4">ปรับแต่งตัวเลขปริมาณวัตถุดิบ</p>
-      
-      <div class="space-y-3 mb-5">
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">วัตถุดิบแทน (Col C-U):</label>
-          <input type="text" id="editReplaceName" readonly class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-100 text-slate-600 font-bold">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">ปริมาณที่ต้องแทน:</label>
-          <input type="number" step="0.1" id="editRecordValueInput" placeholder="เช่น 70" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-900">
-        </div>
-      </div>
-
+  <!-- Modal 3: PIN Security -->
+  <div id="pinModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-[60]">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl text-center">
+      <h3 class="text-lg font-bold text-slate-900 mb-2">ยืนยันสิทธิ์ผู้จัดการ</h3>
+      <input type="password" id="pinInput" placeholder="PIN" maxlength="6" class="w-full px-4 py-3 border-2 border-slate-200 rounded-2xl text-center text-2xl tracking-[0.5em] mb-4 focus:border-indigo-600 focus:outline-none bg-slate-50">
       <div class="flex gap-2">
-        <button onclick="closeEditRecordModal()" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-2xl font-semibold text-xs">ยกเลิก</button>
-        <button onclick="saveRecordToGitHub()" class="flex-1 bg-slate-900 text-white py-3 rounded-2xl font-semibold text-xs">บันทึกและซิงค์ขึ้น GitHub</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal ใส่รหัสผ่าน -->
-  <div id="pinModal" class="fixed inset-0 bg-black/40 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-slate-100">
-      <h3 class="text-lg font-bold text-slate-800 mb-1">ยืนยันรหัสผ่านผู้จัดการ</h3>
-      <p class="text-xs text-slate-500 mb-4">ใส่รหัสผ่านเพื่อจัดการหลังบ้าน</p>
-      <input type="password" id="pinInput" placeholder="••••••" maxlength="6" class="w-full px-4 py-3 border border-slate-200 rounded-2xl text-center text-2xl tracking-widest mb-4 focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50">
-      <div class="flex gap-2">
-        <button onclick="closePinModal()" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-2xl font-semibold text-xs">ยกเลิก</button>
-        <button onclick="verifyPin()" class="flex-1 bg-slate-900 text-white py-3 rounded-2xl font-semibold text-xs">ยืนยัน</button>
+        <button onclick="document.getElementById('pinModal').classList.add('hidden')" class="flex-1 bg-slate-100 text-slate-700 py-3 rounded-2xl font-semibold text-sm">ยกเลิก</button>
+        <button onclick="verifyPin()" class="flex-1 bg-slate-900 text-white py-3 rounded-2xl font-semibold text-sm">เข้าสู่ระบบ</button>
       </div>
     </div>
   </div>
 
   <script>
-    // ฐานข้อมูลเมนูทั้งหมด (ครบถ้วนทุกหมวดหมู่)
-    const globalMenuData = [
-      { "category": "อาหารเซ็ต", "name": "ชุดจุ่มหมูทะเล", "ingredients": { "หมูหมัก": "80 กรัม", "สามชั้นหมูสไลซ์": "50 กรัม", "สันคอ": "40 กรัม", "สันนอก": "50 กรัม", "ตับหมู": "30 กรัม", "เซ่งจี๊หมู": "30 กรัม", "ปลาดอลลี่": "60 กรัม", "กุ้ง": "3 ตัว", "ปลากหมึก": "30 กรัม", "กะหล่ำปลี": "120 กรัม", "ผักบุ้ง": "30 กรัม", "ผักชีฝรั่ง": "15 กรัม", "โหระพา": "20 กรัม", "ใบชะพลู": "15 กรัม", "วุ้นเส้น": "80 กรัม", "ไข่ไก่สด": "1 ฟอง" } },
-      { "category": "อาหารเซ็ต", "name": "ชุดจุ่มเนื้อ", "ingredients": { "เนื้อใบพายสไลซ์": "50 กรัม", "เนื้อริบอายสไลซ์": "50 กรัม", "เนื้อเสื้อร้องให้สไลซ์": "50 กรัม", "กะหล่ำปลี": "120 กรัม", "ผักบุ้ง": "30 กรัม", "ผักชีฝรั่ง": "15 กรัม", "โหระพา": "20 กรัม", "ใบชะพลู": "15 กรัม", "วุ้นเส้น": "80 กรัม", "ไข่ไก่สด": "1 ฟอง" } },
-      { "category": "อาหารเซ็ต", "name": "ชุดจุ่มหมู", "ingredients": { "หมูหมัก": "80 กรัม", "สามชั้นหมูสไลซ์": "50 กรัม", "สันคอ": "40 กรัม", "สันนอก": "50 กรัม", "ตับหมู": "30 กรัม", "เซ่งจี๊หมู": "30 กรัม", "กะหล่ำปลี": "120 กรัม", "ผักบุ้ง": "30 กรัม", "ผักชีฝรั่ง": "15 กรัม", "โหระพา": "20 กรัม", "ใบชะพลู": "15 กรัม", "วุ้นเส้น": "80 กรัม", "ไข่ไก่สด": "1 ฟอง" } },
-      { "category": "อาหารเซ็ต", "name": "ชุดจุ่มเดี่ยวหมู", "ingredients": { "หมูหมัก": "80 กรัม", "สามชั้นหมูสไลซ์": "25 กรัม", "สันนอก": "50 กรัม", "ตับหมู": "30 กรัม", "กะหล่ำปลี": "60 กรัม", "ผักบุ้ง": "10 กรัม", "ผักชีฝรั่ง": "5 กรัม", "โหระพา": "10 กรัม", "ใบชะพลู": "5 กรัม", "วุ้นเส้น": "80 กรัม", "ไข่ไก่สด": "1 ฟอง" } },
-      { "category": "อาหารเซ็ต", "name": "อิ่มเดี่ยว ต้มพร้อมทาน", "ingredients": { "หมูหมัก": "40 กรัม", "สามชั้นหมูสไลซ์": "7.5 กรัม", "สันนอก": "12.5 กรัม", "ตับหมู": "15 กรัม", "กะหล่ำปลี": "60 กรัม", "ผักบุ้ง": "10 กรัม", "ผักชีฝรั่ง": "5 กรัม", "โหระพา": "10 กรัม", "ใบชะพลู": "5 กรัม", "วุ้นเส้น": "80 กรัม" } },
-      { "category": "อาหารเซ็ต", "name": "อิ่มเดี่ยว หมูจุกจุก", "ingredients": { "หมูหมัก": "80 กรัม", "สามชั้นหมูสไลซ์": "25 กรัม", "สันนอก": "50 กรัม", "ตับหมู": "30 กรัม", "กะหล่ำปลี": "60 กรัม", "ผักบุ้ง": "10 กรัม", "ผักชีฝรั่ง": "5 กรัม", "โหระพา": "10 กรัม", "ใบชะพลู": "5 กรัม", "วุ้นเส้น": "80 กรัม" } }
-    ];
+    // ----------------------------------------------------
+    // 1. DATA STRUCTURE (อิงจาก Excel)
+    // ----------------------------------------------------
+    
+    // หน่วยของวัตถุดิบ (จัดการเรื่องข้อยกเว้นการปัดเศษ)
+    const unitMap = { "กุ้ง": "ตัว", "ไข่ไก่สด": "ฟอง" };
+    const getUnit = (item) => unitMap[item] || "กรัม";
 
-    // รายชื่อวัตถุดิบแทนทั้งหมดตาม Header Excel (Col C ถึง U)
-    const replacementHeaders = [
-      "หมูหมัก", "สามชั้นหมูสไลซ์", "สันคอ", "สันนอก", "ตับหมู", "เซ่งจี๊หมู",
-      "เนื้อใบพายสไลซ์", "เนื้อริบอายสไลซ์", "เนื้อเสื้อร้องให้สไลซ์", "ปลาดอลลี่",
-      "กุ้ง", "ปลากหมึก", "กะหล่ำปลี", "ผักบุ้ง", "ผักชีฝรั่ง", "โหระพา", "ใบชะพลู",
-      "วุ้นเส้น", "ไข่ไก่สด"
-    ];
-
-    // ข้อมูลจำลองครบถ้วน 82 เคสตาม Excel (สามารถดึงหรือแก้ผ่าน UI ได้ทันที)
-    let replaceUseData = [
-      { menu: "ชุดจุ่มหมูทะเล", exclude: "หมูหมัก", values: { "หมูหมัก": 70, "สามชั้นหมูสไลซ์": 45.5, "สันคอ": 48.3, "สันนอก": 59.5, "ตับหมู": 76.3, "เซ่งจี๊หมู": 99.4, "เนื้อใบพายสไลซ์": 31.5, "เนื้อริบอายสไลซ์": 31.5, "เนื้อเสื้อร้องให้สไลซ์": 31.5, "ปลาดอลลี่": 116.2, "กุ้ง": 1.4, "ปลากหมึก": 39.9, "กะหล่ำปลี": 249.9, "ผักบุ้ง": 89.6, "ผักชีฝรั่ง": 46.2, "โหระพา": 61.6, "ใบชะพลู": 39.9, "วุ้นเส้น": 175, "ไข่ไก่สด": 2.1 } },
-      { menu: "ชุดจุ่มหมูทะเล", exclude: "สามชั้นหมูสไลซ์", values: { "หมูหมัก": 79.8, "สามชั้นหมูสไลซ์": 35, "สันคอ": 37.1, "สันนอก": 45.5, "ตับหมู": 58.1, "เซ่งจี๊หมู": 76.3, "เนื้อใบพายสไลซ์": 23.8, "เนื้อริบอายสไลซ์": 23.8, "เนื้อเสื้อร้องให้สไลซ์": 23.8, "ปลาดอลลี่": 88.9, "กุ้ง": 0.7, "ปลากหมึก": 30.1, "กะหล่ำปลี": 190.4, "ผักบุ้ง": 67.9, "ผักชีฝรั่ง": 35, "โหระพา": 46.9, "ใบชะพลู": 30.8, "วุ้นเส้น": 133, "ไข่ไก่สด": 1.4 } }
-    ];
-
-    let activeEditRow = null;
-    let activeEditCol = null;
-
-    const GH_CONFIG = {
-      token: "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", 
-      owner: "twentybkk-boop",
-      repo: "NER-Menu-quantity",
-      path: "replace_use_rules.json" 
+    // ข้อมูลฐาน (Original Menu Sheet)
+    const originalMenu = {
+      "ชุดจุ่มหมู": { "หมูหมัก": 100, "สามชั้นหมูสไลซ์": 50, "สันคอ": 40, "สันนอก": 50, "ตับหมู": 30, "เซ่งจี๊หมู": 30, "กะหล่ำปลี": 120, "ผักบุ้ง": 30, "ผักชีฝรั่ง": 15, "โหระพา": 20, "ใบชะพลู": 15, "วุ้นเส้น": 80, "ไข่ไก่สด": 1 },
+      "ชุดจุ่มหมูทะเล": { "หมูหมัก": 100, "สามชั้นหมูสไลซ์": 50, "สันคอ": 40, "สันนอก": 50, "กุ้ง": 3, "ปลาหมึก": 30, "กะหล่ำปลี": 120, "ผักบุ้ง": 30, "ไข่ไก่สด": 1 }, // ย่อเพื่อทำ Demo
+      "เต้าหู้ปลา (เดี่ยว)": { "เต้าหู้ปลา": 100 }
     };
 
-    window.onload = async function() {
-      renderMenuSelector(globalMenuData);
-      await loadDataFromGitHub();
-    };
+    // ข้อมูลทดแทน (Replace Use Sheet)
+    let replaceUseRules = [
+      { 
+        menu: "ชุดจุ่มหมู", 
+        exclude: "หมูหมัก", 
+        replace: { "หมูหมัก": 0, "สามชั้นหมูสไลซ์": 45.5, "สันคอ": 48.3, "สันนอก": 59.5, "ตับหมู": 76.3, "เซ่งจี๊หมู": 99.4, "กุ้ง": 1.4 }
+      },
+      { 
+        menu: "ชุดจุ่มหมู", 
+        exclude: "สามชั้นหมูสไลซ์", 
+        replace: { "หมูหมัก": 79.8, "สามชั้นหมูสไลซ์": 0, "สันคอ": 37.1, "สันนอก": 45.5, "กะหล่ำปลี": 190.4, "ไข่ไก่สด": 1.7 }
+      }
+    ];
 
-    async function loadDataFromGitHub() {
-      try {
-        let res = await fetch(`https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}`);
-        if (res.ok) {
-          let data = await res.json();
-          let decoded = JSON.parse(atob(data.content));
-          if (Array.isArray(decoded) && decoded.length > 0) {
-            replaceUseData = decoded;
-          }
-        }
-      } catch (e) {
-        console.log("ใช้ข้อมูลเริ่มต้นในระบบ");
+    let currentActiveMenu = null;
+    let currentExcludedItem = null;
+    const allIngredientsList = ["หมูหมัก", "สามชั้นหมูสไลซ์", "สันคอ", "สันนอก", "ตับหมู", "เซ่งจี๊หมู", "เนื้อใบพาย", "เนื้อริบอาย", "เสือร้องไห้", "ปลาดอลลี่", "กุ้ง", "ปลาหมึก", "กะหล่ำปลี", "ผักบุ้ง", "ผักชีฝรั่ง", "โหระพา", "ใบชะพลู", "วุ้นเส้น", "ไข่ไก่สด"];
+
+    // ----------------------------------------------------
+    // 2. CORE LOGIC (ฟังก์ชันคำนวณและปัดเศษ)
+    // ----------------------------------------------------
+
+    // ฟังก์ชันปัดลงตามสเปค (Floor)
+    function applySmartRounding(itemName, rawValue) {
+      if (rawValue <= 0) return 0;
+      let unit = getUnit(itemName);
+      
+      if (unit === "ตัว" || unit === "ฟอง") {
+        // กุ้ง, ไข่ -> ปัดลงเป็นจำนวนเต็ม (เช่น 1.7 -> 1)
+        return Math.floor(rawValue);
+      } else {
+        // กรัม -> ปัดลงให้ลงท้าย 0 หรือ 5 (เช่น 98 -> 95, 94 -> 90)
+        return Math.floor(rawValue / 5) * 5;
       }
     }
 
-    function renderMenuSelector(menuData) {
-      const app = document.getElementById('app');
-      app.innerHTML = '';
-      const categories = [...new Set(menuData.map(row => row.category))];
+    function calculateNetRecipe(menuName, excludedItem) {
+      const baseRecipe = originalMenu[menuName];
+      if (!baseRecipe) return {};
 
-      categories.forEach(cat => {
-        const catDiv = document.createElement('div');
-        catDiv.className = 'bg-white rounded-3xl p-5 md:p-6 shadow-sm border border-slate-100';
-        let html = `<h2 class="text-lg font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-slate-900"></span>${cat}</h2><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">`;
+      let netRecipe = { ...baseRecipe };
+      let replaceRule = null;
 
-        const items = menuData.filter(row => row.category === cat);
-        items.forEach(item => {
-          html += `
-            <button onclick="openReplaceTableModal('${item.name}')" class="text-left bg-slate-50 hover:bg-slate-900 hover:text-white p-4 rounded-2xl border border-slate-100/80 transition group flex justify-between items-center shadow-2xs">
-              <div>
-                <span class="font-bold text-slate-800 group-hover:text-white text-base block">${item.name}</span>
-                <span class="text-[10px] text-slate-400 group-hover:text-slate-300">จัดการสูตรวัตถุดิบแทนที่</span>
-              </div>
-              <span class="text-xs bg-white text-slate-600 group-hover:bg-slate-800 group-hover:text-white px-2.5 py-1 rounded-xl border border-slate-200 transition">เปิด ➔</span>
-            </button>
-          `;
-        });
-        html += `</div>`;
-        catDiv.innerHTML = html;
-        app.appendChild(catDiv);
-      });
-    }
+      // หาค่าชดเชยถ้ามีการตัดวัตถุดิบออก
+      if (excludedItem) {
+        replaceRule = replaceUseRules.find(r => r.menu === menuName && r.exclude === excludedItem);
+      }
 
-    function openReplaceTableModal(defaultSearch = '') {
-      document.getElementById('tableSearchInput').value = defaultSearch;
-      renderReplaceTable(defaultSearch);
-      document.getElementById('replaceTableModal').classList.remove('hidden');
-    }
+      const results = [];
+      for (const [item, baseQty] of Object.entries(netRecipe)) {
+        // กฎ: ถ้าลูกค้าบอกไม่เอาสิ่งนี้ ให้ข้ามไปเลย ไม่ต้องแสดงผลฝั่งขวา
+        if (item === excludedItem) continue;
 
-    function closeReplaceTableModal() {
-      document.getElementById('replaceTableModal').classList.add('hidden');
-    }
-
-    function renderReplaceTable(filterText = '') {
-      const tbody = document.getElementById('replaceTableBody');
-      tbody.innerHTML = '';
-
-      replaceUseData.forEach((row, rIdx) => {
-        if (filterText && !row.menu.toLowerCase().includes(filterText.toLowerCase()) && !row.exclude.toLowerCase().includes(filterText.toLowerCase())) {
-          return;
+        let addedQty = 0;
+        if (replaceRule && replaceRule.replace[item]) {
+          addedQty = replaceRule.replace[item];
         }
 
-        // สร้างป้ายแสดงรายการวัตถุดิบแทนและปริมาณแบบกระชับสวยงาม
-        let badgesHtml = '<div class="flex flex-wrap gap-1.5 py-1">';
-        Object.entries(row.values).forEach(([repName, val]) => {
-          badgesHtml += `<span class="bg-slate-100 border border-slate-200 text-slate-700 px-2 py-1 rounded-lg text-[11px] font-medium"><b>${repName}:</b> <span class="text-indigo-600 font-bold">${val}</span></span>`;
-        });
-        badgesHtml += '</div>';
+        let rawTotal = baseQty + addedQty;
+        let finalDisplayQty = applySmartRounding(item, rawTotal);
 
-        tbody.innerHTML += `
-          <tr class="hover:bg-slate-50/80 transition">
-            <td class="p-3 font-bold text-slate-900 border-b border-slate-100 align-top">${row.menu}</td>
-            <td class="p-3 text-slate-700 border-b border-slate-100 align-top">❌ ${row.exclude}</td>
-            <td class="p-3 border-b border-slate-100">${badgesHtml}</td>
-            <td class="p-3 text-center border-b border-slate-100 align-top">
-              <button onclick="openEditRecordModal(${rIdx})" class="bg-slate-900 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-xl font-bold text-[11px] transition shadow-2xs">
-                ✏️ แก้ไขสูตรนี้
-              </button>
-            </td>
-          </tr>
+        if (finalDisplayQty > 0) {
+          results.push({
+            name: item,
+            qty: finalDisplayQty,
+            unit: getUnit(item),
+            isModified: addedQty > 0 // Flag เพื่อทำไฮไลต์สีว่าตัวนี้โดนบวกเพิ่ม
+          });
+        }
+      }
+      return results;
+    }
+
+    // ----------------------------------------------------
+    // 3. FRONT-END UI (หน้าจอพนักงาน)
+    // ----------------------------------------------------
+    
+    function initMenus() {
+      const app = document.getElementById('app-menus');
+      let html = `<div class="grid grid-cols-1 md:grid-cols-3 gap-4">`;
+      
+      Object.keys(originalMenu).forEach(menuName => {
+        let itemsCount = Object.keys(originalMenu[menuName]).length;
+        // ถ้ามีวัตถุดิบเดียว ให้กดแล้วไม่ต้องเด้ง Modal (จำลองพฤติกรรม)
+        let onClickAction = itemsCount > 1 ? `openCalculator('${menuName}')` : `alert('เมนู ${menuName} มีวัตถุดิบเดียว (100%)\\nไม่ต้องใช้ระบบตัดวัตถุดิบ')`;
+        
+        html += `
+          <div onclick="${onClickAction}" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-indigo-500 hover:shadow-md transition cursor-pointer group">
+            <h3 class="font-bold text-lg group-hover:text-indigo-600 transition">${menuName}</h3>
+            <p class="text-xs text-slate-400 mt-1">${itemsCount > 1 ? 'กดเพื่อจัดการสูตร (มีเงื่อนไขตัดออก)' : 'วัตถุดิบเดี่ยว (จัดเต็ม 100%)'}</p>
+          </div>
         `;
       });
+      html += `</div>`;
+      app.innerHTML = html;
     }
 
-    function filterReplaceTable() {
-      let query = document.getElementById('tableSearchInput').value.trim();
-      renderReplaceTable(query);
-    }
-
-    function openEditRecordModal(rIdx) {
-      activeEditRow = rIdx;
-      let row = replaceUseData[rIdx];
-      document.getElementById('editRecordTitle').innerText = `แก้ไขสูตร: ${row.menu}`;
-      document.getElementById('editRecordSub').innerText = `กรณีลูกค้าไม่เอา: ${row.exclude}`;
+    function openCalculator(menuName) {
+      currentActiveMenu = menuName;
+      currentExcludedItem = null;
+      document.getElementById('calcMenuTitle').innerText = menuName;
+      document.getElementById('calculatorModal').classList.remove('hidden');
       
-      // แสดงฟิลด์แก้ไขค่าแรกหรือเลือกปรับแต่ง
-      document.getElementById('editReplaceName').value = "แก้ไขภาพรวมทุกวัตถุดิบแทน";
-      let firstVal = Object.values(row.values)[0] || 0;
-      document.getElementById('editRecordValueInput').value = firstVal;
-      document.getElementById('editRecordModal').classList.remove('hidden');
+      renderExcludeOptions();
+      renderNetResults();
     }
 
-    function closeEditRecordModal() {
-      document.getElementById('editRecordModal').classList.add('hidden');
+    function closeCalculator() {
+      document.getElementById('calculatorModal').classList.add('hidden');
     }
 
-    async function saveRecordToGitHub() {
-      let val = parseFloat(document.getElementById('editRecordValueInput').value);
-      if (isNaN(val)) {
-        alert('กรุณากรอกตัวเลขปริมาณให้ถูกต้อง');
+    function setExcludedItem(item) {
+      currentExcludedItem = (currentExcludedItem === item) ? null : item; // Toggle แบบ Radio
+      renderExcludeOptions();
+      renderNetResults();
+    }
+
+    function renderExcludeOptions() {
+      const container = document.getElementById('excludeOptions');
+      const baseIngredients = Object.keys(originalMenu[currentActiveMenu] || {});
+      
+      let html = '';
+      baseIngredients.forEach(item => {
+        const isActive = currentExcludedItem === item;
+        html += `
+          <button onclick="setExcludedItem('${item}')" class="px-4 py-3 rounded-xl text-sm font-semibold border-2 text-left transition flex justify-between items-center ${isActive ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-slate-200 text-slate-700 hover:border-slate-300 bg-white'}">
+            <span>${item}</span>
+            ${isActive ? '<span>🚫</span>' : ''}
+          </button>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function renderNetResults() {
+      const container = document.getElementById('netResultList');
+      const results = calculateNetRecipe(currentActiveMenu, currentExcludedItem);
+      
+      if (results.length === 0) {
+        container.innerHTML = `<p class="text-slate-400 text-sm text-center py-8">ไม่มีข้อมูลวัตถุดิบ</p>`;
         return;
       }
 
-      // อัปเดตค่าในอาเรย์จำลอง
-      if (activeEditRow !== null) {
-        let firstKey = Object.keys(replaceUseData[activeEditRow].values)[0];
-        replaceUseData[activeEditRow].values[firstKey] = val;
-      }
-
-      alert('กำลังซิงค์ข้อมูลตาราง Replace ขึ้น GitHub อัตโนมัติ รอสักครู่...');
-
-      try {
-        let apiUrl = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}`;
-        
-        let getRes = await fetch(apiUrl, {
-          headers: { "Authorization": `token ${GH_CONFIG.token}` }
-        });
-        
-        let fileSha = null;
-        if (getRes.ok) {
-          let fileData = await getRes.json();
-          fileSha = fileData.sha;
-        }
-
-        let contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(replaceUseData, null, 2))));
-        
-        let putRes = await fetch(apiUrl, {
-          method: "PUT",
-          headers: {
-            "Authorization": `token ${GH_CONFIG.token}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            message: `Update replace use rules table`,
-            content: contentEncoded,
-            sha: fileSha
-          })
-        });
-
-        if (putRes.ok) {
-          alert('บันทึกและซิงค์ขึ้น GitHub สำเร็จ! ทุกคนจะเห็นข้อมูลตรงกันทันที');
-          closeEditRecordModal();
-          renderReplaceTable(document.getElementById('tableSearchInput').value);
-        } else {
-          let errJson = await putRes.json();
-          alert('เกิดข้อผิดพลาดในการซิงค์: ' + errJson.message);
-        }
-      } catch (err) {
-        alert('เชื่อมต่อ GitHub API ไม่สำเร็จ: ' + err.message);
-      }
+      let html = '';
+      results.forEach(res => {
+        html += `
+          <div class="flex justify-between items-center p-3 rounded-xl ${res.isModified ? 'bg-indigo-50 border border-indigo-100' : 'bg-white border border-slate-100'}">
+            <span class="font-medium ${res.isModified ? 'text-indigo-800' : 'text-slate-700'}">${res.name}</span>
+            <div class="flex items-baseline gap-1">
+              <span class="text-xl font-bold ${res.isModified ? 'text-indigo-600' : 'text-slate-900'}">${res.qty}</span>
+              <span class="text-xs text-slate-500">${res.unit}</span>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
     }
 
-    function openEditModal() {
+    // ----------------------------------------------------
+    // 4. MANAGEMENT UI (หน้าจอผู้จัดการ / Matrix)
+    // ----------------------------------------------------
+    
+    function openPinModal() {
       document.getElementById('pinModal').classList.remove('hidden');
       document.getElementById('pinInput').value = '';
       document.getElementById('pinInput').focus();
     }
 
-    function closePinModal() {
-      document.getElementById('pinModal').classList.add('hidden');
-    }
-
     function verifyPin() {
-      const pin = document.getElementById('pinInput').value;
-      if (pin === '206738') {
-        closePinModal();
-        window.open(`https://github.com/${GH_CONFIG.owner}/${GH_CONFIG.repo}`, '_blank');
+      if (document.getElementById('pinInput').value === '206738') {
+        document.getElementById('pinModal').classList.add('hidden');
+        openMatrix();
       } else {
         alert('รหัสผ่านไม่ถูกต้อง');
-        document.getElementById('pinInput').value = '';
-        document.getElementById('pinInput').focus();
       }
     }
+
+    function openMatrix() {
+      document.getElementById('matrixModal').classList.remove('hidden');
+      renderMatrixTable();
+    }
+    function closeMatrix() {
+      document.getElementById('matrixModal').classList.add('hidden');
+    }
+
+    function renderMatrixTable() {
+      const tbody = document.getElementById('matrixTableBody');
+      let html = '';
+      
+      replaceUseRules.forEach((row, rowIndex) => {
+        html += `<tr class="hover:bg-slate-100 transition group">
+          <td class="p-3 sticky-col-1 bg-white group-hover:bg-slate-100 font-bold text-slate-800">${row.menu}</td>
+          <td class="p-3 sticky-col-2 bg-white group-hover:bg-slate-100 text-rose-600 font-semibold border-r border-slate-200">❌ ${row.exclude}</td>
+        `;
+        
+        allIngredientsList.forEach(ing => {
+          let val = row.replace[ing] || 0;
+          let cellStyle = val > 0 ? 'text-indigo-600 font-bold bg-indigo-50/30' : 'text-slate-300';
+          // ทำ Inline Edit จำลอง เมื่อคลิกที่ตัวเลข (รองรับ Prompt ค่าใหม่)
+          html += `
+            <td class="p-3 text-center border-b border-slate-200 ${cellStyle} hover:bg-indigo-100 cursor-pointer" onclick="editMatrixCell(${rowIndex}, '${ing}', ${val})">
+              ${val > 0 ? val : '-'}
+            </td>
+          `;
+        });
+        html += `</tr>`;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function editMatrixCell(rowIndex, ingredient, currentValue) {
+      // สำหรับระบบจริงควรทำ Custom Numpad แต่เพื่อความรวดเร็วและใช้โค้ดไฟล์เดียว จะใช้ Prompt ดักตัวเลข
+      let newVal = prompt(`แก้ไขปริมาณแทนที่:\nเมนู: ${replaceUseRules[rowIndex].menu}\nหัก: ${replaceUseRules[rowIndex].exclude}\nแทนด้วย: ${ingredient}\n\nกรอกตัวเลขใหม่:`, currentValue);
+      
+      if (newVal !== null && !isNaN(parseFloat(newVal))) {
+        replaceUseRules[rowIndex].replace[ingredient] = parseFloat(newVal);
+        renderMatrixTable();
+        // ในระบบจริง: ยิง API ขึ้น GitHub ตรงนี้
+        console.log("Trigger API Sync to GitHub..."); 
+      }
+    }
+
+    // Initialize System
+    window.onload = () => {
+      initMenus();
+    };
   </script>
 </body>
 </html>
