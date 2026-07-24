@@ -16,11 +16,11 @@
   <div class="flex justify-between items-center mb-6 bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
     <div>
       <h1 class="text-xl font-bold text-slate-800">NER แจ่วฮ้อน</h1>
-      <p class="text-xs text-slate-500">ระบบเลือกเมนูและคำนวณวัตถุดิบตามเงื่อนไข</p>
+      <p class="text-xs text-slate-500">ระบบเลือกเมนูและคำนวณวัตถุดิบตามเงื่อนไข (แยกตามรายเซ็ต)</p>
     </div>
     <div class="flex gap-2">
       <button onclick="openCasesOverview()" class="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-2xl text-xs font-semibold shadow-2xs active:scale-95 transition flex items-center gap-1.5">
-        <span>📋</span> เช็คเคสเงื่อนไข
+        <span>📋</span> เช็คเคสเงื่อนไขทั้งหมด
       </button>
       <button onclick="openEditModal()" class="bg-slate-900 text-white px-4 py-2.5 rounded-2xl text-xs font-semibold shadow-md active:scale-95 transition flex items-center gap-1.5">
         <span>⚙️</span> แก้ไขข้อมูล
@@ -31,13 +31,13 @@
   <div id="loading" class="text-center py-20 text-slate-400 font-medium">กำลังโหลดเมนู...</div>
   <div id="app" class="space-y-6"></div>
 
-  <!-- Modal สำหรับเลือกเงื่อนไข (เฉพาะเมนูที่มีวัตถุดิบตั้งแต่ 2 อย่างขึ้นไป) -->
+  <!-- Modal สำหรับเลือกเงื่อนไข (แยกตามเซ็ต) -->
   <div id="customModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl p-6 w-full max-w-2xl shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
         <div>
           <h2 id="modalMenuName" class="text-lg font-bold text-slate-900">ชื่อเมนู</h2>
-          <p class="text-xs text-slate-500">ซ้าย: ติ๊กสิ่ง "ไม่เอา" | ขวา: เลือกสิ่งที่จะ "แทนเป็น" (เฉพาะในเซ็ต)</p>
+          <p class="text-xs text-slate-500">เลือกวัตถุดิบที่ไม่รับ และกำหนดสิ่งที่จะใช้แทนตามสูตรเฉพาะของเซ็ตนี้</p>
         </div>
         <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold">✕</button>
       </div>
@@ -48,7 +48,7 @@
           <div id="leftExcludeList" class="space-y-2"></div>
         </div>
         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-          <h3 class="font-bold text-slate-800 text-sm mb-3 pb-1 border-b border-slate-200">🔄 แทนเป็นอะไร (เลือกในเซ็ต)</h3>
+          <h3 class="font-bold text-slate-800 text-sm mb-3 pb-1 border-b border-slate-200">🔄 แทนเป็นอะไร (ตามสูตรเซ็ต)</h3>
           <div id="rightReplaceList" class="space-y-2"></div>
         </div>
       </div>
@@ -59,33 +59,19 @@
     </div>
   </div>
 
-  <!-- Modal แสดงภาพรวมเคสเงื่อนไขทั้งหมด -->
+  <!-- Modal แสดงภาพรวมเคสเงื่อนไขทั้งหมด (Matrix ที่ระบุและยังไม่ระบุ) -->
   <div id="casesModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-3xl p-6 w-full max-w-xl shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-2xl shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
         <div>
-          <h2 class="text-lg font-bold text-slate-900">📋 สถานะเคสเงื่อนไขการแทนที่</h2>
-          <p class="text-xs text-slate-500">รายการเคสที่เป็นไปได้และกฎ Default ของร้าน</p>
+          <h2 class="text-lg font-bold text-slate-900">📋 สถานะเคสการแทนที่แยกตามเซ็ต</h2>
+          <p class="text-xs text-slate-500">เช็คว่าเคสไหนกำหนดปริมาณแทนที่แล้ว หรือเคสไหนยังว่างอยู่</p>
         </div>
         <button onclick="closeCasesOverview()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold">✕</button>
       </div>
 
-      <div class="overflow-y-auto space-y-3 mb-4 flex-1 pr-1">
-        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/60 flex justify-between items-center">
-          <div>
-            <p class="font-bold text-slate-800 text-sm">เคส: ไม่เอาสามชั้นหมูสไลซ์</p>
-            <p class="text-xs text-slate-500">Default: แทนเป็นหมูหมัก (+20 กรัม)</p>
-          </div>
-          <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-xl font-bold">✅ ตั้งค่าแล้ว</span>
-        </div>
-
-        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/60 flex justify-between items-center">
-          <div>
-            <p class="font-bold text-slate-800 text-sm">เคส: ไม่เอาตับหมู</p>
-            <p class="text-xs text-slate-500">Default: แทนเป็นหมูหมัก (+10 กรัม)</p>
-          </div>
-          <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-xl font-bold">✅ ตั้งค่าแล้ว</span>
-        </div>
+      <div class="overflow-y-auto space-y-3 mb-4 flex-1 pr-1" id="casesMatrixList">
+        <!-- รายการเคสทั้งหมดจะถูกเรนเดอร์ขึ้นมาตรงนี้ให้อัตโนมัติ -->
       </div>
 
       <button onclick="closeCasesOverview()" class="w-full bg-slate-900 text-white py-3.5 rounded-2xl font-bold shadow-lg active:scale-95 transition">
@@ -130,11 +116,24 @@
     let globalMenuData = [];
     let selectedItem = null;
 
+    // ตัวอย่างฐานข้อมูลกฎการแทนที่แยกตามรายเซ็ต (สามารถนำไปปรับแก้เพิ่มได้ตามจริง)
+    const setReplacementRules = {
+      "ชุดจุ่มหมู": {
+        "สามชั้นหมูสไลซ์": { replace: "หมูหมัก", addWeight: 20 },
+        "ตับหมู": { replace: "หมูหมัก", addWeight: 10 }
+      },
+      "อิ่มเดี่ยว หมูจุกจุก": {
+        "สามชั้นหมูสไลซ์": { replace: "หมูหมัก", addWeight: 15 },
+        "ตับหมู": { replace: "หมูหมัก", addWeight: 8 }
+      }
+    };
+
     fetch('data.json')
       .then(res => res.json())
       .then(data => {
         globalMenuData = data;
         renderMenuSelector(data);
+        renderCasesMatrix();
       })
       .catch(err => {
         document.getElementById('loading').innerText = 'ไม่สามารถโหลดข้อมูลได้ กรุณาตรวจสอบไฟล์ data.json';
@@ -158,7 +157,6 @@
           const originalIndex = menuData.indexOf(item);
           const ingredientCount = Object.keys(item.ingredients).length;
           
-          // ถ้ามีวัตถุดิบตั้งแต่ 2 อย่างขึ้นไป ให้เปิด Modal เลือกเงื่อนไขได้ ถ้ามีอย่างเดียว (เช่น เต้าหู้ปลา) ให้โชว์ผลลัพธ์ตรงๆ หรือข้ามได้เลย
           html += `
             <button onclick="handleMenuClick(${originalIndex})" class="text-left bg-slate-50 hover:bg-slate-900 hover:text-white p-4 rounded-2xl border border-slate-100/80 transition group flex justify-between items-center shadow-2xs">
               <div>
@@ -181,10 +179,8 @@
       const ingredientCount = Object.keys(selectedItem.ingredients).length;
 
       if (ingredientCount <= 1) {
-        // ถ้ามีวัตถุดิบชิ้นเดียว (เช่น เต้าหู้ปลา) ไม่ต้องขึ้นหน้าคอนดิชั่น ให้โชว์ผลลัพธ์มาตรฐานทันที
         showDirectResult();
       } else {
-        // ถ้ามีตั้งแต่ 2 อย่างขึ้นไป เปิด Modal เลือกเงื่อนไข
         openCustomModal();
       }
     }
@@ -196,7 +192,7 @@
       const rightList = document.getElementById('rightReplaceList');
       
       leftList.innerHTML = '';
-      rightList.innerHTML = '<p class="text-xs text-slate-400 italic">ติ๊ก "สิ่งที่ไม่เอา" ฝั่งซ้าย เพื่อเลือกตัวแทน</p>';
+      rightList.innerHTML = '<p class="text-xs text-slate-400 italic">ติ๊ก "สิ่งที่ไม่เอา" ฝั่งซ้าย เพื่อดูตัวเลือกแทนที่ตามสูตรของเซ็ตนี้</p>';
 
       const validEntries = Object.entries(selectedItem.ingredients);
       validEntries.forEach(([ingName, val], idx) => {
@@ -217,21 +213,29 @@
       rightList.innerHTML = '';
 
       if (checkedExcludes.length === 0) {
-        rightList.innerHTML = '<p class="text-xs text-slate-400 italic">ติ๊ก "สิ่งที่ไม่เอา" ฝั่งซ้าย เพื่อเลือกตัวแทน</p>';
+        rightList.innerHTML = '<p class="text-xs text-slate-400 italic">ติ๊ก "สิ่งที่ไม่เอา" ฝั่งซ้าย เพื่อดูตัวเลือกแทนที่ตามสูตรของเซ็ตนี้</p>';
         return;
       }
 
-      // ฝั่งขวา: ให้เลือกวัตถุดิบอื่นๆ ที่เหลืออยู่ในเซ็ตเดียวกันเท่านั้นมาแทนที่
-      const validEntries = Object.entries(selectedItem.ingredients);
-      validEntries.forEach(([ingName]) => {
-        // เช็คว่าตัวนี้ไม่ได้ถูกติ๊กเป็น "ไม่เอา"
-        let isExcluded = Array.from(checkedExcludes).some(cb => cb.value === ingName);
-        if (!isExcluded) {
+      const menuRules = setReplacementRules[selectedItem.name] || {};
+
+      checkedExcludes.forEach(cb => {
+        let excludedName = cb.value;
+        let rule = menuRules[excludedName];
+
+        if (rule) {
           rightList.innerHTML += `
-            <label class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200/80 hover:bg-slate-100 cursor-pointer transition">
-              <span class="font-semibold text-slate-700 text-xs">แทนเป็น: ${ingName}</span>
-              <input type="radio" name="replaceTarget" value="${ingName}" class="w-4 h-4 accent-slate-900">
-            </label>
+            <div class="p-2.5 rounded-xl bg-white border border-slate-200/80 flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-800">ไม่เอา ${excludedName} ➔ แทนเป็น: <span class="text-emerald-600">${rule.replace} (+${rule.addWeight} กรัม)</span></span>
+              <span class="bg-slate-100 text-slate-600 px-2 py-1 rounded-lg font-bold">Default สูตรเซ็ต</span>
+            </div>
+          `;
+        } else {
+          rightList.innerHTML += `
+            <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 flex justify-between items-center text-xs">
+              <span class="font-bold text-amber-900">ไม่เอา ${excludedName}</span>
+              <span class="bg-amber-100 text-amber-800 px-2 py-1 rounded-lg font-bold">⚠️ ยังไม่กำหนดสูตรแทน</span>
+            </div>
           `;
         }
       });
@@ -242,6 +246,7 @@
     }
 
     function openCasesOverview() {
+      renderCasesMatrix();
       document.getElementById('casesModal').classList.remove('hidden');
     }
 
@@ -249,8 +254,40 @@
       document.getElementById('casesModal').classList.add('hidden');
     }
 
+    // ฟังก์ชันสร้าง Matrix โชว์เคสทั้งหมดที่ระบุและยังไม่ได้ระบุ
+    function renderCasesMatrix() {
+      const container = document.getElementById('casesMatrixList');
+      container.innerHTML = '';
+
+      // ตัวอย่างการสแกนเคสที่เป็นไปได้จากเซ็ตที่มีเงื่อนไข
+      const allPossibleCases = [
+        { menu: "ชุดจุ่มหมู", exclude: "สามชั้นหมูสไลซ์", status: "defined", rule: "แทนเป็นหมูหมัก (+20 กรัม)" },
+        { menu: "ชุดจุ่มหมู", exclude: "ตับหมู", status: "defined", rule: "แทนเป็นหมูหมัก (+10 กรัม)" },
+        { menu: "อิ่มเดี่ยว หมูจุกจุก", exclude: "สามชั้นหมูสไลซ์", status: "defined", rule: "แทนเป็นหมูหมัก (+15 กรัม)" },
+        { menu: "อิ่มเดี่ยว หมูจุกจุก", exclude: "ตับหมู", status: "defined", rule: "แทนเป็นหมูหมัก (+8 กรัม)" },
+        { menu: "ชุดจุ่มหมูทะเล", exclude: "ปลาดอลลี่", status: "undefined", rule: "ยังไม่ได้ระบุสูตรการแทน" },
+        { menu: "ชุดจุ่มเนื้อ", exclude: "เนื้อใบพายสไลซ์", status: "undefined", rule: "ยังไม่ได้ระบุสูตรการแทน" }
+      ];
+
+      allPossibleCases.forEach(c => {
+        let badge = c.status === 'defined' 
+          ? '<span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-xl font-bold">✅ กำหนดแล้ว</span>' 
+          : '<span class="bg-amber-100 text-amber-800 text-xs px-2.5 py-1 rounded-xl font-bold">⚠️ ยังไม่ระบุ</span>';
+
+        container.innerHTML += `
+          <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/60 flex justify-between items-center">
+            <div>
+              <p class="font-bold text-slate-800 text-sm">[${c.menu}] ไม่เอา: ${c.exclude}</p>
+              <p class="text-xs text-slate-500">กฎการแทน: ${c.rule}</p>
+            </div>
+            <div>${badge}</div>
+          </div>
+        `;
+      });
+    }
+
     function showDirectResult() {
-      document.getElementById('resultMenuTitle').innerText = `เมนู: ${selectedItem.name} (มาตรฐาน)`;
+      document.getElementById('resultMenuTitle').innerText = `เมนู: ${selectedItem.name} (วัตถุดิบเดี่ยว)`;
       const resultList = document.getElementById('resultList');
       resultList.innerHTML = '';
 
@@ -267,19 +304,19 @@
     }
 
     function calculateAndShowResult() {
-      const excludedCheckboxes = document.querySelectorAll('input[name="excludeIng"]:checked');
-      const selectedReplace = document.querySelector('input[name="replaceTarget"]:checked');
-      
+      const checkedExcludes = document.querySelectorAll('input[name="excludeIng"]:checked');
       const excludedSet = new Set();
-      excludedCheckboxes.forEach(cb => excludedSet.add(cb.value));
+      checkedExcludes.forEach(cb => excludedSet.add(cb.value));
 
-      let replacementItem = selectedReplace ? selectedReplace.value : null;
-      let extraWeight = 0;
+      let menuRules = setReplacementRules[selectedItem.name] || {};
+      let totalExtraWeight = {};
 
-      // กฎ Default ของร้าน / การบวกน้ำหนักเพิ่มตามเคส
-      excludedSet.get = (k) => excludedSet.has(k);
-      if (excludedSet.has('สามชั้นหมูสไลซ์')) extraWeight += 20;
-      if (excludedSet.has('ตับหมู')) extraWeight += 10;
+      excludedSet.forEach(item => {
+        let rule = menuRules[item];
+        if (rule) {
+          totalExtraWeight[rule.replace] = (totalExtraWeight[rule.replace] || 0) + rule.addWeight;
+        }
+      });
 
       let adjustedIngredients = {};
 
@@ -292,15 +329,15 @@
         let num = parseFloat(parts[0]);
         let unit = parts[1] || '';
 
-        // ถ้ามีการระบุตัวแทน หรือใช้ Default (วิ่งเข้าหมูหมัก)
-        if (ingName === 'หมูหมัก' || ingName === replacementItem) {
-          num += extraWeight > 0 ? extraWeight : (replacementItem ? 15 : 0);
+        // บวกน้ำหนักชดเชยตามสูตรเฉพาะของเซ็ตนั้นๆ
+        if (totalExtraWeight[ingName]) {
+          num += totalExtraWeight[ingName];
         }
 
         adjustedIngredients[ingName] = `${num} ${unit}`;
       });
 
-      document.getElementById('resultMenuTitle').innerText = `เมนู: ${selectedItem.name} ${excludedSet.size > 0 ? `(ไม่เอา: ${Array.from(excludedSet).join(', ')} ${replacementItem ? `➔ แทนเป็น: ${replacementItem}` : '➔ Default'})` : ''}`;
+      document.getElementById('resultMenuTitle').innerText = `เมนู: ${selectedItem.name} ${excludedSet.size > 0 ? `(ตัด: ${Array.from(excludedSet).join(', ')})` : ''}`;
       
       const resultList = document.getElementById('resultList');
       resultList.innerHTML = '';
@@ -325,7 +362,7 @@
     function openEditModal() {
       document.getElementById('pinModal').classList.remove('hidden');
       document.getElementById('pinInput').value = '';
-      document.getElementById('pinInput').focus();
+      document.getElementById('pinInput'].focus();
     }
 
     function closePinModal() {
@@ -336,8 +373,9 @@
       const pin = document.getElementById('pinInput').value;
       if (pin === '206738') {
         closePinModal();
+        // แก้ไขปุ่มแก้ไขข้อมูลให้พุ่งตรงไปที่หน้าแดชบอร์ดจัดการไฟล์บน GitHub โดยไม่ติด 404
         const githubUser = window.location.hostname.split('.')[0];
-        window.open(`https://github.com/${githubUser}/ner-menu/blob/main/data.json`, '_blank');
+        window.open(`https://github.com/${githubUser}/ner-menu`, '_blank');
       } else {
         alert('รหัสผ่านไม่ถูกต้อง');
         document.getElementById('pinInput').value = '';
