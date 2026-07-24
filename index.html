@@ -28,7 +28,7 @@
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-5 md:p-6 rounded-3xl shadow-sm border border-slate-100 gap-4">
     <div>
       <h1 class="text-2xl font-bold text-slate-900 tracking-tight">NER แจ่วฮ้อน <span class="text-indigo-600">Smart Recipe</span></h1>
-      <p class="text-sm text-slate-500 mt-1">ระบบคำนวณวัตถุดิบสุทธิ (ดึงข้อมูลตรงจาก GitHub JSON)</p>
+      <p class="text-sm text-slate-500 mt-1">ระบบคำนวณวัตถุดิบสุทธิ (กุ้ง/ไข่ปัดปกติ แสดง 0 แทน - / ล็อกเฉพาะวัตถุดิบในเซ็ต)</p>
     </div>
     <div class="flex gap-2 w-full md:w-auto">
       <button onclick="openPinModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-2xl text-sm font-bold shadow-md active:scale-95 transition flex items-center gap-2 w-full md:w-auto justify-center">
@@ -127,10 +127,6 @@
     let excludedItemsMap = {}; 
 
     window.onload = async () => {
-      // ล้างข้อมูลเก่าในหน่วยความจำเครื่องก่อนเริ่มโหลดใหม่
-      originalMenu = {};
-      replaceUseRules = [];
-      
       try {
         const res = await fetch(GITHUB_JSON_URL + "?t=" + new Date().getTime(), { cache: "no-store" });
         if (res.ok) {
@@ -148,22 +144,25 @@
       } catch (e) {
         console.log("No remote file found.");
       }
-
-      // ถ้าไฟล์บน GitHub ถูกลบไปแล้ว หน้าเว็บจะแสดงเตือนทันที
       document.getElementById('app-menus').innerHTML = `
         <div class="bg-rose-50 border border-rose-200 p-8 rounded-3xl text-center max-w-lg mx-auto shadow-sm">
-          <p class="text-rose-700 font-bold text-lg mb-2">❌ ไม่พบไฟล์ข้อมูลกลาง (recipe_master.json) บน GitHub</p>
-          <p class="text-xs text-rose-600 mb-6">คุณได้ลบไฟล์บน GitHub ไปแล้ว ระบบจึงไม่สามารถดึงข้อมูลมาแสดงได้ กรุณาอัปโหลดไฟล์ Excel ใหม่ในหน้าจัดการหลังบ้าน</p>
-          <button onclick="openPinModal()" class="bg-slate-900 text-white px-6 py-3 rounded-2xl text-xs font-bold">ไปที่หน้าจัดการหลังบ้าน (รหัส 206738)</button>
+          <p class="text-rose-700 font-bold text-lg mb-2">❌ ไม่พบไฟล์ข้อมูลกลาง (recipe_master.json)</p>
+          <p class="text-xs text-rose-600 mb-6">กรุณากดจัดการหลังบ้าน (รหัส 206738) เพื่ออัปโหลดไฟล์ Excel ใหม่</p>
         </div>
       `;
     };
 
     function applySmartRounding(itemName, rawValue) {
-      if (rawValue <= 0) return 0;
+      if (rawValue === undefined || rawValue === null || rawValue === "") return 0;
+      let num = parseFloat(rawValue);
+      if (isNaN(num) || num <= 0) return 0;
+
       let unit = getUnit(itemName);
-      if (unit === "ตัว" || unit === "ฟอง") return Math.floor(rawValue);
-      return Math.floor(rawValue / 5) * 5;
+      // กุ้งกับไข่: ปัดเศษแบบปกติ เกิน 0.5 เป็น 1 น้อยกว่าเป็น 0
+      if (unit === "ตัว" || unit === "ฟอง") {
+        return Math.round(num);
+      }
+      return Math.floor(num / 5) * 5;
     }
 
     function calculateNetRecipe(menuName) {
@@ -186,9 +185,14 @@
       }
       const results = [];
       for (const [item, rawTotal] of Object.entries(netRecipeMap)) {
+        let unit = getUnit(item);
         let finalDisplayQty = applySmartRounding(item, rawTotal);
-        if (finalDisplayQty > 0 || rawTotal > 0) {
-          results.push({ name: item, qty: finalDisplayQty > 0 ? finalDisplayQty : Math.floor(rawTotal), unit: getUnit(item), isModified: modifiedFlags[item] === true });
+        
+        // สำหรับกุ้ง/ไข่ ให้แสดงผลเสมอแม้จะได้ 0 (ตามเงื่อนไขใหม่ ไมโชว์เป็น -)
+        if (unit === "ตัว" || unit === "ฟอง") {
+          results.push({ name: item, qty: finalDisplayQty, unit: unit, isModified: modifiedFlags[item] === true });
+        } else if (finalDisplayQty > 0) {
+          results.push({ name: item, qty: finalDisplayQty, unit: unit, isModified: modifiedFlags[item] === true });
         }
       }
       return results;
@@ -392,13 +396,16 @@
           if (rule && rule.replace) {
             Object.entries(rule.replace).forEach(([repItem, repQty]) => {
               if (repItem === item) return; 
+              
+              // 🔒 ล็อกเด็ดขาด: ต้องมีวัตถุดิบตัวนี้อยู่จริงตั้งต้นในเซ็ตนี้เท่านั้น
               let hasInBaseMenu = menuBaseIngredients.includes(repItem);
-              if ((hasInBaseMenu || repQty > 0) && repQty !== undefined) {
-                let roundedQty = applySmartRounding(repItem, repQty);
-                if(roundedQty > 0 || repQty > 0) {
-                  let displayQty = getUnit(repItem) === "ตัว" || getUnit(repItem) === "ฟอง" ? Math.floor(repQty) : roundedQty;
+              
+              if (hasInBaseMenu && repQty !== undefined && repQty > 0) {
+                let unit = getUnit(repItem);
+                let displayQty = applySmartRounding(repItem, repQty);
+                if (displayQty > 0 || unit === "ตัว" || unit === "ฟอง") {
                   let selected = excludedItemsMap[item] === repItem ? 'selected' : '';
-                  optionsHtml += `<option value="${repItem}" ${selected}>แทนด้วย ${repItem} (+${displayQty} ${getUnit(repItem)})</option>`;
+                  optionsHtml += `<option value="${repItem}" ${selected}>แทนด้วย ${repItem} (+${displayQty} ${unit})</option>`;
                 }
               }
             });
@@ -455,7 +462,7 @@
       const container = document.getElementById('tableContainer');
       if (replaceUseRules.length === 0) { container.innerHTML = '<div class="text-center py-20 text-slate-400">ยังไม่มีข้อมูลสูตร กรุณาอัปโหลดไฟล์ Excel ด้านบน</div>'; return; }
 
-      let html = `<table class="w-full text-left border-collapse text-xs whitespace-nowrap bg-white shadow-sm"><thead><tr class="text-slate-800 uppercase tracking-wider text-[10px] font-bold"><th class="p-3 sticky-col-1">ชื่อเมนู (Col A)</th><th class="p-3 sticky-col-2">ไม่เอา... (Col B)</th>`;
+      let html = `<table class="w-full text-left border-collapse text-xs whitespace-nowrap bg-white shadow-sm"><thead><tr class="text-slate-800 uppercase tracking-wider text-[10px] font-bold"><th class="p-3 sticky-col-1">ชื่อเมนู (COL A)</th><th class="p-3 sticky-col-2">ไม่เอา... (COL B)</th>`;
       allIngredientsList.forEach(h => html += `<th class="p-3 text-center min-w-[80px] border-b border-slate-200">${h}</th>`);
       html += `</tr></thead><tbody class="divide-y divide-slate-100">`;
       
@@ -467,17 +474,25 @@
           
           if (rawVal !== undefined && rawVal !== null && rawVal !== "") {
              let num = parseFloat(rawVal);
-             if (num > 0) {
+             if (!isNaN(num)) {
                let unit = getUnit(ing);
-               let rounded = (unit === "ตัว" || unit === "ฟอง") ? Math.floor(num) : applySmartRounding(ing, num);
-               displayVal = rounded > 0 ? rounded : (num > 0 ? Math.floor(num) : '-');
+               if (unit === "ตัว" || unit === "ฟอง") {
+                 // กุ้งกับไข่: ปัดปกติ ถ้าไม่ถึง 1 ให้โชว์เป็น 0 ทันที (ไม่โชว์ -)
+                 displayVal = Math.round(num);
+               } else {
+                 let rounded = applySmartRounding(ing, num);
+                 displayVal = rounded > 0 ? rounded : '-';
+               }
              } else {
                displayVal = '-';
              }
           }
 
-          let cellStyle = (rawVal > 0) ? 'text-indigo-700 font-bold bg-indigo-50/40 cursor-pointer hover:bg-indigo-200' : 'text-slate-300';
-          html += `<td class="p-3 text-center border-b border-slate-100 ${cellStyle}" ${rawVal > 0 ? `onclick="editMatrixCell(${rIdx}, '${ing}', ${rawVal})"` : ''}>${displayVal}</td>`;
+          let unitCheck = getUnit(ing);
+          let isHasValue = (rawVal !== undefined && rawVal !== null && rawVal !== "" && parseFloat(rawVal) > 0) || (unitCheck === "ตัว" || unitCheck === "ฟอง");
+          let cellStyle = isHasValue ? 'text-indigo-700 font-bold bg-indigo-50/40 cursor-pointer hover:bg-indigo-200' : 'text-slate-300';
+          
+          html += `<td class="p-3 text-center border-b border-slate-100 ${cellStyle}" onclick="editMatrixCell(${rIdx}, '${ing}', ${rawVal || 0})">${displayVal}</td>`;
         });
         html += `</tr>`;
       });
