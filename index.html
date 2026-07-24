@@ -18,42 +18,78 @@
       <h1 class="text-xl font-bold text-slate-800">NER แจ่วฮ้อน</h1>
       <p class="text-xs text-slate-500">ระบบเลือกเมนูและคำนวณวัตถุดิบตามเงื่อนไข</p>
     </div>
-    <button onclick="openEditModal()" class="bg-slate-900 text-white px-4 py-2.5 rounded-2xl text-xs font-semibold shadow-md active:scale-95 transition flex items-center gap-2">
-      <span>⚙️</span> แก้ไขข้อมูล (ใส่รหัส)
-    </button>
+    <div class="flex gap-2">
+      <button onclick="openCasesOverview()" class="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-2xl text-xs font-semibold shadow-2xs active:scale-95 transition flex items-center gap-1.5">
+        <span>📋</span> เช็คเคสเงื่อนไข
+      </button>
+      <button onclick="openEditModal()" class="bg-slate-900 text-white px-4 py-2.5 rounded-2xl text-xs font-semibold shadow-md active:scale-95 transition flex items-center gap-1.5">
+        <span>⚙️</span> แก้ไขข้อมูล
+      </button>
+    </div>
   </div>
 
   <div id="loading" class="text-center py-20 text-slate-400 font-medium">กำลังโหลดเมนู...</div>
   <div id="app" class="space-y-6"></div>
 
-  <!-- Modal สำหรับเลือกเงื่อนไข -->
+  <!-- Modal สำหรับเลือกเงื่อนไข (เฉพาะเมนูที่มีวัตถุดิบตั้งแต่ 2 อย่างขึ้นไป) -->
   <div id="customModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl p-6 w-full max-w-2xl shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
         <div>
           <h2 id="modalMenuName" class="text-lg font-bold text-slate-900">ชื่อเมนู</h2>
-          <p class="text-xs text-slate-500">ซ้าย: ติ๊กวัตถุดิบที่ "ไม่เอา" | ขวา: เลือกสิ่งที่ต้องการเพิ่มแทน (ไม่สามารถเลือกตัวที่ถูกตัดได้)</p>
+          <p class="text-xs text-slate-500">ซ้าย: ติ๊กสิ่ง "ไม่เอา" | ขวา: เลือกสิ่งที่จะ "แทนเป็น" (เฉพาะในเซ็ต)</p>
         </div>
         <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold">✕</button>
       </div>
 
-      <!-- พื้นที่แบ่ง 2 คอลัมน์ ซ้าย-ขวา -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto mb-4 flex-1 pr-1">
-        <!-- ฝั่งซ้าย: ไม่เอา -->
         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-          <h3 class="font-bold text-slate-800 text-sm mb-3 pb-1 border-b border-slate-200">❌ สิ่งที่ไม่เอา (เลือกเพื่อตัดออก)</h3>
+          <h3 class="font-bold text-slate-800 text-sm mb-3 pb-1 border-b border-slate-200">❌ สิ่งที่ไม่เอา (ตัดออก)</h3>
           <div id="leftExcludeList" class="space-y-2"></div>
         </div>
-
-        <!-- ฝั่งขวา: เพิ่มแทน -->
         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-          <h3 class="font-bold text-slate-800 text-sm mb-3 pb-1 border-b border-slate-200">➕ สิ่งที่ต้องการเพิ่มแทน (Optional)</h3>
-          <div id="rightAddList" class="space-y-2"></div>
+          <h3 class="font-bold text-slate-800 text-sm mb-3 pb-1 border-b border-slate-200">🔄 แทนเป็นอะไร (เลือกในเซ็ต)</h3>
+          <div id="rightReplaceList" class="space-y-2"></div>
         </div>
       </div>
 
       <button onclick="calculateAndShowResult()" class="w-full bg-slate-900 text-white py-3.5 rounded-2xl font-bold shadow-lg active:scale-95 transition">
         ยืนยันและคำนวณปริมาณ
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal แสดงภาพรวมเคสเงื่อนไขทั้งหมด -->
+  <div id="casesModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-xl shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
+      <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">📋 สถานะเคสเงื่อนไขการแทนที่</h2>
+          <p class="text-xs text-slate-500">รายการเคสที่เป็นไปได้และกฎ Default ของร้าน</p>
+        </div>
+        <button onclick="closeCasesOverview()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold">✕</button>
+      </div>
+
+      <div class="overflow-y-auto space-y-3 mb-4 flex-1 pr-1">
+        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/60 flex justify-between items-center">
+          <div>
+            <p class="font-bold text-slate-800 text-sm">เคส: ไม่เอาสามชั้นหมูสไลซ์</p>
+            <p class="text-xs text-slate-500">Default: แทนเป็นหมูหมัก (+20 กรัม)</p>
+          </div>
+          <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-xl font-bold">✅ ตั้งค่าแล้ว</span>
+        </div>
+
+        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/60 flex justify-between items-center">
+          <div>
+            <p class="font-bold text-slate-800 text-sm">เคส: ไม่เอาตับหมู</p>
+            <p class="text-xs text-slate-500">Default: แทนเป็นหมูหมัก (+10 กรัม)</p>
+          </div>
+          <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-xl font-bold">✅ ตั้งค่าแล้ว</span>
+        </div>
+      </div>
+
+      <button onclick="closeCasesOverview()" class="w-full bg-slate-900 text-white py-3.5 rounded-2xl font-bold shadow-lg active:scale-95 transition">
+        ปิดหน้าต่าง
       </button>
     </div>
   </div>
@@ -69,9 +105,7 @@
         <button onclick="closeResultModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold">✕</button>
       </div>
 
-      <div id="resultList" class="overflow-y-auto space-y-2 mb-4 flex-1 pr-1 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-        <!-- ผลลัพธ์วัตถุดิบ -->
-      </div>
+      <div id="resultList" class="overflow-y-auto space-y-2 mb-4 flex-1 pr-1 bg-slate-50 p-4 rounded-2xl border border-slate-100"></div>
 
       <button onclick="closeResultModal()" class="w-full bg-slate-900 text-white py-3.5 rounded-2xl font-bold shadow-lg active:scale-95 transition">
         เสร็จสิ้น (ปิดหน้าต่าง)
@@ -122,10 +156,16 @@
         const items = menuData.filter(row => row.category === cat);
         items.forEach(item => {
           const originalIndex = menuData.indexOf(item);
+          const ingredientCount = Object.keys(item.ingredients).length;
+          
+          // ถ้ามีวัตถุดิบตั้งแต่ 2 อย่างขึ้นไป ให้เปิด Modal เลือกเงื่อนไขได้ ถ้ามีอย่างเดียว (เช่น เต้าหู้ปลา) ให้โชว์ผลลัพธ์ตรงๆ หรือข้ามได้เลย
           html += `
-            <button onclick="openCustomModal(${originalIndex})" class="text-left bg-slate-50 hover:bg-slate-900 hover:text-white p-4 rounded-2xl border border-slate-100/80 transition group flex justify-between items-center shadow-2xs">
-              <span class="font-bold text-slate-800 group-hover:text-white text-base">${item.name}</span>
-              <span class="text-xs bg-white text-slate-600 group-hover:bg-slate-800 group-hover:text-white px-2.5 py-1 rounded-xl border border-slate-200 transition">เลือก ➔</span>
+            <button onclick="handleMenuClick(${originalIndex})" class="text-left bg-slate-50 hover:bg-slate-900 hover:text-white p-4 rounded-2xl border border-slate-100/80 transition group flex justify-between items-center shadow-2xs">
+              <div>
+                <span class="font-bold text-slate-800 group-hover:text-white text-base block">${item.name}</span>
+                <span class="text-[10px] text-slate-400 group-hover:text-slate-300">${ingredientCount > 1 ? 'มีเงื่อนไขปรับเปลี่ยนได้' : 'วัตถุดิบเดี่ยว'}</span>
+              </div>
+              <span class="text-xs bg-white text-slate-600 group-hover:bg-slate-800 group-hover:text-white px-2.5 py-1 rounded-xl border border-slate-200 transition">ดู ➔</span>
             </button>
           `;
         });
@@ -136,99 +176,132 @@
       });
     }
 
-    function openCustomModal(index) {
+    function handleMenuClick(index) {
       selectedItem = globalMenuData[index];
+      const ingredientCount = Object.keys(selectedItem.ingredients).length;
+
+      if (ingredientCount <= 1) {
+        // ถ้ามีวัตถุดิบชิ้นเดียว (เช่น เต้าหู้ปลา) ไม่ต้องขึ้นหน้าคอนดิชั่น ให้โชว์ผลลัพธ์มาตรฐานทันที
+        showDirectResult();
+      } else {
+        // ถ้ามีตั้งแต่ 2 อย่างขึ้นไป เปิด Modal เลือกเงื่อนไข
+        openCustomModal();
+      }
+    }
+
+    function openCustomModal() {
       document.getElementById('modalMenuName').innerText = selectedItem.name;
       
       const leftList = document.getElementById('leftExcludeList');
-      const rightList = document.getElementById('rightAddList');
+      const rightList = document.getElementById('rightReplaceList');
       
       leftList.innerHTML = '';
-      rightList.innerHTML = '';
+      rightList.innerHTML = '<p class="text-xs text-slate-400 italic">ติ๊ก "สิ่งที่ไม่เอา" ฝั่งซ้าย เพื่อเลือกตัวแทน</p>';
 
       const validEntries = Object.entries(selectedItem.ingredients);
-      if (validEntries.length === 0) {
-        leftList.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">ไม่มีวัตถุดิบในเมนูนี้</p>';
-      } else {
-        validEntries.forEach(([ingName, val], idx) => {
-          // ใช้เลข index แทนชื่อวัตถุดิบเพื่อความปลอดภัยในการอ้างอิง DOM บน Safari
-          leftList.innerHTML += `
-            <label class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200/80 hover:bg-slate-100 cursor-pointer transition">
-              <span class="font-semibold text-slate-700 text-xs">${ingName} <span class="text-slate-400 font-normal">(${val})</span></span>
-              <input type="checkbox" name="excludeIng" value="${ingName}" data-index="${idx}" onchange="handleExcludeChange(this)" class="w-4 h-4 accent-slate-900 rounded">
-            </label>
-          `;
-
-          rightList.innerHTML += `
-            <div id="right-item-${idx}" class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200/80 transition">
-              <span class="font-semibold text-slate-700 text-xs">${ingName}</span>
-              <input type="checkbox" name="addIng" value="${ingName}" class="w-4 h-4 accent-slate-900 rounded">
-            </div>
-          `;
-        });
-      }
+      validEntries.forEach(([ingName, val], idx) => {
+        leftList.innerHTML += `
+          <label class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200/80 hover:bg-slate-100 cursor-pointer transition">
+            <span class="font-semibold text-slate-700 text-xs">${ingName} <span class="text-slate-400 font-normal">(${val})</span></span>
+            <input type="checkbox" name="excludeIng" value="${ingName}" data-index="${idx}" onchange="handleExcludeChange()" class="w-4 h-4 accent-slate-900 rounded">
+          </label>
+        `;
+      });
 
       document.getElementById('customModal').classList.remove('hidden');
     }
 
-    function handleExcludeChange(checkbox) {
-      const idx = checkbox.getAttribute('data-index');
-      const rightItem = document.getElementById(`right-item-${idx}`);
-      if (!rightItem) return;
+    function handleExcludeChange() {
+      const checkedExcludes = document.querySelectorAll('input[name="excludeIng"]:checked');
+      const rightList = document.getElementById('rightReplaceList');
+      rightList.innerHTML = '';
 
-      const rightCheckbox = rightItem.querySelector('input[type="checkbox"]');
-
-      if (checkbox.checked) {
-        rightCheckbox.checked = false;
-        rightItem.classList.add('opacity-30', 'pointer-events-none', 'bg-slate-100');
-      } else {
-        rightItem.classList.remove('opacity-30', 'pointer-events-none', 'bg-slate-100');
+      if (checkedExcludes.length === 0) {
+        rightList.innerHTML = '<p class="text-xs text-slate-400 italic">ติ๊ก "สิ่งที่ไม่เอา" ฝั่งซ้าย เพื่อเลือกตัวแทน</p>';
+        return;
       }
+
+      // ฝั่งขวา: ให้เลือกวัตถุดิบอื่นๆ ที่เหลืออยู่ในเซ็ตเดียวกันเท่านั้นมาแทนที่
+      const validEntries = Object.entries(selectedItem.ingredients);
+      validEntries.forEach(([ingName]) => {
+        // เช็คว่าตัวนี้ไม่ได้ถูกติ๊กเป็น "ไม่เอา"
+        let isExcluded = Array.from(checkedExcludes).some(cb => cb.value === ingName);
+        if (!isExcluded) {
+          rightList.innerHTML += `
+            <label class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200/80 hover:bg-slate-100 cursor-pointer transition">
+              <span class="font-semibold text-slate-700 text-xs">แทนเป็น: ${ingName}</span>
+              <input type="radio" name="replaceTarget" value="${ingName}" class="w-4 h-4 accent-slate-900">
+            </label>
+          `;
+        }
+      });
     }
 
     function closeModal() {
       document.getElementById('customModal').classList.add('hidden');
     }
 
+    function openCasesOverview() {
+      document.getElementById('casesModal').classList.remove('hidden');
+    }
+
+    function closeCasesOverview() {
+      document.getElementById('casesModal').classList.add('hidden');
+    }
+
+    function showDirectResult() {
+      document.getElementById('resultMenuTitle').innerText = `เมนู: ${selectedItem.name} (มาตรฐาน)`;
+      const resultList = document.getElementById('resultList');
+      resultList.innerHTML = '';
+
+      Object.entries(selectedItem.ingredients).forEach(([ingName, val]) => {
+        resultList.innerHTML += `
+          <div class="flex justify-between items-center py-2 px-3 bg-white rounded-xl border border-slate-100 shadow-2xs">
+            <span class="font-bold text-slate-800 text-sm">${ingName}</span>
+            <span class="font-extrabold text-slate-900 text-sm bg-slate-100 px-3 py-1 rounded-lg">${val}</span>
+          </div>
+        `;
+      });
+
+      document.getElementById('resultModal').classList.remove('hidden');
+    }
+
     function calculateAndShowResult() {
       const excludedCheckboxes = document.querySelectorAll('input[name="excludeIng"]:checked');
-      const addedCheckboxes = document.querySelectorAll('input[name="addIng"]:checked');
+      const selectedReplace = document.querySelector('input[name="replaceTarget"]:checked');
       
       const excludedSet = new Set();
       excludedCheckboxes.forEach(cb => excludedSet.add(cb.value));
 
-      const addedSet = new Set();
-      addedCheckboxes.forEach(cb => addedSet.add(cb.value));
-
-      let adjustedIngredients = {};
+      let replacementItem = selectedReplace ? selectedReplace.value : null;
       let extraWeight = 0;
 
-      excludedSet.forEach(item => {
-        if (item === 'สามชั้นหมูสไลซ์') extraWeight += 20;
-        if (item === 'ตับหมู') extraWeight += 10;
-      });
+      // กฎ Default ของร้าน / การบวกน้ำหนักเพิ่มตามเคส
+      excludedSet.get = (k) => excludedSet.has(k);
+      if (excludedSet.has('สามชั้นหมูสไลซ์')) extraWeight += 20;
+      if (excludedSet.has('ตับหมู')) extraWeight += 10;
 
-      addedSet.forEach(item => {
-        extraWeight += 15;
-      });
+      let adjustedIngredients = {};
 
       Object.entries(selectedItem.ingredients).forEach(([ingName, valStr]) => {
         if (excludedSet.has(ingName)) {
-          return;
+          return; // ตัดตัวที่ไม่เอาออก
         }
 
         let parts = valStr.split(' ');
         let num = parseFloat(parts[0]);
         let unit = parts[1] || '';
 
-        if (ingName === 'หมูหมัก') {
-          num += extraWeight;
+        // ถ้ามีการระบุตัวแทน หรือใช้ Default (วิ่งเข้าหมูหมัก)
+        if (ingName === 'หมูหมัก' || ingName === replacementItem) {
+          num += extraWeight > 0 ? extraWeight : (replacementItem ? 15 : 0);
         }
 
         adjustedIngredients[ingName] = `${num} ${unit}`;
       });
 
-      document.getElementById('resultMenuTitle').innerText = `เมนู: ${selectedItem.name}`;
+      document.getElementById('resultMenuTitle').innerText = `เมนู: ${selectedItem.name} ${excludedSet.size > 0 ? `(ไม่เอา: ${Array.from(excludedSet).join(', ')} ${replacementItem ? `➔ แทนเป็น: ${replacementItem}` : '➔ Default'})` : ''}`;
+      
       const resultList = document.getElementById('resultList');
       resultList.innerHTML = '';
 
@@ -263,9 +336,8 @@
       const pin = document.getElementById('pinInput').value;
       if (pin === '206738') {
         closePinModal();
-        // แก้ไขลิงก์ให้พาตรงไปหน้าแก้ไขไฟล์ data.json บน GitHub ของคุณอย่างถูกต้อง
-        const repoPath = window.location.hostname.split('.')[0];
-        window.open(`https://github.com/${repoPath}/${repoPath}.github.io/blob/main/data.json`, '_blank');
+        const githubUser = window.location.hostname.split('.')[0];
+        window.open(`https://github.com/${githubUser}/ner-menu/blob/main/data.json`, '_blank');
       } else {
         alert('รหัสผ่านไม่ถูกต้อง');
         document.getElementById('pinInput').value = '';
