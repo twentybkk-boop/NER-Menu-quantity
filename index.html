@@ -3,29 +3,72 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NER แจ่วฮ้อน - เช็ควัตถุดิบ</title>
+  <title>NER แจ่วฮ้อน - คำนวณวัตถุดิบ</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-    body { font-family: 'Plus+Jakarta+Sans', sans-serif; background-color: #f1f5f9; }
+    body { font-family: 'Plus+Jakarta+Sans', sans-serif; background-color: #f8fafc; }
   </style>
 </head>
-<body class="p-4 md:p-8 max-w-6xl mx-auto">
+<body class="p-4 md:p-8 max-w-6xl mx-auto pb-24">
   
+  <!-- Header -->
   <div class="flex justify-between items-center mb-6 bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
     <div>
       <h1 class="text-xl font-bold text-slate-800">NER แจ่วฮ้อน</h1>
-      <p class="text-xs text-slate-500">ระบบเช็คปริมาณวัตถุดิบมาตรฐาน</p>
+      <p class="text-xs text-slate-500">ระบบเลือกเมนูและคำนวณวัตถุดิบตามเงื่อนไข</p>
     </div>
     <button onclick="openEditModal()" class="bg-slate-900 text-white px-4 py-2.5 rounded-2xl text-xs font-semibold shadow-md active:scale-95 transition flex items-center gap-2">
       <span>⚙️</span> แก้ไขข้อมูล (ใส่รหัส)
     </button>
   </div>
 
-  <div id="loading" class="text-center py-20 text-slate-400 font-medium">กำลังโหลดข้อมูล...</div>
+  <div id="loading" class="text-center py-20 text-slate-400 font-medium">กำลังโหลดเมนู...</div>
   <div id="app" class="space-y-6"></div>
 
-  <!-- Modal Passcode -->
+  <!-- Modal สำหรับเลือกเงื่อนไข (Condition) -->
+  <div id="customModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-lg shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
+      <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+        <div>
+          <h2 id="modalMenuName" class="text-lg font-bold text-slate-900">ชื่อเมนู</h2>
+          <p class="text-xs text-slate-500">ติ๊กเลือกวัตถุดิบที่ลูกค้า "ไม่รับ"</p>
+        </div>
+        <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold">✕</button>
+      </div>
+
+      <div id="modalIngredientsList" class="overflow-y-auto space-y-2 mb-4 flex-1 pr-1">
+        <!-- รายการวัตถุดิบให้ติ๊ก -->
+      </div>
+
+      <button onclick="calculateAndShowResult()" class="w-full bg-slate-900 text-white py-3.5 rounded-2xl font-bold shadow-lg active:scale-95 transition">
+        ยืนยันและคำนวณปริมาณ
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal แสดงผลลัพธ์สุดท้าย -->
+  <div id="resultModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-lg shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
+      <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">📦 ปริมาณวัตถุดิบสุทธิที่ต้องใช้</h2>
+          <p id="resultMenuTitle" class="text-xs text-slate-500 font-medium"></p>
+        </div>
+        <button onclick="closeResultModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold">✕</button>
+      </div>
+
+      <div id="resultList" class="overflow-y-auto space-y-2 mb-4 flex-1 pr-1 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+        <!-- ผลลัพธ์วัตถุดิบ -->
+      </div>
+
+      <button onclick="closeResultModal()" class="w-full bg-slate-900 text-white py-3.5 rounded-2xl font-bold shadow-lg active:scale-95 transition">
+        เสร็จสิ้น (ปิดหน้าต่าง)
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal ใส่รหัสผ่าน -->
   <div id="pinModal" class="fixed inset-0 bg-black/40 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-slate-100">
       <h3 class="text-lg font-bold text-slate-800 mb-1">ยืนยันรหัสผ่านผู้จัดการ</h3>
@@ -39,14 +82,21 @@
   </div>
 
   <script>
+    let globalMenuData = [];
+    let selectedItem = null;
+
     fetch('data.json')
       .then(res => res.json())
-      .then(data => renderApp(data))
+      .then(data => {
+        globalMenuData = data;
+        renderMenuSelector(data);
+      })
       .catch(err => {
-        document.getElementById('loading').innerText = 'ไม่สามารถโหลดข้อมูลได้';
+        document.getElementById('loading').innerText = 'ไม่สามารถโหลดข้อมูลได้ กรุณาตรวจสอบไฟล์ data.json';
       });
 
-    function renderApp(menuData) {
+    // 1. เรนเดอร์หน้าจอแรก: โชว์เฉพาะหมวดหมู่และชื่อเมนู (ยังไม่กางวัตถุดิบ)
+    function renderMenuSelector(menuData) {
       document.getElementById('loading').style.display = 'none';
       const app = document.getElementById('app');
       app.innerHTML = '';
@@ -57,30 +107,107 @@
         const catDiv = document.createElement('div');
         catDiv.className = 'bg-white rounded-3xl p-5 md:p-6 shadow-sm border border-slate-100';
         
-        let html = `<h2 class="text-lg font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-slate-900"></span>${cat}</h2><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`;
+        let html = `<h2 class="text-lg font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-slate-900"></span>${cat}</h2><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">`;
 
         const items = menuData.filter(row => row.category === cat);
-        items.forEach(item => {
-          const validIngredients = Object.entries(item.ingredients).filter(([k, v]) => v && v !== '-' && v !== 0 && v !== '0');
-          
+        items.forEach((item, index) => {
+          const originalIndex = menuData.indexOf(item);
+          html++; // placeholder fix
           html += `
-            <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100/80 flex flex-col justify-between">
-              <div>
-                <h3 class="font-bold text-slate-900 text-base mb-3 border-b border-slate-200/60 pb-2">${item.name}</h3>
-                <div class="flex flex-wrap gap-1.5 mb-2">
+            <button onclick="openCustomModal(${originalIndex})" class="text-left bg-slate-50 hover:bg-slate-900 hover:text-white p-4 rounded-2xl border border-slate-100/80 transition group flex justify-between items-center shadow-2xs">
+              <span class="font-bold text-slate-800 group-hover:text-white text-base">${item.name}</span>
+              <span class="text-xs bg-white text-slate-600 group-hover:bg-slate-800 group-hover:text-white px-2.5 py-1 rounded-xl border border-slate-200 transition">เลือก ➔</span>
+            </button>
           `;
-
-          validIngredients.forEach(([ingName, val]) => {
-            html += `<span class="bg-white text-slate-700 text-xs px-2.5 py-1.5 rounded-xl border border-slate-200/80 font-medium shadow-2xs"><b>${ingName}:</b> ${val}</span>`;
-          });
-
-          html += `</div></div></div>`;
         });
 
         html += `</div>`;
         catDiv.innerHTML = html;
         app.appendChild(catDiv);
       });
+    }
+
+    // 2. เปิดหน้าต่างเลือกเงื่อนไข (ติ๊กไม่เอาอะไรบ้าง)
+    function openCustomModal(index) {
+      selectedItem = globalMenuData[index];
+      document.getElementById('modalMenuName').innerText = selectedItem.name;
+      
+      const listContainer = document.getElementById('modalIngredientsList');
+      listContainer.innerHTML = '';
+
+      const validEntries = Object.entries(selectedItem.ingredients);
+      if (validEntries.length === 0) {
+        listContainer.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">ไม่มีวัตถุดิบในเมนูนี้</p>';
+      } else {
+        validEntries.forEach(([ingName, val]) => {
+          listContainer.innerHTML += `
+            <label class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-slate-100/80 cursor-pointer transition">
+              <span class="font-semibold text-slate-700 text-sm">${ingName} <span class="text-xs text-slate-400 font-normal">(${val})</span></span>
+              <input type="checkbox" name="excludeIng" value="${ingName}" class="w-5 h-5 accent-slate-900 rounded-lg">
+            </label>
+          `;
+        });
+      }
+
+      document.getElementById('customModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('customModal').classList.add('hidden');
+    }
+
+    // 3. คำนวณปริมาณสุทธิหลังหัก/เพิ่มตามเงื่อนไข
+    function calculateAndShowResult() {
+      const checkboxes = document.querySelectorAll('input[name="excludeIng"]:checked');
+      const excludedSet = new Set();
+      checkboxes.forEach(cb => excludedSet.add(cb.value));
+
+      // ก๊อปปี้วัตถุดิบตั้งต้นมาคำนวณ
+      let adjustedIngredients = {};
+      let addedPorkAmount = 0; // ตัวอย่างการบวกรวมเพิ่มน้ำหนักหมูหมักตามเงื่อนไขที่คุณยกตัวอย่าง
+
+      Object.entries(selectedItem.ingredients).forEach(([ingName, valStr]) => {
+        if (excludedSet.has(ingName)) {
+          // ถ้าลูกค้าไม่เอาวัตถุดิบนี้ เช็คเงื่อนไขเพิ่มน้ำหนักให้หมูหมักตามโจทย์ตัวอย่าง
+          if (ingName === 'สามชั้นหมูสไลซ์') addedPorkAmount += 20;
+          if (ingName === 'ตับหมู') addedPorkAmount += 10;
+          return; // ข้ามการแสดงผลตัวที่ถูกตัดออก
+        }
+
+        // แยกตัวเลขและหน่วยออกจาก string เดิม (เช่น "80 กรัม" -> 80 และ "กรัม")
+        let parts = valStr.split(' ');
+        let num = parseFloat(parts[0]);
+        let unit = parts[1] || '';
+
+        if (ingName === 'หมูหมัก') {
+          num += addedPorkAmount; // บวกเพิ่มตามเงื่อนไขที่ตับหรือสามชั้นถูกถอดออก
+        }
+
+        adjustedIngredients[ingName] = `${num} ${unit}`;
+      });
+
+      // กรณีถ้าเมนูนั้นไม่มี "หมูหมัก" ตั้งต้น แต่มีการถอดสามชั้น/ตับแล้วต้องเพิ่มให้วัตถุดิบหลักอื่นๆ สามารถปรับแต่งกฎตรงนี้เพิ่มได้ในอนาคต
+
+      // แสดงผลใน Result Modal
+      document.getElementById('resultMenuTitle').innerText = `เมนู: ${selectedItem.name} ${excludedSet.size > 0 ? '(ปรับแต่งเงื่อนไขแล้ว)' : '(สูตรมาตรฐาน)'}`;
+      const resultList = document.getElementById('resultList');
+      resultList.innerHTML = '';
+
+      Object.entries(adjustedIngredients).forEach(([ingName, val]) => {
+        resultList.innerHTML += `
+          <div class="flex justify-between items-center py-2 px-3 bg-white rounded-xl border border-slate-100 shadow-2xs">
+            <span class="font-bold text-slate-800 text-sm">${ingName}</span>
+            <span class="font-extrabold text-slate-900 text-sm bg-slate-100 px-3 py-1 rounded-lg">${val}</span>
+          </div>
+        `;
+      });
+
+      closeModal();
+      document.getElementById('resultModal').classList.remove('hidden');
+    }
+
+    function closeResultModal() {
+      document.getElementById('resultModal').classList.add('hidden');
     }
 
     function openEditModal() {
@@ -97,8 +224,6 @@
       const pin = document.getElementById('pinInput').value;
       if (pin === '206738') {
         closePinModal();
-        // พาไปหน้าแก้ไฟล์ data.json บน GitHub โดยตรง
-        alert('รหัสผ่านถูกต้อง! ระบบจะพาไปหน้าแก้ไขข้อมูลหลังบ้าน');
         location.href = 'https://github.com/' + location.pathname.split('/')[1] + '/' + location.pathname.split('/')[2] + '/blob/main/data.json';
       } else {
         alert('รหัสผ่านไม่ถูกต้อง');
