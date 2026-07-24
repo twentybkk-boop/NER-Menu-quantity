@@ -189,7 +189,7 @@
     const GH_CONFIG = {
       token: "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", 
       owner: "twentybkk-boop",
-      repo: "ner-menu",
+      repo: "NER-Menu-quantity", // แก้ไขชื่อให้ตรงกับ Repository ของคุณ
       path: "rules.json" 
     };
 
@@ -367,7 +367,7 @@
     function openInputRuleModal(menuName, excludeName) {
       editingRuleKey = { menuName, excludeName };
       document.getElementById('inputRuleTitle').innerText = `กำหนดสูตร: ${menuName}`;
-      document.getElementById('inputRuleSub').innerText = `กรณีลูกค้าไม่เอา: ${excludeName}`;
+      document.getElementById('inputRuleSub', `กรณีลูกค้าไม่เอา: ${excludeName}`);
       
       let menuRules = setReplacementRules[menuName] || {};
       let existingRule = menuRules[excludeName];
@@ -508,7 +508,7 @@
       });
 
       closeModal();
-      document.getElementById('resultModal').classList.remove('hidden');
+      document.getElementById('resultModal').classList.add('hidden');
     }
 
     function closeResultModal() {
@@ -529,8 +529,7 @@
       const pin = document.getElementById('pinInput').value;
       if (pin === '206738') {
         closePinModal();
-        // แก้ไขลิงก์ให้พาตรงไปหน้าแดชบอร์ด Repository ของ twentybkk-boop อย่างถูกต้อง
-        window.open('https://github.com/twentybkk-boop/ner-menu', '_blank');
+        window.open('https://github.com/twentybkk-boop/NER-Menu-quantity', '_blank');
       } else {
         alert('รหัสผ่านไม่ถูกต้อง');
         document.getElementById('pinInput').value = '';
