@@ -16,7 +16,7 @@
   <div class="flex justify-between items-center mb-6 bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
     <div>
       <h1 class="text-xl font-bold text-slate-800">NER แจ่วฮ้อน</h1>
-      <p class="text-xs text-slate-500">ระบบเลือกเมนูและคำนวณวัตถุดิบตามเงื่อนไข (โหลดเร็ว ไม่ค้าง)</p>
+      <p class="text-xs text-slate-500">ระบบเลือกเมนูและคำนวณวัตถุดิบ (ซิงค์ตรงกับ GitHub อัตโนมัติ)</p>
     </div>
     <div class="flex gap-2">
       <button onclick="openCasesOverview()" class="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-2xl text-xs font-semibold shadow-2xs active:scale-95 transition flex items-center gap-1.5">
@@ -64,7 +64,7 @@
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
         <div>
           <h2 class="text-lg font-bold text-slate-900">📋 สถานะเคสการแทนที่แยกตามเซ็ต</h2>
-          <p class="text-xs text-slate-500">เช็คว่าเคสไหนกำหนดสูตรแทนที่แล้ว หรือเคสไหนยังว่างอยู่</p>
+          <p class="text-xs text-slate-500">คลิกที่สถานะเพื่อเพิ่ม/แก้ไขสูตร (อัปเดตขึ้น GitHub ทันทีให้ทุกคนเห็นตรงกัน)</p>
         </div>
         <button onclick="closeCasesOverview()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold">✕</button>
       </div>
@@ -74,6 +74,30 @@
       <button onclick="closeCasesOverview()" class="w-full bg-slate-900 text-white py-3.5 rounded-2xl font-bold shadow-lg active:scale-95 transition">
         ปิดหน้าต่าง
       </button>
+    </div>
+  </div>
+
+  <!-- Modal สำหรับพิมพ์คีย์สูตรการแทนที่ผ่าน UI -->
+  <div id="inputRuleModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-slate-100">
+      <h3 id="inputRuleTitle" class="text-lg font-bold text-slate-900 mb-1">กำหนดสูตรแทนที่</h3>
+      <p id="inputRuleSub" class="text-xs text-slate-500 mb-4">กรอกข้อมูลการทดแทนวัตถุดิบ</p>
+      
+      <div class="space-y-3 mb-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">แทนเป็นวัตถุดิบอะไร:</label>
+          <input type="text" id="ruleReplaceInput" placeholder="เช่น หมูหมัก" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-900">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">เพิ่มปริมาณเท่าไหร่ (ใส่เฉพาะตัวเลข):</label>
+          <input type="number" id="ruleWeightInput" placeholder="เช่น 20" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-900">
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="closeInputRuleModal()" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-2xl font-semibold text-xs">ยกเลิก</button>
+        <button onclick="saveRuleToGitHub()" class="flex-1 bg-slate-900 text-white py-3 rounded-2xl font-semibold text-xs">บันทึกและซิงค์ขึ้น GitHub</button>
+      </div>
     </div>
   </div>
 
@@ -110,417 +134,84 @@
   </div>
 
   <script>
-    // ฝังฐานข้อมูลเมนูทั้งหมดไว้ในนี้โดยตรง โหลดเสร็จทันที ไม่ค้าง
     const globalMenuData = [
-      {
-        "category": "อาหารเซ็ต",
-        "name": "ชุดจุ่มหมูทะเล",
-        "ingredients": {
-          "หมูหมัก": "80 กรัม",
-          "สามชั้นหมูสไลซ์": "50 กรัม",
-          "สันคอ": "40 กรัม",
-          "สันนอก": "50 กรัม",
-          "ตับหมู": "30 กรัม",
-          "เซ่งจี๊หมู": "30 กรัม",
-          "ปลาดอลลี่": "60 กรัม",
-          "กุ้ง": "3 ตัว",
-          "ปลากหมึก": "30 กรัม",
-          "กะหล่ำปลี": "120 กรัม",
-          "ผักบุ้ง": "30 กรัม",
-          "ผักชีฝรั่ง": "15 กรัม",
-          "โหระพา": "20 กรัม",
-          "ใบชะพลู": "15 กรัม",
-          "วุ้นเส้น": "80 กรัม",
-          "ไข่ไก่สด": "1 ฟอง"
-        }
-      },
-      {
-        "category": "อาหารเซ็ต",
-        "name": "ชุดจุ่มเนื้อ",
-        "ingredients": {
-          "เนื้อใบพายสไลซ์": "50 กรัม",
-          "เนื้อริบอายสไลซ์": "50 กรัม",
-          "เนื้อเสื้อร้องให้สไลซ์": "50 กรัม",
-          "กะหล่ำปลี": "120 กรัม",
-          "ผักบุ้ง": "30 กรัม",
-          "ผักชีฝรั่ง": "15 กรัม",
-          "โหระพา": "20 กรัม",
-          "ใบชะพลู": "15 กรัม",
-          "วุ้นเส้น": "80 กรัม",
-          "ไข่ไก่สด": "1 ฟอง"
-        }
-      },
-      {
-        "category": "อาหารเซ็ต",
-        "name": "ชุดจุ่มหมู",
-        "ingredients": {
-          "หมูหมัก": "80 กรัม",
-          "สามชั้นหมูสไลซ์": "50 กรัม",
-          "สันคอ": "40 กรัม",
-          "สันนอก": "50 กรัม",
-          "ตับหมู": "30 กรัม",
-          "เซ่งจี๊หมู": "30 กรัม",
-          "กะหล่ำปลี": "120 กรัม",
-          "ผักบุ้ง": "30 กรัม",
-          "ผักชีฝรั่ง": "15 กรัม",
-          "โหระพา": "20 กรัม",
-          "ใบชะพลู": "15 กรัม",
-          "วุ้นเส้น": "80 กรัม",
-          "ไข่ไก่สด": "1 ฟอง"
-        }
-      },
-      {
-        "category": "อาหารเซ็ต",
-        "name": "ชุดจุ่มเดี่ยวหมู",
-        "ingredients": {
-          "หมูหมัก": "80 กรัม",
-          "สามชั้นหมูสไลซ์": "25 กรัม",
-          "สันนอก": "50 กรัม",
-          "ตับหมู": "30 กรัม",
-          "กะหล่ำปลี": "60 กรัม",
-          "ผักบุ้ง": "10 กรัม",
-          "ผักชีฝรั่ง": "5 กรัม",
-          "โหระพา": "10 กรัม",
-          "ใบชะพลู": "5 กรัม",
-          "วุ้นเส้น": "80 กรัม",
-          "ไข่ไก่สด": "1 ฟอง"
-        }
-      },
-      {
-        "category": "อาหารเซ็ต",
-        "name": "อิ่มเดี่ยว ต้มพร้อมทาน",
-        "ingredients": {
-          "หมูหมัก": "40 กรัม",
-          "สามชั้นหมูสไลซ์": "7.5 กรัม",
-          "สันนอก": "12.5 กรัม",
-          "ตับหมู": "15 กรัม",
-          "กะหล่ำปลี": "60 กรัม",
-          "ผักบุ้ง": "10 กรัม",
-          "ผักชีฝรั่ง": "5 กรัม",
-          "โหระพา": "10 กรัม",
-          "ใบชะพลู": "5 กรัม",
-          "วุ้นเส้น": "80 กรัม"
-        }
-      },
-      {
-        "category": "อาหารเซ็ต",
-        "name": "อิ่มเดี่ยว หมูจุกจุก",
-        "ingredients": {
-          "หมูหมัก": "80 กรัม",
-          "สามชั้นหมูสไลซ์": "25 กรัม",
-          "สันนอก": "50 กรัม",
-          "ตับหมู": "30 กรัม",
-          "กะหล่ำปลี": "60 กรัม",
-          "ผักบุ้ง": "10 กรัม",
-          "ผักชีฝรั่ง": "5 กรัม",
-          "โหระพา": "10 กรัม",
-          "ใบชะพลู": "5 กรัม",
-          "วุ้นเส้น": "80 กรัม"
-        }
-      },
-      {
-        "category": "เนื้อสัตว์เพิ่มเติม",
-        "name": "หมูล้วน (ไม่มีเครื่องใน)",
-        "ingredients": {
-          "หมูหมัก": "80 กรัม",
-          "สามชั้นหมูสไลซ์": "30 กรัม",
-          "สันคอ": "30 กรัม",
-          "สันนอก": "40 กรัม"
-        }
-      },
-      {
-        "category": "เนื้อสัตว์เพิ่มเติม",
-        "name": "หมูหมัก NER",
-        "ingredients": {
-          "หมูหมัก": "80 กรัม"
-        }
-      },
-      {
-        "category": "เนื้อสัตว์เพิ่มเติม",
-        "name": "สามชั้นหมูสไลซ์",
-        "ingredients": {
-          "สามชั้นหมูสไลซ์": "50 กรัม"
-        }
-      },
-      {
-        "category": "เนื้อสัตว์เพิ่มเติม",
-        "name": "สันคอ",
-        "ingredients": {
-          "สันคอ": "50 กรัม"
-        }
-      },
-      {
-        "category": "เนื้อสัตว์เพิ่มเติม",
-        "name": "สันนอก",
-        "ingredients": {
-          "สันนอก": "50 กรัม"
-        }
-      },
-      {
-        "category": "เนื้อสัตว์เพิ่มเติม",
-        "name": "ตับหมู",
-        "ingredients": {
-          "ตับหมู": "50 กรัม"
-        }
-      },
-      {
-        "category": "เนื้อสัตว์เพิ่มเติม",
-        "name": "เซ่งจี๊หมู",
-        "ingredients": {
-          "เซ่งจี๊หมู": "50 กรัม"
-        }
-      },
-      {
-        "category": "เนื้อสัตว์เพิ่มเติม",
-        "name": "เนื้อใบพายสไลซ์",
-        "ingredients": {
-          "เนื้อใบพายสไลซ์": "50 กรัม"
-        }
-      },
-      {
-        "category": "เนื้อสัตว์เพิ่มเติม",
-        "name": "เนื้อริบอายสไลซ์",
-        "ingredients": {
-          "เนื้อริบอายสไลซ์": "50 กรัม"
-        }
-      },
-      {
-        "category": "เนื้อสัตว์เพิ่มเติม",
-        "name": "เนื้อเสือร้องไห้สไลซ์",
-        "ingredients": {
-          "เนื้อเสื้อร้องให้สไลซ์": "50 กรัม"
-        }
-      },
-      {
-        "category": "เนื้อสัตว์เพิ่มเติม",
-        "name": "เนื้อรวม",
-        "ingredients": {
-          "เนื้อใบพายสไลซ์": "50 กรัม",
-          "เนื้อริบอายสไลซ์": "50 กรัม",
-          "เนื้อเสื้อร้องให้สไลซ์": "50 กรัม"
-        }
-      },
-      {
-        "category": "เนื้อสัตว์เพิ่มเติม",
-        "name": "ปลาดอลลี่",
-        "ingredients": {
-          "ปลาดอลลี่": "80 กรัม"
-        }
-      },
-      {
-        "category": "เนื้อสัตว์เพิ่มเติม",
-        "name": "กุ้ง",
-        "ingredients": {
-          "กุ้ง": "3 ตัว"
-        }
-      },
-      {
-        "category": "เนื้อสัตว์เพิ่มเติม",
-        "name": "ปลาหมึก",
-        "ingredients": {
-          "ปลากหมึก": "60 กรัม"
-        }
-      },
-      {
-        "category": "ผักเพิ่มเติม",
-        "name": "ชุดผักรวม",
-        "ingredients": {
-          "กะหล่ำปลี": "120 กรัม",
-          "ผักบุ้ง": "30 กรัม",
-          "ผักชีฝรั่ง": "15 กรัม",
-          "โหระพา": "20 กรัม",
-          "ใบชะพลู": "15 กรัม"
-        }
-      },
-      {
-        "category": "ผักเพิ่มเติม",
-        "name": "กะหล่ำปลี",
-        "ingredients": {
-          "กะหล่ำปลี": "120 กรัม"
-        }
-      },
-      {
-        "category": "ผักเพิ่มเติม",
-        "name": "ผักบุ้ง",
-        "ingredients": {
-          "ผักบุ้ง": "30 กรัม"
-        }
-      },
-      {
-        "category": "ผักเพิ่มเติม",
-        "name": "ผักชีฝรั่ง",
-        "ingredients": {
-          "ผักชีฝรั่ง": "15 กรัม"
-        }
-      },
-      {
-        "category": "ผักเพิ่มเติม",
-        "name": "โหระพา",
-        "ingredients": {
-          "โหระพา": "20 กรัม"
-        }
-      },
-      {
-        "category": "ผักเพิ่มเติม",
-        "name": "ใบชะพลู",
-        "ingredients": {
-          "ใบชะพลู": "15 กรัม"
-        }
-      },
-      {
-        "category": "เส้นเพิ่มเติม",
-        "name": "วุ้นเส้น",
-        "ingredients": {
-          "วุ้นเส้น": "80 กรัม"
-        }
-      },
-      {
-        "category": "เส้นเพิ่มเติม",
-        "name": "มาม่า",
-        "ingredients": {
-          "มาม่า": "1 ก้อน"
-        }
-      },
-      {
-        "category": "เส้นเพิ่มเติม",
-        "name": "หมี่หยก(สด)",
-        "ingredients": {
-          "หมี่หยก(สด)": "1 ก้อน"
-        }
-      },
-      {
-        "category": "เส้นเพิ่มเติม",
-        "name": "เส้นอุด้ง",
-        "ingredients": {
-          "เส้นอุด้ง": "1 ก้อน"
-        }
-      },
-      {
-        "category": "เมนูเพิ่มเติม",
-        "name": "ไข่ไก่สด",
-        "ingredients": {
-          "ไข่ไก่สด": "1 ฟอง"
-        }
-      },
-      {
-        "category": "เมนูเพิ่มเติม",
-        "name": "เต้าหู้ปลา",
-        "ingredients": {
-          "เต้าหู้ปลา": "6 ก้อน"
-        }
-      },
-      {
-        "category": "เมนูเพิ่มเติม",
-        "name": "เต้าหู้ไข่",
-        "ingredients": {
-          "เต้าหู้ไข่": "1 หลอด"
-        }
-      },
-      {
-        "category": "เมนูเพิ่มเติม",
-        "name": "เต้าหู้ชีส",
-        "ingredients": {
-          "เต้าหู้ชีส": "3 ก้อน"
-        }
-      },
-      {
-        "category": "เมนูเพิ่มเติม",
-        "name": "ฟองเต้าหู้แท่ง",
-        "ingredients": {
-          "ฟองเต้าหู้แท่ง": "5 แท่ง"
-        }
-      },
-      {
-        "category": "เมนูเพิ่มเติม",
-        "name": "ฟองเต้าหู้ทอด",
-        "ingredients": {
-          "ฟองเต้าหู้ทอด": "3 ม้วน"
-        }
-      },
-      {
-        "category": "เมนูเพิ่มเติม",
-        "name": "ข้าวเปล่า",
-        "ingredients": {
-          "ข้าวเปล่า": "150 กรัม"
-        }
-      },
-      {
-        "category": "ของทานเล่น",
-        "name": "ไก่ป๊อป",
-        "ingredients": {
-          "ไก่ป๊อป": "130 กรัม"
-        }
-      },
-      {
-        "category": "ของทานเล่น",
-        "name": "แฮชบราวน์ เทเทอร์ ทอตส์",
-        "ingredients": {
-          "แฮชบราวน์ เทเทอร์ ทอตส์": "130 กรัม"
-        }
-      },
-      {
-        "category": "ของทานเล่น",
-        "name": "ข้าวเกรียบปลา",
-        "ingredients": {
-          "ข้าวเกรียบปลา": "35 กรัม"
-        }
-      },
-      {
-        "category": "ของทานเล่น",
-        "name": "คาลามารี",
-        "ingredients": {
-          "คาลามารี": "100 กรัม"
-        }
-      },
-      {
-        "category": "ของหวาน",
-        "name": "ซาโมซ่ากล้วย",
-        "ingredients": {
-          "ซาโมซ่ากล้วย": "5 ชิ้น"
-        }
-      },
-      {
-        "category": "ของหวาน",
-        "name": "สละลอยแก้ว",
-        "ingredients": {
-          "สละลอยแก้ว": "1 ถ้วย"
-        }
-      },
-      {
-        "category": "ของหวาน",
-        "name": "ลูกตาลลอยแก้ว",
-        "ingredients": {
-          "ลูกตาลลอยแก้ว": "1 ถ้วย"
-        }
-      },
-      {
-        "category": "ของหวาน",
-        "name": "โมจิไอศครีม",
-        "ingredients": {
-          "โมจิไอศครีม": "1 ลูก"
-        }
-      }
+      { "category": "อาหารเซ็ต", "name": "ชุดจุ่มหมูทะเล", "ingredients": { "หมูหมัก": "80 กรัม", "สามชั้นหมูสไลซ์": "50 กรัม", "สันคอ": "40 กรัม", "สันนอก": "50 กรัม", "ตับหมู": "30 กรัม", "เซ่งจี๊หมู": "30 กรัม", "ปลาดอลลี่": "60 กรัม", "กุ้ง": "3 ตัว", "ปลากหมึก": "30 กรัม", "กะหล่ำปลี": "120 กรัม", "ผักบุ้ง": "30 กรัม", "ผักชีฝรั่ง": "15 กรัม", "โหระพา": "20 กรัม", "ใบชะพลู": "15 กรัม", "วุ้นเส้น": "80 กรัม", "ไข่ไก่สด": "1 ฟอง" } },
+      { "category": "อาหารเซ็ต", "name": "ชุดจุ่มเนื้อ", "ingredients": { "เนื้อใบพายสไลซ์": "50 กรัม", "เนื้อริบอายสไลซ์": "50 กรัม", "เนื้อเสื้อร้องให้สไลซ์": "50 กรัม", "กะหล่ำปลี": "120 กรัม", "ผักบุ้ง": "30 กรัม", "ผักชีฝรั่ง": "15 กรัม", "โหระพา": "20 กรัม", "ใบชะพลู": "15 กรัม", "วุ้นเส้น": "80 กรัม", "ไข่ไก่สด": "1 ฟอง" } },
+      { "category": "อาหารเซ็ต", "name": "ชุดจุ่มหมู", "ingredients": { "หมูหมัก": "80 กรัม", "สามชั้นหมูสไลซ์": "50 กรัม", "สันคอ": "40 กรัม", "สันนอก": "50 กรัม", "ตับหมู": "30 กรัม", "เซ่งจี๊หมู": "30 กรัม", "กะหล่ำปลี": "120 กรัม", "ผักบุ้ง": "30 กรัม", "ผักชีฝรั่ง": "15 กรัม", "โหระพา": "20 กรัม", "ใบชะพลู": "15 กรัม", "วุ้นเส้น": "80 กรัม", "ไข่ไก่สด": "1 ฟอง" } },
+      { "category": "อาหารเซ็ต", "name": "ชุดจุ่มเดี่ยวหมู", "ingredients": { "หมูหมัก": "80 กรัม", "สามชั้นหมูสไลซ์": "25 กรัม", "สันนอก": "50 กรัม", "ตับหมู": "30 กรัม", "กะหล่ำปลี": "60 กรัม", "ผักบุ้ง": "10 กรัม", "ผักชีฝรั่ง": "5 กรัม", "โหระพา": "10 กรัม", "ใบชะพลู": "5 กรัม", "วุ้นเส้น": "80 กรัม", "ไข่ไก่สด": "1 ฟอง" } },
+      { "category": "อาหารเซ็ต", "name": "อิ่มเดี่ยว ต้มพร้อมทาน", "ingredients": { "หมูหมัก": "40 กรัม", "สามชั้นหมูสไลซ์": "7.5 กรัม", "สันนอก": "12.5 กรัม", "ตับหมู": "15 กรัม", "กะหล่ำปลี": "60 กรัม", "ผักบุ้ง": "10 กรัม", "ผักชีฝรั่ง": "5 กรัม", "โหระพา": "10 กรัม", "ใบชะพลู": "5 กรัม", "วุ้นเส้น": "80 กรัม" } },
+      { "category": "อาหารเซ็ต", "name": "อิ่มเดี่ยว หมูจุกจุก", "ingredients": { "หมูหมัก": "80 กรัม", "สามชั้นหมูสไลซ์": "25 กรัม", "สันนอก": "50 กรัม", "ตับหมู": "30 กรัม", "กะหล่ำปลี": "60 กรัม", "ผักบุ้ง": "10 กรัม", "ผักชีฝรั่ง": "5 กรัม", "โหระพา": "10 กรัม", "ใบชะพลู": "5 กรัม", "วุ้นเส้น": "80 กรัม" } },
+      { "category": "เนื้อสัตว์เพิ่มเติม", "name": "หมูล้วน (ไม่มีเครื่องใน)", "ingredients": { "หมูหมัก": "80 กรัม", "สามชั้นหมูสไลซ์": "30 กรัม", "สันคอ": "30 กรัม", "สันนอก": "40 กรัม" } },
+      { "category": "เนื้อสัตว์เพิ่มเติม", "name": "หมูหมัก NER", "ingredients": { "หมูหมัก": "80 กรัม" } },
+      { "category": "เนื้อสัตว์เพิ่มเติม", "name": "สามชั้นหมูสไลซ์", "ingredients": { "สามชั้นหมูสไลซ์": "50 กรัม" } },
+      { "category": "เนื้อสัตว์เพิ่มเติม", "name": "สันคอ", "ingredients": { "สันคอ": "50 กรัม" } },
+      { "category": "เนื้อสัตว์เพิ่มเติม", "name": "สันนอก", "ingredients": { "สันนอก": "50 กรัม" } },
+      { "category": "เนื้อสัตว์เพิ่มเติม", "name": "ตับหมู", "ingredients": { "ตับหมู": "50 กรัม" } },
+      { "category": "เนื้อสัตว์เพิ่มเติม", "name": "เซ่งจี๊หมู", "ingredients": { "เซ่งจี๊หมู": "50 กรัม" } },
+      { "category": "เนื้อสัตว์เพิ่มเติม", "name": "เนื้อใบพายสไลซ์", "ingredients": { "เนื้อใบพายสไลซ์": "50 กรัม" } },
+      { "category": "เนื้อสัตว์เพิ่มเติม", "name": "เนื้อริบอายสไลซ์", "ingredients": { "เนื้อริบอายสไลซ์": "50 กรัม" } },
+      { "category": "เนื้อสัตว์เพิ่มเติม", "name": "เนื้อเสือร้องไห้สไลซ์", "ingredients": { "เนื้อเสื้อร้องให้สไลซ์": "50 กรัม" } },
+      { "category": "เนื้อสัตว์เพิ่มเติม", "name": "เนื้อรวม", "ingredients": { "เนื้อใบพายสไลซ์": "50 กรัม", "เนื้อริบอายสไลซ์": "50 กรัม", "เนื้อเสื้อร้องให้สไลซ์": "50 กรัม" } },
+      { "category": "เนื้อสัตว์เพิ่มเติม", "name": "ปลาดอลลี่", "ingredients": { "ปลาดอลลี่": "80 กรัม" } },
+      { "category": "เนื้อสัตว์เพิ่มเติม", "name": "กุ้ง", "ingredients": { "กุ้ง": "3 ตัว" } },
+      { "category": "เนื้อสัตว์เพิ่มเติม", "name": "ปลาหมึก", "ingredients": { "ปลากหมึก": "60 กรัม" } },
+      { "category": "ผักเพิ่มเติม", "name": "ชุดผักรวม", "ingredients": { "กะหล่ำปลี": "120 กรัม", "ผักบุ้ง": "30 กรัม", "ผักชีฝรั่ง": "15 กรัม", "โหระพา": "20 กรัม", "ใบชะพลู": "15 กรัม" } },
+      { "category": "ผักเพิ่มเติม", "name": "กะหล่ำปลี", "ingredients": { "กะหล่ำปลี": "120 กรัม" } },
+      { "category": "ผักเพิ่มเติม", "name": "ผักบุ้ง", "ingredients": { "ผักบุ้ง": "30 กรัม" } },
+      { "category": "ผักเพิ่มเติม", "name": "ผักชีฝรั่ง", "ingredients": { "ผักชีฝรั่ง": "15 กรัม" } },
+      { "category": "ผักเพิ่มเติม", "name": "โหระพา", "ingredients": { "โหระพา": "20 กรัม" } },
+      { "category": "ผักเพิ่มเติม", "name": "ใบชะพลู", "ingredients": { "ใบชะพลู": "15 กรัม" } },
+      { "category": "เส้นเพิ่มเติม", "name": "วุ้นเส้น", "ingredients": { "วุ้นเส้น": "80 กรัม" } },
+      { "category": "เส้นเพิ่มเติม", "name": "มาม่า", "ingredients": { "มาม่า": "1 ก้อน" } },
+      { "category": "เส้นเพิ่มเติม", "name": "หมี่หยก(สด)", "ingredients": { "หมี่หยก(สด)": "1 ก้อน" } },
+      { "category": "เส้นเพิ่มเติม", "name": "เส้นอุด้ง", "ingredients": { "เส้นอุด้ง": "1 ก้อน" } },
+      { "category": "เมนูเพิ่มเติม", "name": "ไข่ไก่สด", "ingredients": { "ไข่ไก่สด": "1 ฟอง" } },
+      { "category": "เมนูเพิ่มเติม", "name": "เต้าหู้ปลา", "ingredients": { "เต้าหู้ปลา": "6 ก้อน" } },
+      { "category": "เมนูเพิ่มเติม", "name": "เต้าหู้ไข่", "ingredients": { "เต้าหู้ไข่": "1 หลอด" } },
+      { "category": "เมนูเพิ่มเติม", "name": "เต้าหู้ชีส", "ingredients": { "เต้าหู้ชีส": "3 ก้อน" } },
+      { "category": "เมนูเพิ่มเติม", "name": "ฟองเต้าหู้แท่ง", "ingredients": { "ฟองเต้าหู้แท่ง": "5 แท่ง" } },
+      { "category": "เมนูเพิ่มเติม", "name": "ฟองเต้าหู้ทอด", "ingredients": { "ฟองเต้าหู้ทอด": "3 ม้วน" } },
+      { "category": "เมนูเพิ่มเติม", "name": "ข้าวเปล่า", "ingredients": { "ข้าวเปล่า": "150 กรัม" } },
+      { "category": "ของทานเล่น", "name": "ไก่ป๊อป", "ingredients": { "ไก่ป๊อป": "130 กรัม" } },
+      { "category": "ของทานเล่น", "name": "แฮชบราวน์ เทเทอร์ ทอตส์", "ingredients": { "แฮชบราวน์ เทเทอร์ ทอตส์": "130 กรัม" } },
+      { "category": "ของทานเล่น", "name": "ข้าวเกรียบปลา", "ingredients": { "ข้าวเกรียบปลา": "35 กรัม" } },
+      { "category": "ของทานเล่น", "name": "คาลามารี", "ingredients": { "คาลามารี": "100 กรัម" } },
+      { "category": "ของหวาน", "name": "ซาโมซ่ากล้วย", "ingredients": { "ซาโมซ่ากล้วย": "5 ชิ้น" } },
+      { "category": "ของหวาน", "name": "สละลอยแก้ว", "ingredients": { "สละลอยแก้ว": "1 ถ้วย" } },
+      { "category": "ของหวาน", "name": "ลูกตาลลอยแก้ว", "ingredients": { "ลูกตาลลอยแก้ว": "1 ถ้วย" } },
+      { "category": "ของหวาน", "name": "โมจิไอศครีม", "ingredients": { "โมจิไอศครีม": "1 ลูก" } }
     ];
 
     let selectedItem = null;
+    let editingRuleKey = null;
+    let setReplacementRules = {};
 
-    // กฎการแทนที่แยกตามรายเซ็ต (สามารถเพิ่มสูตรจริงเข้าไปได้ตรงนี้)
-    const setReplacementRules = {
-      "ชุดจุ่มหมู": {
-        "สามชั้นหมูสไลซ์": { replace: "หมูหมัก", addWeight: 20 },
-        "ตับหมู": { replace: "หมูหมัก", addWeight: 10 }
-      },
-      "อิ่มเดี่ยว หมูจุกจุก": {
-        "สามชั้นหมูสไลซ์": { replace: "หมูหมัก", addWeight: 15 },
-        "ตับหมู": { replace: "หมูหมัก", addWeight: 8 }
-      }
+    // ตั้งค่า GitHub Config พร้อม Token ของคุณเรียบร้อยแล้ว
+    const GH_CONFIG = {
+      token: "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", 
+      owner: "twentybkk-boop",
+      repo: "ner-menu",
+      path: "rules.json" 
     };
 
-    // เรนเดอร์หน้าจอทันทีเมื่อโหลดหน้าเว็บ
-    window.onload = function() {
+    window.onload = async function() {
       renderMenuSelector(globalMenuData);
+      await loadRulesFromGitHub();
       renderCasesMatrix();
     };
+
+    async function loadRulesFromGitHub() {
+      try {
+        let res = await fetch(`https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}`);
+        if (res.ok) {
+          let data = await res.json();
+          let decoded = JSON.parse(atob(data.content));
+          setReplacementRules = decoded;
+        }
+      } catch (e) {
+        console.log("ยังไม่มีไฟล์ rules.json บน GitHub หรือกำลังใช้ค่าว่าง");
+      }
+    }
 
     function renderMenuSelector(menuData) {
       const app = document.getElementById('app');
@@ -609,7 +300,7 @@
           rightList.innerHTML += `
             <div class="p-2.5 rounded-xl bg-white border border-slate-200/80 flex justify-between items-center text-xs">
               <span class="font-bold text-slate-800">ไม่เอา ${excludedName} ➔ แทนเป็น: <span class="text-emerald-600">${rule.replace} (+${rule.addWeight} กรัม)</span></span>
-              <span class="bg-slate-100 text-slate-600 px-2 py-1 rounded-lg font-bold">Default เซ็ต</span>
+              <span class="bg-slate-100 text-slate-600 px-2 py-1 rounded-lg font-bold">กำหนดแล้ว</span>
             </div>
           `;
         } else {
@@ -640,32 +331,117 @@
       const container = document.getElementById('casesMatrixList');
       container.innerHTML = '';
 
-      // ลิสต์เคสทั้งหมดที่เป็นไปได้ เพื่อตรวจสอบว่าอันไหนกำหนดแล้วหรือยังว่างอยู่
-      const allPossibleCases = [
-        { menu: "ชุดจุ่มหมู", exclude: "สามชั้นหมูสไลซ์", status: "defined", rule: "แทนเป็นหมูหมัก (+20 กรัม)" },
-        { menu: "ชุดจุ่มหมู", exclude: "ตับหมู", status: "defined", rule: "แทนเป็นหมูหมัก (+10 กรัม)" },
-        { menu: "อิ่มเดี่ยว หมูจุกจุก", exclude: "สามชั้นหมูสไลซ์", status: "defined", rule: "แทนเป็นหมูหมัก (+15 กรัม)" },
-        { menu: "อิ่มเดี่ยว หมูจุกจุก", exclude: "ตับหมู", status: "defined", rule: "แทนเป็นหมูหมัก (+8 กรัม)" },
-        { menu: "ชุดจุ่มหมูทะเล", exclude: "สามชั้นหมูสไลซ์", status: "undefined", rule: "ยังไม่ได้ระบุสูตรการแทน" },
-        { menu: "ชุดจุ่มหมูทะเล", exclude: "ตับหมู", status: "undefined", rule: "ยังไม่ได้ระบุสูตรการแทน" },
-        { menu: "ชุดจุ่มเดี่ยวหมู", exclude: "สามชั้นหมูสไลซ์", status: "undefined", rule: "ยังไม่ได้ระบุสูตรการแทน" }
-      ];
+      let targetMenus = globalMenuData.filter(m => Object.keys(m.ingredients).length > 1);
 
-      allPossibleCases.forEach(c => {
-        let badge = c.status === 'defined' 
-          ? '<span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-xl font-bold">✅ กำหนดแล้ว</span>' 
-          : '<span class="bg-amber-100 text-amber-800 text-xs px-2.5 py-1 rounded-xl font-bold">⚠️ ยังไม่ระบุ</span>';
+      targetMenus.forEach(menu => {
+        Object.keys(menu.ingredients).forEach(ingName => {
+          let menuRules = setReplacementRules[menu.name] || {};
+          let rule = menuRules[ingName];
+          let statusHtml = '';
 
-        container.innerHTML += `
-          <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/60 flex justify-between items-center">
-            <div>
-              <p class="font-bold text-slate-800 text-sm">[${c.menu}] ไม่เอา: ${c.exclude}</p>
-              <p class="text-xs text-slate-500">กฎการแทน: ${c.rule}</p>
+          if (rule) {
+            statusHtml = `
+              <div class="text-right cursor-pointer" onclick="openInputRuleModal('${menu.name}', '${ingName}')">
+                <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-xl font-bold inline-block">✅ กำหนดแล้ว</span>
+                <p class="text-[10px] text-slate-500 mt-1">แทนเป็น ${rule.replace} (+${rule.addWeight}ก.)</p>
+              </div>`;
+          } else {
+            statusHtml = `
+              <button onclick="openInputRuleModal('${menu.name}', '${ingName}')" class="bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs px-3 py-1.5 rounded-xl font-bold transition shadow-2xs">
+                ⚠️ ยังไม่ระบุ (คลิกเพื่อใส่สูตร)
+              </button>`;
+          }
+
+          container.innerHTML += `
+            <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/60 flex justify-between items-center">
+              <div>
+                <p class="font-bold text-slate-800 text-sm">[${menu.name}] ไม่เอา: ${ingName}</p>
+                <p class="text-xs text-slate-500">คลิกที่สถานะด้านขวาเพื่อแก้ไขหรือเพิ่มสูตร</p>
+              </div>
+              <div>${statusHtml}</div>
             </div>
-            <div>${badge}</div>
-          </div>
-        `;
+          `;
+        });
       });
+    }
+
+    function openInputRuleModal(menuName, excludeName) {
+      editingRuleKey = { menuName, excludeName };
+      document.getElementById('inputRuleTitle').innerText = `กำหนดสูตร: ${menuName}`;
+      document.getElementById('inputRuleSub').innerText = `กรณีลูกค้าไม่เอา: ${excludeName}`;
+      
+      let menuRules = setReplacementRules[menuName] || {};
+      let existingRule = menuRules[excludeName];
+
+      document.getElementById('ruleReplaceInput').value = existingRule ? existingRule.replace : 'หมูหมัก';
+      document.getElementById('ruleWeightInput').value = existingRule ? existingRule.addWeight : '';
+
+      document.getElementById('inputRuleModal').classList.remove('hidden');
+    }
+
+    function closeInputRuleModal() {
+      document.getElementById('inputRuleModal').classList.add('hidden');
+    }
+
+    async function saveRuleToGitHub() {
+      let replaceVal = document.getElementById('ruleReplaceInput').value.trim();
+      let weightVal = parseFloat(document.getElementById('ruleWeightInput').value);
+
+      if (!replaceVal || isNaN(weightVal)) {
+        alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+        return;
+      }
+
+      if (!setReplacementRules[editingRuleKey.menuName]) {
+        setReplacementRules[editingRuleKey.menuName] = {};
+      }
+
+      setReplacementRules[editingRuleKey.menuName][editingRuleKey.excludeName] = {
+        replace: replaceVal,
+        addWeight: weightVal
+      };
+
+      alert('กำลังซิงค์ข้อมูลขึ้น GitHub อัตโนมัติ รอสักครู่...');
+
+      try {
+        let apiUrl = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}`;
+        
+        let getRes = await fetch(apiUrl, {
+          headers: { "Authorization": `token ${GH_CONFIG.token}` }
+        });
+        
+        let fileSha = null;
+        if (getRes.ok) {
+          let fileData = await getRes.json();
+          fileSha = fileData.sha;
+        }
+
+        let contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(setReplacementRules, null, 2))));
+        
+        let putRes = await fetch(apiUrl, {
+          method: "PUT",
+          headers: {
+            "Authorization": `token ${GH_CONFIG.token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: `Update replacement rules for ${editingRuleKey.menuName}`,
+            content: contentEncoded,
+            sha: fileSha
+          })
+        });
+
+        if (putRes.ok) {
+          alert('บันทึกและซิงค์ขึ้น GitHub สำเร็จ! ทุกคนจะเห็นข้อมูลตรงกันทันที');
+          closeInputRuleModal();
+          renderCasesMatrix();
+        } else {
+          let errJson = await putRes.json();
+          alert('เกิดข้อผิดพลาดในการซิงค์: ' + errJson.message);
+        }
+      } catch (err) {
+        alert('เชื่อมต่อ GitHub API ไม่สำเร็จ: ' + err.message);
+      }
     }
 
     function showDirectResult() {
@@ -754,8 +530,7 @@
       const pin = document.getElementById('pinInput').value;
       if (pin === '206738') {
         closePinModal();
-        // พาเปิดหน้าจัดการ Repository หลักบน GitHub โดยตรง
-        window.open('https://github.com/twentybkk/ner-menu', '_blank');
+        window.open('https://github.com/twentybkk-boop/ner-menu', '_blank');
       } else {
         alert('รหัสผ่านไม่ถูกต้อง');
         document.getElementById('pinInput').value = '';
