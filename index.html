@@ -10,7 +10,7 @@
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
     body { font-family: 'Plus+Jakarta+Sans', sans-serif; background-color: #f8fafc; }
     
-    .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     
@@ -28,7 +28,7 @@
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-5 md:p-6 rounded-3xl shadow-sm border border-slate-100 gap-4">
     <div>
       <h1 class="text-2xl font-bold text-slate-900 tracking-tight">NER แจ่วฮ้อน <span class="text-indigo-600">Smart Recipe</span></h1>
-      <p class="text-sm text-slate-500 mt-1">ระบบคำนวณวัตถุดิบสุทธิ (เชื่อมต่อข้อมูลกลางอัตโนมัติ)</p>
+      <p class="text-sm text-slate-500 mt-1">ระบบคำนวณวัตถุดิบสุทธิ (เชื่อมต่อข้อมูลกลางผ่าน GitHub JSON)</p>
     </div>
     <div class="flex gap-2 w-full md:w-auto">
       <button onclick="openPinModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-2xl text-sm font-bold shadow-md active:scale-95 transition flex items-center gap-2 w-full md:w-auto justify-center">
@@ -42,7 +42,7 @@
     <div class="text-center py-20 text-slate-400 font-medium">กำลังโหลดข้อมูลสูตรอาหารจากระบบกลาง...</div>
   </div>
 
-  <!-- Modal 1: Front-end Calculator -->
+  <!-- Modal 1: Front-end Calculator (ปรับฝั่งขวาให้กระชับ เห็นครบทุกตัว) -->
   <div id="calculatorModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-40 transition-opacity">
     <div class="bg-white rounded-3xl w-full max-w-6xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden border border-slate-100">
       <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -62,12 +62,12 @@
           <div id="excludeOptions" class="space-y-3"></div>
         </div>
         
-        <!-- ฝั่งขวา (Grid 2 คอลัมน์) -->
+        <!-- ฝั่งขวา (Compact Grid 2 คอลัมน์ เห็นครบจบในหน้าเดียว ไม่ต้องเลื่อนเยอะ) -->
         <div id="rightPanel" class="w-full md:w-[55%] p-6 bg-slate-50 overflow-y-auto custom-scrollbar">
           <h3 class="text-sm font-bold text-indigo-600 mb-4 flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-indigo-600"></span> ⚖️ ปริมาณสุทธิ (เตรียมจัดเสิร์ฟ)
           </h3>
-          <div id="netResultList" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+          <div id="netResultList" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
         </div>
       </div>
     </div>
@@ -111,9 +111,11 @@
 
   <script>
     const unitMap = { "กุ้ง": "ตัว", "ไข่ไก่สด": "ฟอง" };
-    const getUnit = (item) => unitMap[item] || "กรัม";
+    const getUnit = (item) => {
+      let cleanItem = String(item).trim();
+      return unitMap[cleanItem] || "กรัม";
+    };
 
-    // URL กลางสำหรับดึง JSON อัตโนมัติจาก GitHub สาธารณะ (Read-only ปลอดภัย 100%)
     const GITHUB_JSON_URL = "https://raw.githubusercontent.com/twentybkk-boop/NER-Menu-quantity/main/recipe_master.json";
 
     let menuCategories = {}; 
@@ -124,7 +126,6 @@
     let currentActiveMenu = null;
     let excludedItemsMap = {}; 
 
-    // โหลดข้อมูลกลางจาก GitHub ทันทีที่เปิดเว็บ
     window.onload = async () => {
       try {
         const res = await fetch(GITHUB_JSON_URL + "?t=" + new Date().getTime());
@@ -141,9 +142,8 @@
           }
         }
       } catch (e) {
-        console.log("Not loaded from remote, checking local fallback");
+        console.log("Not loaded from remote");
       }
-      // หากยังไม่มีข้อมูลออนไลน์ ให้แจ้งเตือนเบาๆ
       document.getElementById('app-menus').innerHTML = `
         <div class="bg-amber-50 border border-amber-200 p-6 rounded-3xl text-center">
           <p class="text-amber-800 font-bold mb-2">⚠️ ยังไม่พบไฟล์ข้อมูลกลางบน GitHub</p>
@@ -202,12 +202,13 @@
           let newOriginalMenu = {};
           let newMenuCategories = {};
           
-          let origHeaderRowIdx = jsonOrig.findIndex(row => row.indexOf("หมูหมัก") !== -1 || row.includes("หมูหมัก"));
+          let origHeaderRowIdx = jsonOrig.findIndex(row => row.some(cell => String(cell).trim() === "หมูหมัก"));
           let headerRowOrig = jsonOrig[origHeaderRowIdx];
           let origIngredients = [];
           
           for(let i=2; i<headerRowOrig.length; i++) {
             let val = String(headerRowOrig[i]).trim();
+            if(!val && origIngredients.length > 0) val = origIngredients[origIngredients.length-1];
             if(val && val !== "-" && !origIngredients.includes(val)) {
               origIngredients.push(val);
             }
@@ -224,10 +225,13 @@
             
             let recipe = {};
             for(let i=0; i<origIngredients.length; i++) {
-              let val = row[i+2];
-              if(val !== "" && val !== "-") {
-                let num = parseFloat(val);
-                if(!isNaN(num)) recipe[origIngredients[i]] = num;
+              let colIndex = headerRowOrig.findIndex(h => String(h).trim() === origIngredients[i]);
+              if(colIndex !== -1) {
+                let val = row[colIndex];
+                if(val !== "" && val !== "-") {
+                  let num = parseFloat(val);
+                  if(!isNaN(num)) recipe[origIngredients[i]] = num;
+                }
               }
             }
             if(Object.keys(recipe).length > 0) {
@@ -240,12 +244,13 @@
           const jsonRep = XLSX.utils.sheet_to_json(sheetRep, {header: 1, defval: ""});
           let newReplaceRules = [];
           
-          let repHeaderRowIdx = jsonRep.findIndex(row => row.indexOf("หมูหมัก") !== -1 || row.includes("หมูหมัก"));
+          let repHeaderRowIdx = jsonRep.findIndex(row => row.some(cell => String(cell).trim() === "หมูหมัก"));
           let headerRowRep = jsonRep[repHeaderRowIdx];
           let repIngredients = [];
           
           for(let i=2; i<headerRowRep.length; i++) {
             let val = String(headerRowRep[i]).trim();
+            if(!val && repIngredients.length > 0) val = repIngredients[repIngredients.length-1];
             if(val && val !== "-" && !repIngredients.includes(val)) {
               repIngredients.push(val);
             }
@@ -278,14 +283,13 @@
           
           initMenus();
           renderMatrixTable();
-          alert("อัปโหลดและแปลงข้อมูลสำเร็จ! อย่าลืมกดปุ่ม 'ดาวน์โหลดไฟล์ JSON' แล้วนำไปวางใน GitHub");
+          alert("อัปโหลดและแปลงข้อมูลสำเร็จ! ข้อมูลกุ้งและไข่ถูกแมพถูกต้องแล้ว");
           
         } catch (err) { alert("Error: " + err.message); }
       };
       reader.readAsArrayBuffer(file);
     }
 
-    // ฟังก์ชันดาวน์โหลดไฟล์ JSON เพื่อนำไปอัปโหลดขึ้น GitHub Repository
     function downloadJSON() {
       if(Object.keys(originalMenu).length === 0) {
         alert("ยังไม่มีข้อมูลสูตรอาหาร กรุณาอัปโหลด Excel ก่อนครับ");
@@ -304,7 +308,7 @@
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
-      alert("ดาวน์โหลดไฟล์ 'recipe_master.json' เรียบร้อย!\nให้นำไฟล์นี้ไปวาง/อัปเดตใน GitHub ของคุณ (ตั้งชื่อไฟล์ว่า recipe_master.json)");
+      alert("ดาวน์โหลดไฟล์ 'recipe_master.json' เรียบร้อย!\nให้นำไปอัปเดตบน GitHub ได้เลยครับ ข้อมูลจะเปลี่ยนตามทันที");
     }
 
     function initMenus() {
@@ -406,11 +410,11 @@
       let html = '';
       calculateNetRecipe(currentActiveMenu).forEach(res => {
         html += `
-          <div class="flex justify-between items-center p-3.5 rounded-2xl ${res.isModified ? 'bg-indigo-100 border-2 border-indigo-400' : 'bg-white border border-slate-200'} shadow-sm">
-            <span class="font-bold text-sm ${res.isModified ? 'text-indigo-900' : 'text-slate-700'} leading-tight truncate mr-2">${res.name}</span>
+          <div class="flex justify-between items-center p-3 rounded-xl ${res.isModified ? 'bg-indigo-50 border-2 border-indigo-400' : 'bg-white border border-slate-200'} shadow-xs">
+            <span class="font-bold text-xs ${res.isModified ? 'text-indigo-900' : 'text-slate-700'} leading-tight truncate mr-2">${res.name}</span>
             <div class="flex items-baseline gap-1 shrink-0">
-              <span class="text-2xl font-black ${res.isModified ? 'text-indigo-600' : 'text-slate-900'}">${res.qty}</span>
-              <span class="text-[11px] font-bold text-slate-500">${res.unit}</span>
+              <span class="text-xl font-black ${res.isModified ? 'text-indigo-600' : 'text-slate-900'}">${res.qty}</span>
+              <span class="text-[10px] font-bold text-slate-500">${res.unit}</span>
             </div>
           </div>
         `;
