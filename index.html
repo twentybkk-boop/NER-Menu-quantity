@@ -26,19 +26,32 @@
   <div id="loading" class="text-center py-20 text-slate-400 font-medium">กำลังโหลดเมนู...</div>
   <div id="app" class="space-y-6"></div>
 
-  <!-- Modal สำหรับเลือกเงื่อนไข (Condition) -->
+  <!-- Modal สำหรับเลือกเงื่อนไข (แบ่งซ้าย-ขวา) -->
   <div id="customModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-3xl p-6 w-full max-w-lg shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-2xl shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
         <div>
           <h2 id="modalMenuName" class="text-lg font-bold text-slate-900">ชื่อเมนู</h2>
-          <p class="text-xs text-slate-500">ติ๊กเลือกวัตถุดิบที่ลูกค้า "ไม่รับ"</p>
+          <p class="text-xs text-slate-500">ซ้าย: ติ๊กวัตถุดิบที่ "ไม่เอา" | ขวา: เลือกสิ่งที่ต้องการเพิ่มแทน (ไม่บังคับ)</p>
         </div>
         <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold">✕</button>
       </div>
 
-      <div id="modalIngredientsList" class="overflow-y-auto space-y-2 mb-4 flex-1 pr-1">
-        <!-- รายการวัตถุดิบให้ติ๊ก -->
+      <!-- พื้นที่แบ่ง 2 คอลัมน์ ซ้าย-ขวา -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto mb-4 flex-1 pr-1">
+        <!-- ฝั่งซ้าย: ไม่เอา -->
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+          <h3 class="font-bold text-slate-800 text-sm mb-3 pb-1 border-b border-slate-200">❌ สิ่งที่ไม่เอา (เลือกเพื่อตัดออก)</h3>
+          <div id="leftExcludeList" class="space-y-2"></div>
+        </div>
+
+        <!-- ฝั่งขวา: เพิ่มแทน (Optional & Locked จนกว่าจะเลือกฝั่งซ้าย) -->
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+          <h3 class="font-bold text-slate-800 text-sm mb-3 pb-1 border-b border-slate-200">➕ สิ่งที่ต้องการเพิ่มแทน (Optional)</h3>
+          <div id="rightAddList" class="space-y-2 opacity-50 pointer-events-none transition">
+            <p class="text-xs text-slate-400 italic mb-2">กรุณาเลือก "สิ่งที่ไม่เอา" ฝั่งซ้ายก่อน จึงจะสามารถเลือกช่องนี้ได้</p>
+          </div>
+        </div>
       </div>
 
       <button onclick="calculateAndShowResult()" class="w-full bg-slate-900 text-white py-3.5 rounded-2xl font-bold shadow-lg active:scale-95 transition">
@@ -95,7 +108,7 @@
         document.getElementById('loading').innerText = 'ไม่สามารถโหลดข้อมูลได้ กรุณาตรวจสอบไฟล์ data.json';
       });
 
-    // 1. เรนเดอร์หน้าจอแรก: โชว์เฉพาะหมวดหมู่และชื่อเมนู (ยังไม่กางวัตถุดิบ)
+    // 1. เรนเดอร์หน้าจอแรก จัดกลุ่มตามหมวดหมู่ถูกต้อง ไม่เป็น NaN
     function renderMenuSelector(menuData) {
       document.getElementById('loading').style.display = 'none';
       const app = document.getElementById('app');
@@ -110,9 +123,8 @@
         let html = `<h2 class="text-lg font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-slate-900"></span>${cat}</h2><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">`;
 
         const items = menuData.filter(row => row.category === cat);
-        items.forEach((item, index) => {
+        items.forEach(item => {
           const originalIndex = menuData.indexOf(item);
-          html++; // placeholder fix
           html += `
             <button onclick="openCustomModal(${originalIndex})" class="text-left bg-slate-50 hover:bg-slate-900 hover:text-white p-4 rounded-2xl border border-slate-100/80 transition group flex justify-between items-center shadow-2xs">
               <span class="font-bold text-slate-800 group-hover:text-white text-base">${item.name}</span>
@@ -127,23 +139,36 @@
       });
     }
 
-    // 2. เปิดหน้าต่างเลือกเงื่อนไข (ติ๊กไม่เอาอะไรบ้าง)
+    // 2. เปิดหน้า Modal แบ่งซ้าย-ขวา
     function openCustomModal(index) {
       selectedItem = globalMenuData[index];
       document.getElementById('modalMenuName').innerText = selectedItem.name;
       
-      const listContainer = document.getElementById('modalIngredientsList');
-      listContainer.innerHTML = '';
+      const leftList = document.getElementById('leftExcludeList');
+      const rightList = document.getElementById('rightAddList');
+      
+      leftList.innerHTML = '';
+      rightList.innerHTML = '<p class="text-xs text-slate-400 italic mb-2">กรุณาเลือก "สิ่งที่ไม่เอา" ฝั่งซ้ายก่อน จึงจะสามารถเลือกช่องนี้ได้</p>';
+      rightList.classList.add('opacity-50', 'pointer-events-none');
 
       const validEntries = Object.entries(selectedItem.ingredients);
       if (validEntries.length === 0) {
-        listContainer.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">ไม่มีวัตถุดิบในเมนูนี้</p>';
+        leftList.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">ไม่มีวัตถุดิบในเมนูนี้</p>';
       } else {
         validEntries.forEach(([ingName, val]) => {
-          listContainer.innerHTML += `
-            <label class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-slate-100/80 cursor-pointer transition">
-              <span class="font-semibold text-slate-700 text-sm">${ingName} <span class="text-xs text-slate-400 font-normal">(${val})</span></span>
-              <input type="checkbox" name="excludeIng" value="${ingName}" class="w-5 h-5 accent-slate-900 rounded-lg">
+          // ฝั่งซ้าย (สิ่งที่ไม่เอา)
+          leftList.innerHTML += `
+            <label class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200/80 hover:bg-slate-100 cursor-pointer transition">
+              <span class="font-semibold text-slate-700 text-xs">${ingName} <span class="text-slate-400 font-normal">(${val})</span></span>
+              <input type="checkbox" name="excludeIng" value="${ingName}" onchange="checkLeftSelection()" class="w-4 h-4 accent-slate-900 rounded">
+            </label>
+          `;
+
+          // ฝั่งขวา (สิ่งที่จะเพิ่มแทน - เป็นรายการวัตถุดิบทั้งหมดในเซ็ตให้เลือกเพิ่ม)
+          rightList.innerHTML += `
+            <label class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200/80 hover:bg-slate-100 cursor-pointer transition">
+              <span class="font-semibold text-slate-700 text-xs">${ingName}</span>
+              <input type="checkbox" name="addIng" value="${ingName}" class="w-4 h-4 accent-slate-900 rounded">
             </label>
           `;
         });
@@ -152,44 +177,68 @@
       document.getElementById('customModal').classList.remove('hidden');
     }
 
+    // ฟังก์ชันเช็คว่าฝั่งซ้ายถูกติ๊กเลือกหรือยัง ถ้าติ๊กแล้วถึงปลดล็อกฝั่งขวา
+    function checkLeftSelection() {
+      const checkedLeft = document.querySelectorAll('input[name="excludeIng"]:checked');
+      const rightList = document.getElementById('rightAddList');
+      
+      if (checkedLeft.length > 0) {
+        rightList.classList.remove('opacity-50', 'pointer-events-none');
+      } else {
+        rightList.classList.add('opacity-50', 'pointer-events-none');
+        // เคลียร์ค่าฝั่งขวาถ้าเอาติ๊กซ้ายออกหมด
+        document.querySelectorAll('input[name="addIng"]').forEach(cb => cb.checked = false);
+      }
+    }
+
     function closeModal() {
       document.getElementById('customModal').classList.add('hidden');
     }
 
-    // 3. คำนวณปริมาณสุทธิหลังหัก/เพิ่มตามเงื่อนไข
+    // 3. คำนวณผลลัพธ์
     function calculateAndShowResult() {
-      const checkboxes = document.querySelectorAll('input[name="excludeIng"]:checked');
+      const excludedCheckboxes = document.querySelectorAll('input[name="excludeIng"]:checked');
+      const addedCheckboxes = document.querySelectorAll('input[name="addIng"]:checked');
+      
       const excludedSet = new Set();
-      checkboxes.forEach(cb => excludedSet.add(cb.value));
+      excludedCheckboxes.forEach(cb => excludedSet.add(cb.value));
 
-      // ก๊อปปี้วัตถุดิบตั้งต้นมาคำนวณ
+      const addedSet = new Set();
+      addedCheckboxes.forEach(cb => addedSet.add(cb.value));
+
       let adjustedIngredients = {};
-      let addedPorkAmount = 0; // ตัวอย่างการบวกรวมเพิ่มน้ำหนักหมูหมักตามเงื่อนไขที่คุณยกตัวอย่าง
+      let extraPorkAmount = 0;
+
+      // ตัวอย่างกฎหลังบ้าน: ถ้าไม่เอาสามชั้น เพิ่มหมูหมัก 20 กรัม / ไม่เอาตับ เพิ่มหมูหมัก 10 กรัม
+      excludedSet.forEach(item => {
+        if (item === 'สามชั้นหมูสไลซ์') extraPorkAmount += 20;
+        if (item === 'ตับหมู') extraPorkAmount += 10;
+      });
+
+      // ถ้ามีการเลือกฝั่งขวา (เพิ่มแทนเฉพาะเจาะจง) สามารถคำนวณเพิ่มได้ที่นี่
+      addedSet.forEach(item => {
+        extraPorkAmount += 15; // ตัวอย่างการเพิ่มน้ำหนักเสริมเมื่อลูกค้าเจาะจงขอเพิ่มสิ่งนั้น
+      });
 
       Object.entries(selectedItem.ingredients).forEach(([ingName, valStr]) => {
         if (excludedSet.has(ingName)) {
-          // ถ้าลูกค้าไม่เอาวัตถุดิบนี้ เช็คเงื่อนไขเพิ่มน้ำหนักให้หมูหมักตามโจทย์ตัวอย่าง
-          if (ingName === 'สามชั้นหมูสไลซ์') addedPorkAmount += 20;
-          if (ingName === 'ตับหมู') addedPorkAmount += 10;
-          return; // ข้ามการแสดงผลตัวที่ถูกตัดออก
+          return; // ตัดตัวที่ไม่เอาออก
         }
 
-        // แยกตัวเลขและหน่วยออกจาก string เดิม (เช่น "80 กรัม" -> 80 และ "กรัม")
         let parts = valStr.split(' ');
         let num = parseFloat(parts[0]);
         let unit = parts[1] || '';
 
+        // ถ้าเป็นวัตถุดิบหลัก ให้บวกเพิ่มตามเงื่อนไข
         if (ingName === 'หมูหมัก') {
-          num += addedPorkAmount; // บวกเพิ่มตามเงื่อนไขที่ตับหรือสามชั้นถูกถอดออก
+          num += extraPorkAmount;
         }
 
         adjustedIngredients[ingName] = `${num} ${unit}`;
       });
 
-      // กรณีถ้าเมนูนั้นไม่มี "หมูหมัก" ตั้งต้น แต่มีการถอดสามชั้น/ตับแล้วต้องเพิ่มให้วัตถุดิบหลักอื่นๆ สามารถปรับแต่งกฎตรงนี้เพิ่มได้ในอนาคต
-
-      // แสดงผลใน Result Modal
-      document.getElementById('resultMenuTitle').innerText = `เมนู: ${selectedItem.name} ${excludedSet.size > 0 ? '(ปรับแต่งเงื่อนไขแล้ว)' : '(สูตรมาตรฐาน)'}`;
+      // แสดงผลลัพธ์
+      document.getElementById('resultMenuTitle').innerText = `เมนู: ${selectedItem.name}`;
       const resultList = document.getElementById('resultList');
       resultList.innerHTML = '';
 
