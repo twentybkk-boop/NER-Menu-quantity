@@ -5,19 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NER แจ่วฮ้อน - POS & Recipe Management</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- เพิ่ม SheetJS สำหรับอ่านไฟล์ Excel โดยตรงบนหน้าเว็บ -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-    body { font-family: 'Plus+Jakarta+Sans', sans-serif; background-color: #f1f5f9; }
+    body { font-family: 'Plus+Jakarta+Sans', sans-serif; background-color: #f8fafc; }
     
     .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     
-    /* ล็อกความกว้างและมิติซ้อนทับ (Z-index) แก้ปัญหาตารางบังกัน */
-    .sticky-col-1 { position: sticky; left: 0; min-width: 140px; max-width: 140px; border-right: 1px solid #e2e8f0; }
-    .sticky-col-2 { position: sticky; left: 140px; min-width: 160px; max-width: 160px; border-right: 2px solid #cbd5e1; }
+    .sticky-col-1 { position: sticky; left: 0; min-width: 150px; max-width: 150px; border-right: 1px solid #e2e8f0; }
+    .sticky-col-2 { position: sticky; left: 150px; min-width: 160px; max-width: 160px; border-right: 2px solid #cbd5e1; }
     
     thead th { position: sticky; top: 0; z-index: 20; background-color: #f8fafc; border-bottom: 2px solid #e2e8f0; }
     thead .sticky-col-1, thead .sticky-col-2 { z-index: 30; background-color: #f1f5f9; }
@@ -26,87 +24,87 @@
 </head>
 <body class="p-4 md:p-8 max-w-7xl mx-auto pb-24 text-slate-800">
   
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-white p-5 rounded-3xl shadow-sm border border-slate-200 gap-4">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-5 md:p-6 rounded-3xl shadow-sm border border-slate-100 gap-4">
     <div>
-      <h1 class="text-xl font-bold text-slate-900 tracking-tight">NER แจ่วฮ้อน <span class="text-indigo-600">Smart Recipe</span></h1>
-      <p class="text-xs text-slate-500 mt-1">อัปโหลด Excel > เลือกว่าไม่เอาอะไร > เลือกของแทนที่ > คำนวณอัตโนมัติ</p>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">NER แจ่วฮ้อน <span class="text-indigo-600">Smart Recipe</span></h1>
+      <p class="text-sm text-slate-500 mt-1">อัปโหลด Excel > เลือกว่าไม่เอาอะไร > เลือกของแทนที่ > คำนวณอัตโนมัติ</p>
     </div>
     <div class="flex gap-2 w-full md:w-auto">
-      <button onclick="openPinModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-2xl text-sm font-semibold shadow-md active:scale-95 transition flex items-center gap-2 w-full md:w-auto justify-center">
+      <button onclick="openPinModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-2xl text-sm font-bold shadow-md active:scale-95 transition flex items-center gap-2 w-full md:w-auto justify-center">
         <span>⚙️</span> จัดการหลังบ้าน (Matrix UI)
       </button>
     </div>
   </div>
 
-  <div id="app-menus" class="space-y-6"></div>
+  <!-- Main Menu Grid -->
+  <div id="app-menus" class="space-y-8"></div>
 
-  <!-- Modal 1: ฝั่งพนักงานหน้าร้าน (เลือกตัดออกหลายอัน + เลือกแทนที่ได้) -->
-  <div id="calculatorModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-40">
-    <div class="bg-white rounded-3xl w-full max-w-5xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
-      <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+  <!-- Modal 1: Front-end Calculator -->
+  <div id="calculatorModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-40 transition-opacity">
+    <div class="bg-white rounded-3xl w-full max-w-5xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-slate-100">
+      <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
         <div>
           <h2 id="calcMenuTitle" class="text-2xl font-bold text-slate-900">ชื่อเมนู</h2>
-          <p class="text-sm text-slate-500">ติ๊กเลือกสิ่งที่ไม่รับ และเลือกวัตถุดิบทดแทนจาก Dropdown ด้านล่าง</p>
+          <p id="calcMenuSubtitle" class="text-sm text-slate-500 mt-1">ติ๊กเลือกสิ่งที่ไม่รับ และเลือกวัตถุดิบทดแทนจาก Dropdown</p>
         </div>
-        <button onclick="closeCalculator()" class="w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-600 font-bold hover:bg-slate-100 transition">✕</button>
+        <button onclick="closeCalculator()" class="w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-600 font-bold hover:bg-slate-100 transition shadow-sm">✕</button>
       </div>
       
       <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
-        <!-- ฝั่งซ้าย -->
-        <div class="w-full md:w-1/2 p-6 border-r border-slate-100 overflow-y-auto bg-white">
+        <!-- ฝั่งซ้าย (จะถูกซ่อนถ้าเป็นเมนูวัตถุดิบเดี่ยว) -->
+        <div id="leftPanel" class="w-full md:w-1/2 p-6 border-r border-slate-100 overflow-y-auto bg-white">
           <h3 class="text-sm font-bold text-rose-600 mb-4 flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-rose-600"></span> ❌ สิ่งที่ลูกค้า "ไม่รับ" (เลือกได้หลายอัน)
           </h3>
-          <div id="excludeOptions" class="space-y-3">
-            <!-- Checkboxes & Dropdowns render here -->
-          </div>
+          <div id="excludeOptions" class="space-y-3"></div>
         </div>
         
         <!-- ฝั่งขวา -->
-        <div class="w-full md:w-1/2 p-6 bg-slate-50 overflow-y-auto">
+        <div id="rightPanel" class="w-full md:w-1/2 p-6 bg-slate-50 overflow-y-auto">
           <h3 class="text-sm font-bold text-indigo-600 mb-4 flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-indigo-600"></span> ⚖️ ปริมาณสุทธิ (เตรียมจัดเสิร์ฟ)
           </h3>
-          <div id="netResultList" class="space-y-2">
-            <!-- Net Results render here -->
-          </div>
+          <div id="netResultList" class="space-y-2"></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal 2: Matrix หลังบ้าน (แก้ไข CSS Table เรียบร้อย + ปุ่มอัปโหลด Excel) -->
-  <div id="matrixModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-2 z-50">
-    <div class="bg-white rounded-2xl w-full max-w-[98vw] h-[95vh] flex flex-col shadow-2xl">
-      <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-900 text-white rounded-t-2xl">
+  <!-- Modal 2: Matrix & Management -->
+  <div id="matrixModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden flex items-center justify-center p-2 z-50">
+    <div class="bg-white rounded-3xl w-full max-w-[98vw] h-[95vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-900 text-white">
         <div>
-          <h2 class="text-lg font-bold">📊 ตารางสูตรการแทนที่ (Replace Use Matrix)</h2>
-          <p class="text-xs text-slate-300 font-light mt-1">โครงสร้างตารางเป๊ะ! ไม่มีเหลื่อมบังเวลากดเลื่อนซ้ายขวา</p>
+          <h2 class="text-lg font-bold flex items-center gap-2">📊 ตารางสูตรการแทนที่ (Replace Use Matrix)</h2>
+          <p class="text-xs text-slate-300 font-light mt-1">ตัวเลขในตารางผ่านการ Round-down เรียบร้อยแล้ว</p>
         </div>
-        <div class="flex items-center gap-3">
-          <!-- ปุ่ม Upload Excel -->
-          <label class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer shadow-md transition flex items-center gap-2 border border-indigo-400">
-            <span>📥 โหลดข้อมูลจากไฟล์ Excel</span>
+        <div class="flex items-center gap-2">
+          <label class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 rounded-xl text-xs font-bold cursor-pointer shadow-md transition flex items-center gap-2 border border-indigo-400">
+            <span>📥 1. อัปโหลด Excel</span>
             <input type="file" accept=".xlsx, .xls" class="hidden" onchange="importExcelData(event)">
           </label>
-          <button onclick="closeMatrix()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm transition">ปิดหน้าต่าง</button>
+          <button onclick="syncToGitHub()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 px-4 py-2.5 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-2">
+            <span>☁️ 2. ซิงค์ขึ้นระบบกลาง</span>
+          </button>
+          <div class="w-px h-8 bg-slate-700 mx-1"></div>
+          <button onclick="closeMatrix()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2.5 rounded-xl text-sm font-bold transition">ปิด</button>
         </div>
       </div>
       
-      <div class="flex-1 overflow-auto custom-scrollbar bg-slate-50 relative p-4" id="tableContainer">
-        <!-- Table will be rendered here completely dynamically -->
-      </div>
+      <div class="flex-1 overflow-auto custom-scrollbar bg-slate-50 relative p-4" id="tableContainer"></div>
     </div>
   </div>
 
   <!-- Modal 3: PIN -->
-  <div id="pinModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-[60]">
-    <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl text-center">
-      <h3 class="text-lg font-bold text-slate-900 mb-2">PIN ผู้จัดการ</h3>
-      <input type="password" id="pinInput" placeholder="••••••" maxlength="6" class="w-full px-4 py-3 border-2 border-slate-200 rounded-2xl text-center text-2xl tracking-[0.5em] mb-4 bg-slate-50 focus:outline-none">
-      <div class="flex gap-2">
-        <button onclick="document.getElementById('pinModal').classList.add('hidden')" class="flex-1 bg-slate-100 py-3 rounded-2xl font-semibold text-sm">ยกเลิก</button>
-        <button onclick="verifyPin()" class="flex-1 bg-slate-900 text-white py-3 rounded-2xl font-semibold text-sm">เข้าสู่ระบบ</button>
+  <div id="pinModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-[60]">
+    <div class="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl text-center border border-slate-100">
+      <h3 class="text-xl font-bold text-slate-900 mb-2">PIN ผู้จัดการ</h3>
+      <p class="text-xs text-slate-500 mb-5">กรุณาใส่รหัสเพื่อจัดการข้อมูลหลังบ้าน</p>
+      <input type="password" id="pinInput" placeholder="••••••" maxlength="6" class="w-full px-4 py-4 border-2 border-slate-200 rounded-2xl text-center text-3xl tracking-[0.5em] mb-6 bg-slate-50 focus:border-indigo-600 focus:outline-none transition">
+      <div class="flex gap-3">
+        <button onclick="document.getElementById('pinModal').classList.add('hidden')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3.5 rounded-2xl font-bold text-sm transition">ยกเลิก</button>
+        <button onclick="verifyPin()" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white py-3.5 rounded-2xl font-bold text-sm transition shadow-md">ยืนยัน</button>
       </div>
     </div>
   </div>
@@ -118,104 +116,24 @@
     const unitMap = { "กุ้ง": "ตัว", "ไข่ไก่สด": "ฟอง" };
     const getUnit = (item) => unitMap[item] || "กรัม";
 
-    // ข้อมูลเริ่มต้นสำหรับให้กดทดสอบก่อนอัปโหลด Excel
-    let originalMenu = {
-      "ชุดจุ่มหมู": { "หมูหมัก": 100, "สามชั้นหมูสไลซ์": 50, "สันคอ": 40, "สันนอก": 50, "ตับหมู": 30, "เซ่งจี๊หมู": 30, "กะหล่ำปลี": 120, "ผักบุ้ง": 30, "ผักชีฝรั่ง": 15, "โหระพา": 20, "ใบชะพลู": 15, "วุ้นเส้น": 80, "ไข่ไก่สด": 1 }
+    // GitHub Config (จากแชทเก่า)
+    const GH_CONFIG = {
+      token: "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", 
+      owner: "twentybkk-boop",
+      repo: "NER-Menu-quantity",
+      path: "replace_use_rules.json" 
     };
-    let replaceUseRules = [
-      { menu: "ชุดจุ่มหมู", exclude: "หมูหมัก", replace: { "สามชั้นหมูสไลซ์": 45.5, "สันคอ": 48.3, "สันนอก": 59.5, "ตับหมู": 76.3, "เซ่งจี๊หมู": 99.4, "กุ้ง": 1.4 } },
-      { menu: "ชุดจุ่มหมู", exclude: "สามชั้นหมูสไลซ์", replace: { "หมูหมัก": 79.8, "สันคอ": 37.1, "สันนอก": 45.5, "กะหล่ำปลี": 190.4 } },
-      { menu: "ชุดจุ่มหมู", exclude: "สันคอ", replace: { "หมูหมัก": 52.5, "สามชั้นหมูสไลซ์": 25.9, "สันนอก": 34.3 } }
-    ];
-    let allIngredientsList = ["หมูหมัก", "สามชั้นหมูสไลซ์", "สันคอ", "สันนอก", "ตับหมู", "เซ่งจี๊หมู", "กุ้ง", "กะหล่ำปลี", "ผักบุ้ง"];
+
+    let menuCategories = {}; 
+    let originalMenu = {}; 
+    let replaceUseRules = [];
+    let allIngredientsList = [];
 
     let currentActiveMenu = null;
-    let excludedItemsMap = {}; // State ควบคุมสิ่งที่ติ๊กออก และสิ่งที่เลือกมาแทน เช่น { "หมูหมัก": "สามชั้นหมูสไลซ์", "สันคอ": "" }
+    let excludedItemsMap = {}; 
 
     // ----------------------------------------------------
-    // 2. EXCEL PARSER (ตัวช่วยอ่านไฟล์อัตโนมัติ)
-    // ----------------------------------------------------
-    function importExcelData(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      
-      reader.onload = function(e) {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, {type: 'array'});
-          
-          // --- Parse Sheet: Original menu ---
-          const sheetOrig = workbook.Sheets['Original menu'];
-          const jsonOrig = XLSX.utils.sheet_to_json(sheetOrig, {header: 1, defval: ""});
-          let newOriginalMenu = {};
-          let origIngredients = [];
-          
-          let headerRowOrig = jsonOrig[0]; // แถวรายชื่อวัตถุดิบ
-          for(let i=2; i<headerRowOrig.length; i++) {
-            let val = headerRowOrig[i];
-            if(!val && origIngredients.length > 0) val = origIngredients[origIngredients.length-1];
-            if(val) origIngredients.push(String(val).trim());
-          }
-          
-          for(let r=2; r<jsonOrig.length; r++) { // เริ่มเก็บข้อมูลบรรทัด 2
-            let row = jsonOrig[r];
-            let menuName = String(row[1] || "").trim();
-            if(!menuName) continue;
-            let recipe = {};
-            for(let i=0; i<origIngredients.length; i++) {
-              let val = row[i+2];
-              if(val && !isNaN(val)) recipe[origIngredients[i]] = parseFloat(val);
-            }
-            if(Object.keys(recipe).length > 0) newOriginalMenu[menuName] = recipe;
-          }
-          
-          // --- Parse Sheet: Replace Use ---
-          const sheetRep = workbook.Sheets['Replace Use'];
-          const jsonRep = XLSX.utils.sheet_to_json(sheetRep, {header: 1, defval: ""});
-          let newReplaceRules = [];
-          let repIngredients = [];
-          
-          let headerRowRep = jsonRep[0];
-          for(let i=3; i<headerRowRep.length; i++) {
-            let val = headerRowRep[i];
-            if(!val && repIngredients.length > 0) val = repIngredients[repIngredients.length-1];
-            if(val) repIngredients.push(String(val).trim());
-          }
-          
-          for(let r=1; r<jsonRep.length; r++) {
-            let row = jsonRep[r];
-            let menuName = String(row[0] || "").trim();
-            let excludeName = String(row[1] || "").trim();
-            if(!menuName || !excludeName) continue;
-            let reps = {};
-            for(let i=0; i<repIngredients.length; i++) {
-              let val = row[i+3];
-              if(val && !isNaN(val)) reps[repIngredients[i]] = parseFloat(val);
-            }
-            if(Object.keys(reps).length > 0) {
-              newReplaceRules.push({ menu: menuName, exclude: excludeName, replace: reps });
-            }
-          }
-          
-          // Save state & Update UI
-          originalMenu = newOriginalMenu;
-          replaceUseRules = newReplaceRules;
-          allIngredientsList = repIngredients;
-          
-          initMenus();
-          renderMatrixTable();
-          alert("ดึงข้อมูลจาก Excel ทั้งหมด 100% สำเร็จ! ระบบพร้อมใช้งาน");
-          
-        } catch (err) {
-          alert("ไฟล์ Excel ไม่ถูกต้อง หรือโครงสร้างไม่ตรงกับที่ระบุ: " + err.message);
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
-    // ----------------------------------------------------
-    // 3. CORE LOGIC (ฟังก์ชันคำนวณ)
+    // 2. LOGIC (การปัดเศษ)
     // ----------------------------------------------------
     function applySmartRounding(itemName, rawValue) {
       if (rawValue <= 0) return 0;
@@ -223,35 +141,28 @@
       if (unit === "ตัว" || unit === "ฟอง") {
         return Math.floor(rawValue); // ปัดลงเป็นจำนวนเต็ม
       } else {
-        return Math.floor(rawValue / 5) * 5; // กรัม ปัดลงให้จบที่ 0 หรือ 5
+        return Math.floor(rawValue / 5) * 5; // ปัดลงให้ลงท้าย 0 หรือ 5
       }
     }
 
     function calculateNetRecipe(menuName) {
       const baseRecipe = originalMenu[menuName];
       if (!baseRecipe) return [];
-
       let netRecipeMap = { ...baseRecipe };
       let modifiedFlags = {};
 
-      // 1. ลบสิ่งที่ติ๊กออก "ทั้งหมด" ที่เลือกไว้
       for (let ex of Object.keys(excludedItemsMap)) {
         delete netRecipeMap[ex];
       }
-
-      // 2. บวกของแทนที่เข้าไป ตาม Dropdown ที่ผู้ใช้เลือก
       for (let [ex, rep] of Object.entries(excludedItemsMap)) {
         if (rep && rep !== "") {
           let rule = replaceUseRules.find(r => r.menu === menuName && r.exclude === ex);
           if (rule && rule.replace[rep]) {
-            // บวกทบเข้าไปเรื่อยๆ ถ้าแทนที่ซ้ำกัน
             netRecipeMap[rep] = (netRecipeMap[rep] || 0) + rule.replace[rep];
             modifiedFlags[rep] = true;
           }
         }
       }
-
-      // 3. ปัดเศษและเตรียมแสดงผล
       const results = [];
       for (const [item, rawTotal] of Object.entries(netRecipeMap)) {
         let finalDisplayQty = applySmartRounding(item, rawTotal);
@@ -263,47 +174,233 @@
     }
 
     // ----------------------------------------------------
-    // 4. FRONT-END UI
+    // 3. EXCEL PARSER (ตัวอ่านไฟล์แบบโคตรละเอียด)
+    // ----------------------------------------------------
+    function importExcelData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, {type: 'array'});
+          
+          // --- Parse: Original menu ---
+          const sheetOrig = workbook.Sheets['Original menu'];
+          const jsonOrig = XLSX.utils.sheet_to_json(sheetOrig, {header: 1, defval: ""});
+          let newOriginalMenu = {};
+          let newMenuCategories = {};
+          
+          // ค้นหาบรรทัดที่มีคำว่า "หมูหมัก" เพื่อความชัวร์ (แก้ปัญหาบรรทัดเหลื่อม)
+          let origHeaderRowIdx = jsonOrig.findIndex(row => row.indexOf("หมูหมัก") !== -1 || row.includes("หมูหมัก"));
+          if (origHeaderRowIdx === -1) throw new Error("ไม่พบคอลัมน์ 'หมูหมัก' ในชีท Original menu");
+          
+          let headerRowOrig = jsonOrig[origHeaderRowIdx];
+          let origIngredients = [];
+          
+          // วัตถุดิบเริ่มที่คอลัมน์ Index 2 (C)
+          for(let i=2; i<headerRowOrig.length; i++) {
+            let val = String(headerRowOrig[i]).trim();
+            if(!val && origIngredients.length > 0) val = origIngredients[origIngredients.length-1];
+            origIngredients.push(val);
+          }
+          
+          let lastCategory = "อื่นๆ";
+          // เริ่มอ่านข้อมูลบรรทัดถัดจากหัวตาราง + 1 (ข้ามบรรทัดที่เป็น กรัม/ตัว)
+          for(let r = origHeaderRowIdx + 2; r < jsonOrig.length; r++) {
+            let row = jsonOrig[r];
+            let cat = String(row[0] || "").trim();
+            if (cat && cat !== "-") lastCategory = cat; // เก็บหมวดหมู่ล่าสุดเผื่อเซลล์โดน Merge
+            
+            let menuName = String(row[1] || "").trim();
+            if(!menuName || menuName === "-") continue;
+            
+            let recipe = {};
+            for(let i=0; i<origIngredients.length; i++) {
+              let val = row[i+2];
+              if(val !== "" && val !== "-") {
+                let num = parseFloat(val);
+                if(!isNaN(num)) recipe[origIngredients[i]] = num;
+              }
+            }
+            if(Object.keys(recipe).length > 0) {
+              newOriginalMenu[menuName] = recipe;
+              newMenuCategories[menuName] = lastCategory;
+            }
+          }
+          
+          // --- Parse: Replace Use ---
+          const sheetRep = workbook.Sheets['Replace Use'];
+          const jsonRep = XLSX.utils.sheet_to_json(sheetRep, {header: 1, defval: ""});
+          let newReplaceRules = [];
+          
+          let repHeaderRowIdx = jsonRep.findIndex(row => row.indexOf("หมูหมัก") !== -1 || row.includes("หมูหมัก"));
+          let headerRowRep = jsonRep[repHeaderRowIdx];
+          let repIngredients = [];
+          
+          // วัตถุดิบเริ่มที่คอลัมน์ Index 2 (C)
+          for(let i=2; i<headerRowRep.length; i++) {
+            let val = String(headerRowRep[i]).trim();
+            if(!val && repIngredients.length > 0) val = repIngredients[repIngredients.length-1];
+            if (val) repIngredients.push(val);
+          }
+          
+          for(let r = repHeaderRowIdx + 1; r < jsonRep.length; r++) {
+            let row = jsonRep[r];
+            let menuName = String(row[0] || "").trim();
+            let excludeName = String(row[1] || "").trim();
+            if(!menuName || !excludeName) continue;
+            
+            let reps = {};
+            for(let i=0; i<repIngredients.length; i++) {
+              let val = row[i+2];
+              if(val !== "" && val !== "-") {
+                let num = parseFloat(val);
+                if(!isNaN(num)) reps[repIngredients[i]] = num;
+              }
+            }
+            if(Object.keys(reps).length > 0) {
+              newReplaceRules.push({ menu: menuName, exclude: excludeName, replace: reps });
+            }
+          }
+          
+          originalMenu = newOriginalMenu;
+          menuCategories = newMenuCategories;
+          replaceUseRules = newReplaceRules;
+          allIngredientsList = repIngredients;
+          
+          initMenus();
+          renderMatrixTable();
+          alert("ดึงข้อมูลจาก Excel สำเร็จ! (ข้อมูลถูกจัดกลุ่มตามหมวดหมู่แล้ว)\nอย่าลืมกด 'ซิงค์ขึ้นระบบกลาง' เพื่อให้เครื่องอื่นเห็นข้อมูลด้วยครับ");
+          
+        } catch (err) {
+          alert("เกิดข้อผิดพลาดในการอ่าน Excel: " + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // ----------------------------------------------------
+    // 4. GitHub API (ซิงค์ข้อมูล)
+    // ----------------------------------------------------
+    async function syncToGitHub() {
+      if(Object.keys(originalMenu).length === 0) {
+        alert("กรุณาอัปโหลดไฟล์ Excel ก่อนทำการซิงค์ครับ"); return;
+      }
+      
+      const payload = {
+        categories: menuCategories,
+        baseMenu: originalMenu,
+        replaceRules: replaceUseRules,
+        ingredients: allIngredientsList
+      };
+
+      try {
+        let apiUrl = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}`;
+        let getRes = await fetch(apiUrl, { headers: { "Authorization": `token ${GH_CONFIG.token}` } });
+        let fileSha = null;
+        if (getRes.ok) {
+          let fileData = await getRes.json();
+          fileSha = fileData.sha;
+        }
+
+        let contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
+        let putRes = await fetch(apiUrl, {
+          method: "PUT",
+          headers: { "Authorization": `token ${GH_CONFIG.token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: `Update Full Master Recipe via Web UI`,
+            content: contentEncoded,
+            sha: fileSha
+          })
+        });
+
+        if (putRes.ok) {
+          alert('☁️ ซิงค์ข้อมูลขึ้น GitHub สำเร็จ! iPad ทุกเครื่องในร้านจะเห็นข้อมูลอัปเดตนี้เมื่อรีเฟรชหน้าเว็บ');
+        } else {
+          let errJson = await putRes.json();
+          alert('เกิดข้อผิดพลาดในการซิงค์: ' + errJson.message);
+        }
+      } catch (err) {
+        alert('เชื่อมต่อระบบขัดข้อง: ' + err.message);
+      }
+    }
+
+    // ----------------------------------------------------
+    // 5. FRONT-END UI (หน้าหลัก & เครื่องคิดเลข)
     // ----------------------------------------------------
     function initMenus() {
       const app = document.getElementById('app-menus');
-      let html = `<div class="grid grid-cols-1 md:grid-cols-3 gap-4">`;
-      Object.keys(originalMenu).forEach(menuName => {
-        let itemsCount = Object.keys(originalMenu[menuName]).length;
-        let onClickAction = itemsCount > 1 ? `openCalculator('${menuName}')` : `alert('เมนูวัตถุดิบเดี่ยวไม่มีการตัดสูตร')`;
-        html += `
-          <div onclick="${onClickAction}" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-indigo-500 hover:shadow-md transition cursor-pointer group">
-            <h3 class="font-bold text-lg group-hover:text-indigo-600 transition">${menuName}</h3>
-            <p class="text-xs text-slate-400 mt-1">${itemsCount > 1 ? 'กดเพื่อจัดการสูตร (เลือกหลายเงื่อนไขได้)' : 'วัตถุดิบเดี่ยว 100%'}</p>
-          </div>
-        `;
+      let html = '';
+      
+      // จัดกลุ่มตามหมวดหมู่
+      let grouped = {};
+      Object.keys(originalMenu).forEach(menu => {
+        let cat = menuCategories[menu] || "อื่นๆ";
+        if(!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(menu);
       });
-      html += `</div>`;
-      app.innerHTML = html;
+      
+      for(let cat in grouped) {
+        html += `
+          <div class="mb-8">
+            <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2 pb-2 border-b border-slate-200">
+              <span class="w-3 h-3 rounded-full bg-slate-900"></span>${cat}
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        `;
+        grouped[cat].forEach(menuName => {
+          let itemsCount = Object.keys(originalMenu[menuName]).length;
+          let isSingle = itemsCount === 1;
+          
+          html += `
+            <div onclick="openCalculator('${menuName}')" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-indigo-500 hover:shadow-md transition cursor-pointer group flex flex-col justify-between h-full">
+              <h3 class="font-bold text-lg text-slate-800 group-hover:text-indigo-600 transition leading-tight mb-2">${menuName}</h3>
+              <p class="text-xs font-semibold ${isSingle ? 'text-emerald-500' : 'text-slate-400'}">${isSingle ? 'กดเพื่อดูปริมาณ (100%)' : 'กดเพื่อจัดการสูตรตัดออก'}</p>
+            </div>
+          `;
+        });
+        html += `</div></div>`;
+      }
+      app.innerHTML = html || '<div class="text-center py-10 text-slate-400">ยังไม่มีข้อมูล กรุณาเข้าสู่ระบบหลังบ้านเพื่ออัปโหลด Excel</div>';
     }
 
     function openCalculator(menuName) {
       currentActiveMenu = menuName;
-      excludedItemsMap = {}; // Reset ทุกครั้งที่เปิดเมนูใหม่
+      excludedItemsMap = {}; 
       document.getElementById('calcMenuTitle').innerText = menuName;
+      
+      let itemsCount = Object.keys(originalMenu[menuName]).length;
+      let leftPanel = document.getElementById('leftPanel');
+      let rightPanel = document.getElementById('rightPanel');
+      
+      if (itemsCount === 1) {
+        // เมนูวัตถุดิบเดี่ยว: ซ่อนฝั่งซ้าย โชว์ฝั่งขวาเต็มจอ
+        leftPanel.classList.add('hidden');
+        rightPanel.className = "w-full p-6 bg-slate-50 overflow-y-auto";
+        document.getElementById('calcMenuSubtitle').innerText = "เมนูวัตถุดิบเดี่ยว (ไม่มีการตัดสูตร)";
+      } else {
+        // เมนูเซ็ต: โชว์ 2 ฝั่งปกติ
+        leftPanel.classList.remove('hidden');
+        rightPanel.className = "w-full md:w-1/2 p-6 bg-slate-50 overflow-y-auto";
+        document.getElementById('calcMenuSubtitle').innerText = "ติ๊กเลือกสิ่งที่ไม่รับ และเลือกวัตถุดิบทดแทนจาก Dropdown";
+      }
+
       document.getElementById('calculatorModal').classList.remove('hidden');
       renderExcludeOptions();
       renderNetResults();
     }
+    
     function closeCalculator() { document.getElementById('calculatorModal').classList.add('hidden'); }
 
-    // ฟังก์ชันติ๊กเปิด-ปิดสิ่งที่ "ไม่เอา"
     function toggleExclude(item) {
-      if (excludedItemsMap[item] !== undefined) {
-        delete excludedItemsMap[item]; // เอาออกจากการแบน
-      } else {
-        excludedItemsMap[item] = ""; // แบนแล้ว แต่ยังไม่เลือกของแทน
-      }
+      if (excludedItemsMap[item] !== undefined) delete excludedItemsMap[item];
+      else excludedItemsMap[item] = ""; 
       renderExcludeOptions();
       renderNetResults();
     }
 
-    // ฟังก์ชันเลือก "แทนด้วย..." จาก Dropdown
     function setReplacement(excludedItem, replacementItem) {
       excludedItemsMap[excludedItem] = replacementItem;
       renderNetResults();
@@ -316,16 +413,14 @@
       
       baseIngredients.forEach(item => {
         const isExcluded = excludedItemsMap[item] !== undefined;
-        
         html += `<div class="mb-3">`;
         html += `
-          <button onclick="toggleExclude('${item}')" class="w-full px-4 py-3 rounded-xl text-sm font-semibold border-2 text-left transition flex justify-between items-center ${isExcluded ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-slate-200 text-slate-700 hover:border-slate-300 bg-white'}">
+          <button onclick="toggleExclude('${item}')" class="w-full px-4 py-3.5 rounded-xl text-sm font-bold border-2 text-left transition flex justify-between items-center ${isExcluded ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-slate-200 text-slate-700 hover:border-slate-300 bg-white'}">
             <span>${item}</span>
-            ${isExcluded ? '<span>✅ เลือกตัดออกแล้ว</span>' : '<span class="text-slate-300">กดเพื่อตัดออก</span>'}
+            ${isExcluded ? '<span>✅ ตัดออก</span>' : '<span class="text-slate-300 font-normal">กดเพื่อตัดทิ้ง</span>'}
           </button>
         `;
         
-        // ถ้ากดตัดออก จะแสดง Dropdown ให้เลือกว่าจะแทนด้วยอะไร (ดึงจาก Matrix)
         if (isExcluded) {
           let rule = replaceUseRules.find(r => r.menu === currentActiveMenu && r.exclude === item);
           let optionsHtml = `<option value="">-- ไม่รับของแทน (หักทิ้งเฉยๆ) --</option>`;
@@ -333,16 +428,17 @@
           if (rule && rule.replace) {
             Object.entries(rule.replace).forEach(([repItem, repQty]) => {
               if (repQty > 0) {
+                let roundedQty = applySmartRounding(repItem, repQty); // โชว์เลขที่ปัดแล้วใน Dropdown ด้วย
                 let selected = excludedItemsMap[item] === repItem ? 'selected' : '';
-                optionsHtml += `<option value="${repItem}" ${selected}>แทนด้วย ${repItem} (+${repQty} ${getUnit(repItem)})</option>`;
+                optionsHtml += `<option value="${repItem}" ${selected}>แทนด้วย ${repItem} (+${roundedQty} ${getUnit(repItem)})</option>`;
               }
             });
           }
           
           html += `
             <div class="mt-2 ml-4 pl-4 border-l-2 border-indigo-200">
-              <label class="text-[11px] text-slate-600 font-bold uppercase tracking-wider">เลือกว่าจะแทนที่ด้วยอะไร?</label>
-              <select onchange="setReplacement('${item}', this.value)" class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-slate-800 font-semibold shadow-sm">
+              <label class="text-[11px] text-slate-500 font-bold uppercase tracking-wider">เลือกว่าจะแทนที่ด้วยอะไร?</label>
+              <select onchange="setReplacement('${item}', this.value)" class="w-full mt-1.5 p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-slate-800 font-bold shadow-sm">
                 ${optionsHtml}
               </select>
             </div>
@@ -359,11 +455,11 @@
       let html = '';
       results.forEach(res => {
         html += `
-          <div class="flex justify-between items-center p-3 rounded-xl ${res.isModified ? 'bg-indigo-50 border-2 border-indigo-400' : 'bg-white border border-slate-200'}">
-            <span class="font-medium ${res.isModified ? 'text-indigo-800' : 'text-slate-700'}">${res.name}</span>
-            <div class="flex items-baseline gap-1">
-              <span class="text-xl font-bold ${res.isModified ? 'text-indigo-600' : 'text-slate-900'}">${res.qty}</span>
-              <span class="text-xs text-slate-500">${res.unit}</span>
+          <div class="flex justify-between items-center p-4 rounded-xl ${res.isModified ? 'bg-indigo-100 border-2 border-indigo-400' : 'bg-white border border-slate-200'} shadow-sm">
+            <span class="font-bold ${res.isModified ? 'text-indigo-900' : 'text-slate-700'}">${res.name}</span>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-2xl font-black ${res.isModified ? 'text-indigo-600' : 'text-slate-900'}">${res.qty}</span>
+              <span class="text-xs font-bold text-slate-500">${res.unit}</span>
             </div>
           </div>
         `;
@@ -372,7 +468,7 @@
     }
 
     // ----------------------------------------------------
-    // 5. MANAGEMENT UI (Dynamic Table)
+    // 6. MANAGEMENT UI (ตาราง Matrix ปัดเศษลงแล้ว)
     // ----------------------------------------------------
     function openPinModal() {
       document.getElementById('pinModal').classList.remove('hidden');
@@ -393,42 +489,34 @@
 
     function renderMatrixTable() {
       const container = document.getElementById('tableContainer');
-      let html = `<table class="w-full text-left border-collapse text-xs whitespace-nowrap bg-white">`;
-      
-      // Dynamic Headers
+      if (replaceUseRules.length === 0) {
+        container.innerHTML = '<div class="text-center text-slate-400 py-20">กรุณากดอัปโหลดไฟล์ Excel ก่อนครับ</div>';
+        return;
+      }
+
+      let html = `<table class="w-full text-left border-collapse text-xs whitespace-nowrap bg-white shadow-sm">`;
       html += `<thead><tr class="text-slate-800 uppercase tracking-wider text-[10px] font-bold">`;
       html += `<th class="p-3 sticky-col-1">ชื่อเมนู (Col A)</th>`;
       html += `<th class="p-3 sticky-col-2">ไม่เอา... (Col B)</th>`;
       allIngredientsList.forEach(h => html += `<th class="p-3 text-center min-w-[80px] border-b border-slate-200">${h}</th>`);
-      html += `</tr></thead>`;
+      html += `</tr></thead><tbody class="divide-y divide-slate-100">`;
       
-      // Dynamic Body
-      html += `<tbody class="divide-y divide-slate-100">`;
-      replaceUseRules.forEach((row, rowIndex) => {
+      replaceUseRules.forEach((row) => {
         html += `<tr class="hover:bg-slate-50 transition group">
-          <td class="p-3 sticky-col-1 font-bold text-slate-800">${row.menu}</td>
-          <td class="p-3 sticky-col-2 text-rose-600 font-semibold">❌ ${row.exclude}</td>`;
+          <td class="p-3 sticky-col-1 font-bold text-slate-800 bg-white group-hover:bg-slate-50">${row.menu}</td>
+          <td class="p-3 sticky-col-2 text-rose-600 font-bold bg-white group-hover:bg-slate-50">❌ ${row.exclude}</td>`;
         
         allIngredientsList.forEach(ing => {
-          let val = row.replace[ing] || 0;
-          let cellStyle = val > 0 ? 'text-indigo-600 font-bold bg-indigo-50/40' : 'text-slate-300';
-          html += `
-            <td class="p-3 text-center border-b border-slate-100 ${cellStyle} cursor-pointer hover:bg-indigo-100" onclick="editMatrixCell(${rowIndex}, '${ing}', ${val})">
-              ${val > 0 ? val : '-'}
-            </td>`;
+          let rawVal = row.replace[ing] || 0;
+          let displayVal = rawVal > 0 ? applySmartRounding(ing, rawVal) : '-'; // โชว์เลขที่ปัดแล้วในตาราง!
+          
+          let cellStyle = rawVal > 0 ? 'text-indigo-700 font-bold bg-indigo-50/40' : 'text-slate-300';
+          html += `<td class="p-3 text-center border-b border-slate-100 ${cellStyle}">${displayVal}</td>`;
         });
         html += `</tr>`;
       });
       html += `</tbody></table>`;
       container.innerHTML = html;
-    }
-
-    function editMatrixCell(rowIndex, ingredient, currentValue) {
-      let newVal = prompt(`แก้ไขปริมาณแทนที่:\nเมนู: ${replaceUseRules[rowIndex].menu}\nหัก: ${replaceUseRules[rowIndex].exclude}\nแทนด้วย: ${ingredient}\n\nกรอกตัวเลขใหม่:`, currentValue);
-      if (newVal !== null && !isNaN(parseFloat(newVal))) {
-        replaceUseRules[rowIndex].replace[ingredient] = parseFloat(newVal);
-        renderMatrixTable();
-      }
     }
 
     window.onload = () => { initMenus(); };
