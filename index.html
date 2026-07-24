@@ -175,7 +175,7 @@
       { "category": "ของทานเล่น", "name": "ไก่ป๊อป", "ingredients": { "ไก่ป๊อป": "130 กรัม" } },
       { "category": "ของทานเล่น", "name": "แฮชบราวน์ เทเทอร์ ทอตส์", "ingredients": { "แฮชบราวน์ เทเทอร์ ทอตส์": "130 กรัม" } },
       { "category": "ของทานเล่น", "name": "ข้าวเกรียบปลา", "ingredients": { "ข้าวเกรียบปลา": "35 กรัม" } },
-      { "category": "ของทานเล่น", "name": "คาลามารี", "ingredients": { "คาลามารี": "100 กรัម" } },
+      { "category": "ของทานเล่น", "name": "คาลามารี", "ingredients": { "คาลามารี": "100 กรัม" } },
       { "category": "ของหวาน", "name": "ซาโมซ่ากล้วย", "ingredients": { "ซาโมซ่ากล้วย": "5 ชิ้น" } },
       { "category": "ของหวาน", "name": "สละลอยแก้ว", "ingredients": { "สละลอยแก้ว": "1 ถ้วย" } },
       { "category": "ของหวาน", "name": "ลูกตาลลอยแก้ว", "ingredients": { "ลูกตาลลอยแก้ว": "1 ถ้วย" } },
@@ -186,7 +186,6 @@
     let editingRuleKey = null;
     let setReplacementRules = {};
 
-    // ตั้งค่า GitHub Config พร้อม Token ของคุณเรียบร้อยแล้ว
     const GH_CONFIG = {
       token: "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", 
       owner: "twentybkk-boop",
@@ -530,6 +529,7 @@
       const pin = document.getElementById('pinInput').value;
       if (pin === '206738') {
         closePinModal();
+        // แก้ไขลิงก์ให้พาตรงไปหน้าแดชบอร์ด Repository ของ twentybkk-boop อย่างถูกต้อง
         window.open('https://github.com/twentybkk-boop/ner-menu', '_blank');
       } else {
         alert('รหัสผ่านไม่ถูกต้อง');
