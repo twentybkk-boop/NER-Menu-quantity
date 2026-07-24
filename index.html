@@ -26,7 +26,7 @@
   <div id="loading" class="text-center py-20 text-slate-400 font-medium">กำลังโหลดเมนู...</div>
   <div id="app" class="space-y-6"></div>
 
-  <!-- Modal สำหรับเลือกเงื่อนไข (แบ่งซ้าย-ขวา ป้องกันการเลือกซ้ำ) -->
+  <!-- Modal สำหรับเลือกเงื่อนไข -->
   <div id="customModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl p-6 w-full max-w-2xl shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
       <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
@@ -45,7 +45,7 @@
           <div id="leftExcludeList" class="space-y-2"></div>
         </div>
 
-        <!-- ฝั่งขวา: เพิ่มแทน (สัมพันธ์กับฝั่งซ้าย) -->
+        <!-- ฝั่งขวา: เพิ่มแทน -->
         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
           <h3 class="font-bold text-slate-800 text-sm mb-3 pb-1 border-b border-slate-200">➕ สิ่งที่ต้องการเพิ่มแทน (Optional)</h3>
           <div id="rightAddList" class="space-y-2"></div>
@@ -150,18 +150,17 @@
       if (validEntries.length === 0) {
         leftList.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">ไม่มีวัตถุดิบในเมนูนี้</p>';
       } else {
-        validEntries.forEach(([ingName, val]) => {
-          // ฝั่งซ้าย (สิ่งที่ไม่เอา)
+        validEntries.forEach(([ingName, val], idx) => {
+          // ใช้เลข index แทนชื่อวัตถุดิบเพื่อความปลอดภัยในการอ้างอิง DOM บน Safari
           leftList.innerHTML += `
             <label class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200/80 hover:bg-slate-100 cursor-pointer transition">
               <span class="font-semibold text-slate-700 text-xs">${ingName} <span class="text-slate-400 font-normal">(${val})</span></span>
-              <input type="checkbox" name="excludeIng" value="${ingName}" onchange="handleExcludeChange(this)" class="w-4 h-4 accent-slate-900 rounded">
+              <input type="checkbox" name="excludeIng" value="${ingName}" data-index="${idx}" onchange="handleExcludeChange(this)" class="w-4 h-4 accent-slate-900 rounded">
             </label>
           `;
 
-          // ฝั่งขวา (สิ่งที่จะเพิ่มแทน - ผูก ID ไว้เช็คตัดออก)
           rightList.innerHTML += `
-            <div id="right-item-${CSS.escape(ingName)}" class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200/80 transition">
+            <div id="right-item-${idx}" class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200/80 transition">
               <span class="font-semibold text-slate-700 text-xs">${ingName}</span>
               <input type="checkbox" name="addIng" value="${ingName}" class="w-4 h-4 accent-slate-900 rounded">
             </div>
@@ -172,20 +171,17 @@
       document.getElementById('customModal').classList.remove('hidden');
     }
 
-    // ฟังก์ชันจัดการเมื่อติ๊กซ้าย: ห้ามฝั่งขวาเลือกตัวเดียวกัน และถ้าติ๊กซ้ายให้ฝั่งขวาจางและกดไม่ได้ทันที
     function handleExcludeChange(checkbox) {
-      const ingName = checkbox.value;
-      const rightItem = document.getElementById(`right-item-${CSS.escape(ingName)}`);
+      const idx = checkbox.getAttribute('data-index');
+      const rightItem = document.getElementById(`right-item-${idx}`);
       if (!rightItem) return;
 
       const rightCheckbox = rightItem.querySelector('input[type="checkbox"]');
 
       if (checkbox.checked) {
-        // ถ้าฝั่งซ้ายเลือก "ไม่เอา" ตัวนี้ ให้ปิดการใช้งานฝั่งขวาของตัวนี้ทันที และเอาติ๊กออก
         rightCheckbox.checked = false;
         rightItem.classList.add('opacity-30', 'pointer-events-none', 'bg-slate-100');
       } else {
-        // ถ้าเอาติ๊กซ้ายออก คืนสถานะฝั่งขวาปกติ
         rightItem.classList.remove('opacity-30', 'pointer-events-none', 'bg-slate-100');
       }
     }
@@ -207,26 +203,24 @@
       let adjustedIngredients = {};
       let extraWeight = 0;
 
-      // กฎคำนวณตามเงื่อนไข
       excludedSet.forEach(item => {
         if (item === 'สามชั้นหมูสไลซ์') extraWeight += 20;
         if (item === 'ตับหมู') extraWeight += 10;
       });
 
       addedSet.forEach(item => {
-        extraWeight += 15; // ตัวอย่างเพิ่มน้ำหนักเมื่อเลือกเพิ่มเฉพาะเจาะจง
+        extraWeight += 15;
       });
 
       Object.entries(selectedItem.ingredients).forEach(([ingName, valStr]) => {
         if (excludedSet.has(ingName)) {
-          return; // ข้ามตัวที่ไม่เอา
+          return;
         }
 
         let parts = valStr.split(' ');
         let num = parseFloat(parts[0]);
         let unit = parts[1] || '';
 
-        // เพิ่มน้ำหนักให้วัตถุดิบหลัก (เช่น หมูหมัก) ตามเงื่อนไข
         if (ingName === 'หมูหมัก') {
           num += extraWeight;
         }
@@ -234,7 +228,6 @@
         adjustedIngredients[ingName] = `${num} ${unit}`;
       });
 
-      // แสดงผลลัพธ์
       document.getElementById('resultMenuTitle').innerText = `เมนู: ${selectedItem.name}`;
       const resultList = document.getElementById('resultList');
       resultList.innerHTML = '';
@@ -270,11 +263,13 @@
       const pin = document.getElementById('pinInput').value;
       if (pin === '206738') {
         closePinModal();
-        location.href = 'https://github.com/' + location.pathname.split('/')[1] + '/' + location.pathname.split('/')[2] + '/blob/main/data.json';
+        // แก้ไขลิงก์ให้พาตรงไปหน้าแก้ไขไฟล์ data.json บน GitHub ของคุณอย่างถูกต้อง
+        const repoPath = window.location.hostname.split('.')[0];
+        window.open(`https://github.com/${repoPath}/${repoPath}.github.io/blob/main/data.json`, '_blank');
       } else {
         alert('รหัสผ่านไม่ถูกต้อง');
         document.getElementById('pinInput').value = '';
-        document.getElementById('pinInput'].focus();
+        document.getElementById('pinInput').focus();
       }
     }
   </script>
