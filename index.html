@@ -28,7 +28,7 @@
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-5 md:p-6 rounded-3xl shadow-sm border border-slate-100 gap-4">
     <div>
       <h1 class="text-2xl font-bold text-slate-900 tracking-tight">NER แจ่วฮ้อน <span class="text-indigo-600">Smart Recipe</span></h1>
-      <p class="text-sm text-slate-500 mt-1">ระบบคำนวณวัตถุดิบสุทธิ (แก้ไขหน่วยนับและแสดงปริมาณครบถ้วนถูกต้อง)</p>
+      <p class="text-sm text-slate-500 mt-1">ระบบคำนวณวัตถุดิบสุทธิ (ปัดเศษเป็นจำนวนเต็มปกติ ไม่มีทศนิยม)</p>
     </div>
     <div class="flex gap-2 w-full md:w-auto">
       <button onclick="openPinModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-2xl text-sm font-bold shadow-md active:scale-95 transition flex items-center gap-2 w-full md:w-auto justify-center">
@@ -110,7 +110,6 @@
   </div>
 
   <script>
-    // อัปเดตรายการหน่วยนับทั้งหมดตามที่คุณต้องการ
     const unitMap = { 
       "กุ้ง": "ตัว", 
       "ไข่ไก่": "ฟอง",
@@ -176,14 +175,8 @@
       let num = parseFloat(rawValue);
       if (isNaN(num)) return 0;
 
-      let unit = getUnit(itemName);
-      // หากเป็นหน่วยนับชิ้น/ก้อน/ถ้วย/ลูก/แถว/แท่ง/ม้วน/ฟอง/ตัว ให้ใช้การปัดเศษจำนวนเต็มปกติ (Math.round)
-      if (unit !== "กรัม") {
-        return Math.round(num);
-      }
-      // หากเป็นหน่วยกรัม ให้ปัดลงทีละ 5
-      if (num <= 0) return 0;
-      return Math.floor(num / 5) * 5;
+      // ทุกหน่วยปัดเป็นจำนวนเต็มปกติ (Math.round) ไม่มีทศนิยม และไม่บังคับลงท้ายด้วย 5 แล้ว
+      return Math.round(num);
     }
 
     function calculateNetRecipe(menuName) {
@@ -209,10 +202,8 @@
         let unit = getUnit(item);
         let finalDisplayQty = applySmartRounding(item, rawTotal);
         
-        // หากเป็นหน่วยนับ ให้แสดงผลเสมอ (แม้จะเป็น 0 หรือเลขจำนวนเต็ม) ส่วนหน่วยกรัมแสดงเฉพาะที่มากกว่า 0
-        if (unit !== "กรัม") {
-          results.push({ name: item, qty: finalDisplayQty, unit: unit, isModified: modifiedFlags[item] === true });
-        } else if (finalDisplayQty > 0) {
+        // แสดงผลเฉพาะรายการที่คำนวณแล้วมากกว่า 0 หรือถ้าเป็นหน่วยนับที่ตั้งใจให้โชว์
+        if (finalDisplayQty > 0 || unit !== "กรัม") {
           results.push({ name: item, qty: finalDisplayQty, unit: unit, isModified: modifiedFlags[item] === true });
         }
       }
@@ -494,19 +485,14 @@
           if (rawVal !== undefined && rawVal !== null && rawVal !== "") {
              let num = parseFloat(rawVal);
              if (!isNaN(num)) {
+               let rounded = applySmartRounding(ing, num);
                let unit = getUnit(ing);
-               if (unit !== "กรัม") {
-                 displayVal = Math.round(num);
-               } else {
-                 let rounded = applySmartRounding(ing, num);
-                 displayVal = rounded > 0 ? rounded : '-';
-               }
+               displayVal = (rounded > 0 || unit !== "กรัม") ? rounded : '-';
              } else {
                displayVal = '-';
              }
           }
 
-          let unitCheck = getUnit(ing);
           let isHasValue = (rawVal !== undefined && rawVal !== null && rawVal !== "" && parseFloat(rawVal) >= 0);
           let cellStyle = isHasValue ? 'text-indigo-700 font-bold bg-indigo-50/40 cursor-pointer hover:bg-indigo-200' : 'text-slate-300';
           
