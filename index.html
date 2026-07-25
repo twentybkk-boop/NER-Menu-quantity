@@ -28,7 +28,7 @@
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-5 md:p-6 rounded-3xl shadow-sm border border-slate-100 gap-4">
     <div>
       <h1 class="text-2xl font-bold text-slate-900 tracking-tight">NER แจ่วฮ้อน <span class="text-indigo-600">Smart Recipe</span></h1>
-      <p class="text-sm text-slate-500 mt-1">ระบบคำนวณวัตถุดิบสุทธิ (กุ้ง/ไข่ปัดปกติ แสดง 0 แทน - / ล็อกเฉพาะวัตถุดิบในเซ็ต)</p>
+      <p class="text-sm text-slate-500 mt-1">ระบบคำนวณวัตถุดิบสุทธิ (แก้ไขหน่วยนับและแสดงปริมาณครบถ้วนถูกต้อง)</p>
     </div>
     <div class="flex gap-2 w-full md:w-auto">
       <button onclick="openPinModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-2xl text-sm font-bold shadow-md active:scale-95 transition flex items-center gap-2 w-full md:w-auto justify-center">
@@ -110,7 +110,26 @@
   </div>
 
   <script>
-    const unitMap = { "กุ้ง": "ตัว", "ไข่ไก่สด": "ฟอง" };
+    // อัปเดตรายการหน่วยนับทั้งหมดตามที่คุณต้องการ
+    const unitMap = { 
+      "กุ้ง": "ตัว", 
+      "ไข่ไก่": "ฟอง",
+      "ไข่ไก่สด": "ฟอง",
+      "มาม่า": "ก้อน",
+      "หมี่หยก": "ก้อน",
+      "หมี่หยก(สด)": "ก้อน",
+      "เส้นอุด้ง": "ก้อน",
+      "เต้าหู้ปลา": "ชิ้น",
+      "เต้าหู้ไข่": "แถว",
+      "เต้าหู้ชีส": "ชิ้น",
+      "ฟองเต้าหู้แท่ง": "แท่ง",
+      "ฟองเต้าหู้ทอด": "ม้วน",
+      "ซาโมซ่ากล้วย": "ชิ้น",
+      "สละลอยแก้ว": "ถ้วย",
+      "ลูกตาลลอยแก้ว": "ถ้วย",
+      "โมจิไอศครีม": "ลูก"
+    };
+
     const getUnit = (item) => {
       let cleanItem = String(item).trim();
       return unitMap[cleanItem] || "กรัม";
@@ -155,13 +174,15 @@
     function applySmartRounding(itemName, rawValue) {
       if (rawValue === undefined || rawValue === null || rawValue === "") return 0;
       let num = parseFloat(rawValue);
-      if (isNaN(num) || num <= 0) return 0;
+      if (isNaN(num)) return 0;
 
       let unit = getUnit(itemName);
-      // กุ้งกับไข่: ปัดเศษแบบปกติ เกิน 0.5 เป็น 1 น้อยกว่าเป็น 0
-      if (unit === "ตัว" || unit === "ฟอง") {
+      // หากเป็นหน่วยนับชิ้น/ก้อน/ถ้วย/ลูก/แถว/แท่ง/ม้วน/ฟอง/ตัว ให้ใช้การปัดเศษจำนวนเต็มปกติ (Math.round)
+      if (unit !== "กรัม") {
         return Math.round(num);
       }
+      // หากเป็นหน่วยกรัม ให้ปัดลงทีละ 5
+      if (num <= 0) return 0;
       return Math.floor(num / 5) * 5;
     }
 
@@ -188,8 +209,8 @@
         let unit = getUnit(item);
         let finalDisplayQty = applySmartRounding(item, rawTotal);
         
-        // สำหรับกุ้ง/ไข่ ให้แสดงผลเสมอแม้จะได้ 0 (ตามเงื่อนไขใหม่ ไมโชว์เป็น -)
-        if (unit === "ตัว" || unit === "ฟอง") {
+        // หากเป็นหน่วยนับ ให้แสดงผลเสมอ (แม้จะเป็น 0 หรือเลขจำนวนเต็ม) ส่วนหน่วยกรัมแสดงเฉพาะที่มากกว่า 0
+        if (unit !== "กรัม") {
           results.push({ name: item, qty: finalDisplayQty, unit: unit, isModified: modifiedFlags[item] === true });
         } else if (finalDisplayQty > 0) {
           results.push({ name: item, qty: finalDisplayQty, unit: unit, isModified: modifiedFlags[item] === true });
@@ -241,7 +262,7 @@
                 let val = row[colIndex];
                 if(val !== "" && val !== "-") {
                   let num = parseFloat(val);
-                  if(!isNaN(num) && num > 0) recipe[origIngredients[i]] = num;
+                  if(!isNaN(num) && num >= 0) recipe[origIngredients[i]] = num;
                 }
               }
             }
@@ -397,13 +418,11 @@
             Object.entries(rule.replace).forEach(([repItem, repQty]) => {
               if (repItem === item) return; 
               
-              // 🔒 ล็อกเด็ดขาด: ต้องมีวัตถุดิบตัวนี้อยู่จริงตั้งต้นในเซ็ตนี้เท่านั้น
               let hasInBaseMenu = menuBaseIngredients.includes(repItem);
-              
-              if (hasInBaseMenu && repQty !== undefined && repQty > 0) {
+              if (hasInBaseMenu && repQty !== undefined && repQty >= 0) {
                 let unit = getUnit(repItem);
                 let displayQty = applySmartRounding(repItem, repQty);
-                if (displayQty > 0 || unit === "ตัว" || unit === "ฟอง") {
+                if (displayQty > 0 || unit !== "กรัม") {
                   let selected = excludedItemsMap[item] === repItem ? 'selected' : '';
                   optionsHtml += `<option value="${repItem}" ${selected}>แทนด้วย ${repItem} (+${displayQty} ${unit})</option>`;
                 }
@@ -476,8 +495,7 @@
              let num = parseFloat(rawVal);
              if (!isNaN(num)) {
                let unit = getUnit(ing);
-               if (unit === "ตัว" || unit === "ฟอง") {
-                 // กุ้งกับไข่: ปัดปกติ ถ้าไม่ถึง 1 ให้โชว์เป็น 0 ทันที (ไม่โชว์ -)
+               if (unit !== "กรัม") {
                  displayVal = Math.round(num);
                } else {
                  let rounded = applySmartRounding(ing, num);
@@ -489,7 +507,7 @@
           }
 
           let unitCheck = getUnit(ing);
-          let isHasValue = (rawVal !== undefined && rawVal !== null && rawVal !== "" && parseFloat(rawVal) > 0) || (unitCheck === "ตัว" || unitCheck === "ฟอง");
+          let isHasValue = (rawVal !== undefined && rawVal !== null && rawVal !== "" && parseFloat(rawVal) >= 0);
           let cellStyle = isHasValue ? 'text-indigo-700 font-bold bg-indigo-50/40 cursor-pointer hover:bg-indigo-200' : 'text-slate-300';
           
           html += `<td class="p-3 text-center border-b border-slate-100 ${cellStyle}" onclick="editMatrixCell(${rIdx}, '${ing}', ${rawVal || 0})">${displayVal}</td>`;
