@@ -28,7 +28,7 @@
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-5 md:p-6 rounded-3xl shadow-sm border border-slate-100 gap-4">
     <div>
       <h1 class="text-2xl font-bold text-slate-900 tracking-tight">NER แจ่วฮ้อน <span class="text-indigo-600">Smart Recipe</span></h1>
-      <p class="text-sm text-slate-500 mt-1">ระบบคำนวณวัตถุดิบสุทธิ (ปลดล็อกตัวเลือก Dropdown ตามหลังบ้านสมบูรณ์)</p>
+      <p class="text-sm text-slate-500 mt-1">ระบบคำนวณวัตถุดิบสุทธิ (แก้ไขคำว่าปลาหมึกให้ถูกต้องเรียบร้อย)</p>
     </div>
     <div class="flex gap-2 w-full md:w-auto">
       <button onclick="openPinModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-2xl text-sm font-bold shadow-md active:scale-95 transition flex items-center gap-2 w-full md:w-auto justify-center">
@@ -126,7 +126,8 @@
       "ซาโมซ่ากล้วย": "ชิ้น",
       "สละลอยแก้ว": "ถ้วย",
       "ลูกตาลลอยแก้ว": "ถ้วย",
-      "โมจิไอศครีม": "ลูก"
+      "โมจิไอศครีม": "ลูก",
+      "ปลาหมึก": "กรัม"
     };
 
     const getUnit = (item) => {
@@ -188,7 +189,7 @@
       }
       for (let [ex, rep] of Object.entries(excludedItemsMap)) {
         if (rep && rep !== "") {
-          let rule = replaceUseRules.find(r => r.menu === menuName && r.exclude === ex);
+          let rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(ex).trim());
           if (rule && rule.replace[rep] !== undefined) {
             netRecipeMap[rep] = (netRecipeMap[rep] || 0) + rule.replace[rep];
             modifiedFlags[rep] = true;
@@ -400,13 +401,16 @@
         `;
         
         if (isExcluded) {
-          let rule = replaceUseRules.find(r => r.menu === currentActiveMenu && r.exclude === item);
+          let cleanMenu = String(currentActiveMenu).trim();
+          let cleanEx = String(item).trim();
+          
+          let rule = replaceUseRules.find(r => String(r.menu).trim() === cleanMenu && String(r.exclude).trim() === cleanEx);
+          
           let optionsHtml = `<option value="">-- ไม่รับของแทน (หักทิ้ง) --</option>`;
           if (rule && rule.replace) {
             Object.entries(rule.replace).forEach(([repItem, repQty]) => {
               if (repItem === item) return; 
               
-              // ✅ ปลดล็อกให้แสดงใน Dropdown ตามตารางหลังบ้านทันทีที่มีค่ามากกว่า 0
               if (repQty !== undefined && repQty > 0) {
                 let unit = getUnit(repItem);
                 let displayQty = applySmartRounding(repItem, repQty);
