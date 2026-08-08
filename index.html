@@ -28,7 +28,7 @@
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-5 md:p-6 rounded-3xl shadow-sm border border-slate-100 gap-4">
     <div>
       <h1 class="text-2xl font-bold text-slate-900 tracking-tight">NER แจ่วฮ้อน <span class="text-indigo-600">Smart Recipe</span></h1>
-      <p class="text-sm text-slate-500 mt-1">ระบบคำนวณวัตถุดิบสุทธิ (แก้ไขคำว่าปลาหมึกให้ถูกต้องเรียบร้อย)</p>
+      <p class="text-sm text-slate-500 mt-1">ระบบคำนวณวัตถุดิบสุทธิ (กรองตัวเลือกเฉพาะในเซ็ต, เลือกแทนอัตโนมัติ และแสดงเฉพาะชื่อ)</p>
     </div>
     <div class="flex gap-2 w-full md:w-auto">
       <button onclick="openPinModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-2xl text-sm font-bold shadow-md active:scale-95 transition flex items-center gap-2 w-full md:w-auto justify-center">
@@ -208,6 +208,35 @@
       return results;
     }
 
+    function getValidReplacements(menuName, excludedItem) {
+      const menuBaseIngredients = Object.keys(originalMenu[menuName] || {});
+      let rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(excludedItem).trim());
+      let valid = [];
+      if (rule && rule.replace) {
+        Object.entries(rule.replace).forEach(([repItem, repQty]) => {
+          if (repItem === excludedItem) return;
+          let hasInBaseMenu = menuBaseIngredients.includes(repItem);
+          let isNotExcluded = excludedItemsMap[repItem] === undefined;
+          // ต้องมีในเซ็ตตั้งต้น, ไม่ได้ถูกติ๊กไม่รับอยู่, และมีปริมาณแทนที่มากกว่า 0
+          if (hasInBaseMenu && isNotExcluded && repQty !== undefined && repQty > 0) {
+            valid.push(repItem);
+          }
+        });
+      }
+      return valid;
+    }
+
+    function checkAndFixFallbacks() {
+      for (let ex of Object.keys(excludedItemsMap)) {
+        let currentRep = excludedItemsMap[ex];
+        let validReps = getValidReplacements(currentActiveMenu, ex);
+        // ถ้าตัวแทนปัจจุบันถูกติ๊กไม่รับไปแล้ว หรือไม่อยู่ในรายการที่ใช้ได้ ให้สลับไปเลือกตัวแทนอันแรกที่ยังใช้ได้อัตโนมัติ
+        if (excludedItemsMap[currentRep] !== undefined || !validReps.includes(currentRep)) {
+          excludedItemsMap[ex] = validReps.length > 0 ? validReps[0] : "";
+        }
+      }
+    }
+
     function importExcelData(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -376,12 +405,21 @@
     }
     
     function closeCalculator() { document.getElementById('calculatorModal').classList.add('hidden'); }
+    
     function toggleExclude(item) {
-      if (excludedItemsMap[item] !== undefined) delete excludedItemsMap[item];
-      else excludedItemsMap[item] = ""; 
+      if (excludedItemsMap[item] !== undefined) {
+        delete excludedItemsMap[item];
+      } else {
+        // เมื่อติ๊กไม่รับ เลือกตัวแทนอัตโนมัติจากตัวแรกที่ยังใช้งานได้ทันทีเป็น Default
+        let validReps = getValidReplacements(currentActiveMenu, item);
+        excludedItemsMap[item] = validReps.length > 0 ? validReps[0] : "";
+      }
+      // ตรวจสอบและแก้ไขตัวแทนอัตโนมัติหากมีวัตถุดิบสำรองตัวใดถูกติ๊กไม่รับตามไปด้วย
+      checkAndFixFallbacks();
       renderExcludeOptions();
       renderNetResults();
     }
+
     function setReplacement(excludedItem, replacementItem) {
       excludedItemsMap[excludedItem] = replacementItem;
       renderNetResults();
@@ -401,24 +439,14 @@
         `;
         
         if (isExcluded) {
-          let cleanMenu = String(currentActiveMenu).trim();
-          let cleanEx = String(item).trim();
-          
-          let rule = replaceUseRules.find(r => String(r.menu).trim() === cleanMenu && String(r.exclude).trim() === cleanEx);
-          
-          let optionsHtml = `<option value="">-- ไม่รับของแทน (หักทิ้ง) --</option>`;
-          if (rule && rule.replace) {
-            Object.entries(rule.replace).forEach(([repItem, repQty]) => {
-              if (repItem === item) return; 
-              
-              if (repQty !== undefined && repQty > 0) {
-                let unit = getUnit(repItem);
-                let displayQty = applySmartRounding(repItem, repQty);
-                let selected = excludedItemsMap[item] === repItem ? 'selected' : '';
-                optionsHtml += `<option value="${repItem}" ${selected}>แทนด้วย ${repItem} (+${displayQty} ${unit})</option>`;
-              }
-            });
-          }
+          let validReps = getValidReplacements(currentActiveMenu, item);
+          let optionsHtml = '';
+          validReps.forEach(repItem => {
+            let selected = excludedItemsMap[item] === repItem ? 'selected' : '';
+            // แสดงเฉพาะชื่อวัตถุดิบสั้นๆ ตามที่ต้องการ ไม่เอาคำว่าแทนด้วยและปริมาณ
+            optionsHtml += `<option value="${repItem}" ${selected}>${repItem}</option>`;
+          });
+
           html += `
             <div class="mt-2 ml-4 pl-3 border-l-2 border-indigo-200">
               <select onchange="setReplacement('${item}', this.value)" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white font-bold text-indigo-700">
