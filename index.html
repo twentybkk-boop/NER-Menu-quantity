@@ -28,7 +28,7 @@
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-5 md:p-6 rounded-3xl shadow-sm border border-slate-100 gap-4">
     <div>
       <h1 class="text-2xl font-bold text-slate-900 tracking-tight">NER แจ่วฮ้อน <span class="text-indigo-600">Smart Recipe</span></h1>
-      <p class="text-sm text-slate-500 mt-1">ระบบคำนวณวัตถุดิบสุทธิ (อัปเกรดระบบประมวลผลการบวกทบตัวแทนให้แม่นยำ 100%)</p>
+      <p class="text-sm text-slate-500 mt-1">ระบบคำนวณวัตถุดิบสุทธิ (จัดลำดับ Default เลือกตัวแทนหมวดเดียวกันอัตโนมัติ)</p>
     </div>
     <div class="flex gap-2 w-full md:w-auto">
       <button onclick="openPinModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-2xl text-sm font-bold shadow-md active:scale-95 transition flex items-center gap-2 w-full md:w-auto justify-center">
@@ -117,7 +117,7 @@
       "มาม่า": "ก้อน",
       "หมี่หยก": "ก้อน",
       "หมี่หยก(สด)": "ก้อน",
-      "เส้นอุด้ง": "ก้อน",
+      "เส้นอุด้ง": "g",
       "เต้าหู้ปลา": "ชิ้น",
       "เต้าหู้ไข่": "หลอด",
       "เต้าหู้ชีส": "ชิ้น",
@@ -144,6 +144,12 @@
 
     let currentActiveMenu = null;
     let excludedItemsMap = {}; 
+
+    // รายชื่อหมวดหมู่กลุ่มผักและเครื่องเคียง (สำหรับจัดลำดับ Smart Default)
+    const veggieGroups = [
+      "กะหล่ำปลี", "ผักบุ้ง", "ผักชีฝรั่ง", "โหระพา", "ใบชะพลู", 
+      "วุ้นเส้น", "ไข่ไก่", "ไข่ไก่สด", "เต้าหู้ปลา", "เต้าหู้ไข่", "เต้าหู้ชีส", "ฟองเต้าหู้แท่ง", "ฟองเต้าหู้ทอด"
+    ];
 
     window.onload = async () => {
       try {
@@ -173,7 +179,7 @@
 
     function applySmartRounding(itemName, rawValue) {
       if (rawValue === undefined || rawValue === null || rawValue === "") return 0;
-      let num = Number(rawValue); // บังคับเป็น Number
+      let num = Number(rawValue);
       if (isNaN(num)) return 0;
       return Math.round(num);
     }
@@ -195,7 +201,6 @@
           let rule = replaceUseRules.find(r => String(r.menu).trim() === cleanMenu && String(r.exclude).trim() === cleanEx);
           
           if (rule && rule.replace && rule.replace[rep] !== undefined) {
-            // บังคับแปลงเป็นตัวเลขทั้งหมดก่อนบวกกัน ป้องกัน String + String
             let addAmt = Number(rule.replace[rep]) || 0;
             let currentAmt = Number(netRecipeMap[rep]) || 0;
             netRecipeMap[rep] = currentAmt + addAmt;
@@ -216,7 +221,7 @@
       return results;
     }
 
-    function getValidReplacements(menuName, excludedItem) {
+    function getSortedValidReplacements(menuName, excludedItem) {
       const menuBaseIngredients = Object.keys(originalMenu[menuName] || {});
       let rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(excludedItem).trim());
       let valid = [];
@@ -230,13 +235,26 @@
           }
         });
       }
+
+      // จัดลำดับ Smart Default: ถ้าสิ่งที่ถูกตัดออกไม่ใช่เนื้อสัตว์ ให้ดันวัตถุดิบในกลุ่มผัก/เครื่องเคียงขึ้นมาเลือกก่อน
+      let isExcludedVeggie = veggieGroups.includes(excludedItem);
+      if (isExcludedVeggie) {
+        valid.sort((a, b) => {
+          let aIsVeg = veggieGroups.includes(a);
+          let bIsVeg = veggieGroups.includes(b);
+          if (aIsVeg && !bIsVeg) return -1;
+          if (!aIsVeg && bIsVeg) return 1;
+          return 0;
+        });
+      }
+
       return valid;
     }
 
     function checkAndFixFallbacks() {
       for (let ex of Object.keys(excludedItemsMap)) {
         let currentRep = excludedItemsMap[ex];
-        let validReps = getValidReplacements(currentActiveMenu, ex);
+        let validReps = getSortedValidReplacements(currentActiveMenu, ex);
         if (excludedItemsMap[currentRep] !== undefined || !validReps.includes(currentRep)) {
           excludedItemsMap[ex] = validReps.length > 0 ? validReps[0] : "";
         }
@@ -253,7 +271,6 @@
           const data = new Uint8Array(e.target.result);
           const workbook = XLSX.read(data, {type: 'array'});
           
-          // โหลด Original Menu (อัปเกรดให้รองรับคอลัมน์ซ้ำ)
           const sheetOrig = workbook.Sheets['Original menu'];
           const jsonOrig = XLSX.utils.sheet_to_json(sheetOrig, {header: 1, defval: ""});
           let newOriginalMenu = {};
@@ -263,13 +280,19 @@
           let headerRowOrig = jsonOrig[origHeaderRowIdx];
           
           let lastCategory = "อื่นๆ";
+          let lastOrigMenuName = "";
           for(let r = origHeaderRowIdx + 2; r < jsonOrig.length; r++) {
             let row = jsonOrig[r];
             let cat = String(row[0] || "").trim();
             if (cat && cat !== "-") lastCategory = cat; 
             
             let menuName = String(row[1] || "").trim();
-            if(!menuName || menuName === "-") continue;
+            if(menuName && menuName !== "-") {
+              lastOrigMenuName = menuName;
+            } else {
+              menuName = lastOrigMenuName;
+            }
+            if(!menuName) continue;
             
             let recipe = {};
             for(let i=2; i<headerRowOrig.length; i++) {
@@ -290,7 +313,6 @@
             }
           }
           
-          // โหลด Replace Use (อัปเกรดให้รองรับคอลัมน์ซ้ำ)
           const sheetRep = workbook.Sheets['Replace Use'];
           const jsonRep = XLSX.utils.sheet_to_json(sheetRep, {header: 1, defval: ""});
           let newReplaceRules = [];
@@ -304,9 +326,16 @@
             if(h && h!=="-" && !repIngredientsList.includes(h)) repIngredientsList.push(h);
           }
           
+          let lastReplaceMenu = "";
           for(let r = repHeaderRowIdx + 1; r < jsonRep.length; r++) {
             let row = jsonRep[r];
             let menuName = String(row[0] || "").trim();
+            if(menuName && menuName !== "-") {
+              lastReplaceMenu = menuName;
+            } else {
+              menuName = lastReplaceMenu;
+            }
+            
             let excludeName = String(row[1] || "").trim();
             if(!menuName || !excludeName) continue;
             
@@ -342,7 +371,7 @@
 
     function downloadJSON() {
       if(Object.keys(originalMenu).length === 0) {
-        alert("ยังไม่มีข้อมูลสูตรอาหาร กรุณาอัปโหลด Excel ก่อนครับ");
+        alert("ยังไม่มีข้อมูลสูตรอาหาร กรุณาอัปโหลดไฟล์ Excel ก่อนครับ");
         return;
       }
       const payload = {
@@ -410,7 +439,7 @@
       if (excludedItemsMap[item] !== undefined) {
         delete excludedItemsMap[item];
       } else {
-        let validReps = getValidReplacements(currentActiveMenu, item);
+        let validReps = getSortedValidReplacements(currentActiveMenu, item);
         excludedItemsMap[item] = validReps.length > 0 ? validReps[0] : "";
       }
       checkAndFixFallbacks();
@@ -437,7 +466,7 @@
         `;
         
         if (isExcluded) {
-          let validReps = getValidReplacements(currentActiveMenu, item);
+          let validReps = getSortedValidReplacements(currentActiveMenu, item);
           let optionsHtml = '';
           validReps.forEach(repItem => {
             let selected = excludedItemsMap[item] === repItem ? 'selected' : '';
@@ -474,7 +503,7 @@
       container.innerHTML = html;
     }
 
-    function openPinModal() { document.getElementById('pinModal').classList.remove('hidden'); document.getElementById('pinInput').value = ''; document.getElementById('pinInput').focus(); }
+    function openPinModal() { document.getElementById('pinModal').classList.add('hidden'); document.getElementById('pinInput').value = ''; document.getElementById('pinInput').focus(); }
     function verifyPin() {
       if (document.getElementById('pinInput').value === '206738') {
         document.getElementById('pinModal').classList.add('hidden');
