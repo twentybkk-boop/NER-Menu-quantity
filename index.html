@@ -28,7 +28,7 @@
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-5 md:p-6 rounded-3xl shadow-sm border border-slate-100 gap-4">
     <div>
       <h1 class="text-2xl font-bold text-slate-900 tracking-tight">NER แจ่วฮ้อน <span class="text-indigo-600">Smart Recipe</span></h1>
-      <p class="text-sm text-slate-500 mt-1">ระบบคำนวณวัตถุดิบสุทธิ (กรองตัวเลือกเฉพาะในเซ็ต, เลือกแทนอัตโนมัติ และแสดงเฉพาะชื่อ)</p>
+      <p class="text-sm text-slate-500 mt-1">ระบบคำนวณวัตถุดิบสุทธิ (อัปเกรดระบบประมวลผลการบวกทบตัวแทนให้แม่นยำ 100%)</p>
     </div>
     <div class="flex gap-2 w-full md:w-auto">
       <button onclick="openPinModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-2xl text-sm font-bold shadow-md active:scale-95 transition flex items-center gap-2 w-full md:w-auto justify-center">
@@ -173,7 +173,7 @@
 
     function applySmartRounding(itemName, rawValue) {
       if (rawValue === undefined || rawValue === null || rawValue === "") return 0;
-      let num = parseFloat(rawValue);
+      let num = Number(rawValue); // บังคับเป็น Number
       if (isNaN(num)) return 0;
       return Math.round(num);
     }
@@ -187,15 +187,23 @@
       for (let ex of Object.keys(excludedItemsMap)) {
         delete netRecipeMap[ex];
       }
+      
       for (let [ex, rep] of Object.entries(excludedItemsMap)) {
         if (rep && rep !== "") {
-          let rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(ex).trim());
-          if (rule && rule.replace[rep] !== undefined) {
-            netRecipeMap[rep] = (netRecipeMap[rep] || 0) + rule.replace[rep];
+          let cleanMenu = String(menuName).trim();
+          let cleanEx = String(ex).trim();
+          let rule = replaceUseRules.find(r => String(r.menu).trim() === cleanMenu && String(r.exclude).trim() === cleanEx);
+          
+          if (rule && rule.replace && rule.replace[rep] !== undefined) {
+            // บังคับแปลงเป็นตัวเลขทั้งหมดก่อนบวกกัน ป้องกัน String + String
+            let addAmt = Number(rule.replace[rep]) || 0;
+            let currentAmt = Number(netRecipeMap[rep]) || 0;
+            netRecipeMap[rep] = currentAmt + addAmt;
             modifiedFlags[rep] = true;
           }
         }
       }
+      
       const results = [];
       for (const [item, rawTotal] of Object.entries(netRecipeMap)) {
         let unit = getUnit(item);
@@ -217,8 +225,7 @@
           if (repItem === excludedItem) return;
           let hasInBaseMenu = menuBaseIngredients.includes(repItem);
           let isNotExcluded = excludedItemsMap[repItem] === undefined;
-          // ต้องมีในเซ็ตตั้งต้น, ไม่ได้ถูกติ๊กไม่รับอยู่, และมีปริมาณแทนที่มากกว่า 0
-          if (hasInBaseMenu && isNotExcluded && repQty !== undefined && repQty > 0) {
+          if (hasInBaseMenu && isNotExcluded && repQty !== undefined && Number(repQty) > 0) {
             valid.push(repItem);
           }
         });
@@ -230,7 +237,6 @@
       for (let ex of Object.keys(excludedItemsMap)) {
         let currentRep = excludedItemsMap[ex];
         let validReps = getValidReplacements(currentActiveMenu, ex);
-        // ถ้าตัวแทนปัจจุบันถูกติ๊กไม่รับไปแล้ว หรือไม่อยู่ในรายการที่ใช้ได้ ให้สลับไปเลือกตัวแทนอันแรกที่ยังใช้ได้อัตโนมัติ
         if (excludedItemsMap[currentRep] !== undefined || !validReps.includes(currentRep)) {
           excludedItemsMap[ex] = validReps.length > 0 ? validReps[0] : "";
         }
@@ -247,6 +253,7 @@
           const data = new Uint8Array(e.target.result);
           const workbook = XLSX.read(data, {type: 'array'});
           
+          // โหลด Original Menu (อัปเกรดให้รองรับคอลัมน์ซ้ำ)
           const sheetOrig = workbook.Sheets['Original menu'];
           const jsonOrig = XLSX.utils.sheet_to_json(sheetOrig, {header: 1, defval: ""});
           let newOriginalMenu = {};
@@ -254,15 +261,6 @@
           
           let origHeaderRowIdx = jsonOrig.findIndex(row => row.some(cell => String(cell).trim() === "หมูหมัก"));
           let headerRowOrig = jsonOrig[origHeaderRowIdx];
-          let origIngredients = [];
-          
-          for(let i=2; i<headerRowOrig.length; i++) {
-            let val = String(headerRowOrig[i]).trim();
-            if(!val && origIngredients.length > 0) val = origIngredients[origIngredients.length-1];
-            if(val && val !== "-" && !origIngredients.includes(val)) {
-              origIngredients.push(val);
-            }
-          }
           
           let lastCategory = "อื่นๆ";
           for(let r = origHeaderRowIdx + 2; r < jsonOrig.length; r++) {
@@ -274,13 +272,15 @@
             if(!menuName || menuName === "-") continue;
             
             let recipe = {};
-            for(let i=0; i<origIngredients.length; i++) {
-              let colIndex = headerRowOrig.findIndex(h => String(h).trim() === origIngredients[i]);
-              if(colIndex !== -1) {
-                let val = row[colIndex];
-                if(val !== "" && val !== "-") {
+            for(let i=2; i<headerRowOrig.length; i++) {
+              let ingName = String(headerRowOrig[i] || "").trim();
+              if(ingName && ingName !== "-") {
+                let val = row[i];
+                if(val !== undefined && val !== "" && val !== "-") {
                   let num = parseFloat(val);
-                  if(!isNaN(num) && num >= 0) recipe[origIngredients[i]] = num;
+                  if(!isNaN(num) && num >= 0) {
+                    recipe[ingName] = (recipe[ingName] || 0) + num;
+                  }
                 }
               }
             }
@@ -290,20 +290,18 @@
             }
           }
           
+          // โหลด Replace Use (อัปเกรดให้รองรับคอลัมน์ซ้ำ)
           const sheetRep = workbook.Sheets['Replace Use'];
           const jsonRep = XLSX.utils.sheet_to_json(sheetRep, {header: 1, defval: ""});
           let newReplaceRules = [];
           
           let repHeaderRowIdx = jsonRep.findIndex(row => row.some(cell => String(cell).trim() === "หมูหมัก"));
           let headerRowRep = jsonRep[repHeaderRowIdx];
-          let repIngredients = [];
           
+          let repIngredientsList = [];
           for(let i=2; i<headerRowRep.length; i++) {
-            let val = String(headerRowRep[i]).trim();
-            if(!val && repIngredients.length > 0) val = repIngredients[repIngredients.length-1];
-            if(val && val !== "-" && !repIngredients.includes(val)) {
-              repIngredients.push(val);
-            }
+            let h = String(headerRowRep[i]||"").trim();
+            if(h && h!=="-" && !repIngredientsList.includes(h)) repIngredientsList.push(h);
           }
           
           for(let r = repHeaderRowIdx + 1; r < jsonRep.length; r++) {
@@ -313,13 +311,15 @@
             if(!menuName || !excludeName) continue;
             
             let reps = {};
-            for(let i=0; i<repIngredients.length; i++) {
-              let actualIndex = headerRowRep.findIndex(h => String(h).trim() === repIngredients[i]);
-              if (actualIndex !== -1) {
-                let val = row[actualIndex];
-                if(val !== "" && val !== "-") {
+            for(let i=2; i<headerRowRep.length; i++) {
+              let ingName = String(headerRowRep[i] || "").trim();
+              if(ingName && ingName !== "-") {
+                let val = row[i];
+                if(val !== undefined && val !== "" && val !== "-") {
                   let num = parseFloat(val);
-                  if(!isNaN(num)) reps[repIngredients[i]] = num;
+                  if(!isNaN(num)) {
+                    reps[ingName] = (reps[ingName] || 0) + num;
+                  }
                 }
               }
             }
@@ -329,7 +329,7 @@
           originalMenu = newOriginalMenu;
           menuCategories = newMenuCategories;
           replaceUseRules = newReplaceRules;
-          allIngredientsList = repIngredients;
+          allIngredientsList = repIngredientsList;
           
           initMenus();
           renderMatrixTable();
@@ -410,11 +410,9 @@
       if (excludedItemsMap[item] !== undefined) {
         delete excludedItemsMap[item];
       } else {
-        // เมื่อติ๊กไม่รับ เลือกตัวแทนอัตโนมัติจากตัวแรกที่ยังใช้งานได้ทันทีเป็น Default
         let validReps = getValidReplacements(currentActiveMenu, item);
         excludedItemsMap[item] = validReps.length > 0 ? validReps[0] : "";
       }
-      // ตรวจสอบและแก้ไขตัวแทนอัตโนมัติหากมีวัตถุดิบสำรองตัวใดถูกติ๊กไม่รับตามไปด้วย
       checkAndFixFallbacks();
       renderExcludeOptions();
       renderNetResults();
@@ -443,7 +441,6 @@
           let optionsHtml = '';
           validReps.forEach(repItem => {
             let selected = excludedItemsMap[item] === repItem ? 'selected' : '';
-            // แสดงเฉพาะชื่อวัตถุดิบสั้นๆ ตามที่ต้องการ ไม่เอาคำว่าแทนด้วยและปริมาณ
             optionsHtml += `<option value="${repItem}" ${selected}>${repItem}</option>`;
           });
 
