@@ -2,303 +2,478 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NER แจ่วฮ้อน - POS & Recipe Management</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fff8ef">
+  <title>NER แจ่วฮ้อน - Smart Recipe</title>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
     :root {
-      --ner-cream: #fffaf3;
-      --ner-paper: rgba(255, 253, 249, .97);
-      --ner-brown: #6d4937;
-      --ner-brown-dark: #493126;
-      --ner-line: #ead9c8;
-      --ner-green: #70835c;
-      --ner-green-soft: #eef3e9;
-      --ner-rose: #c95c64;
-      --ner-rose-soft: #fff1f2;
-      --ner-text: #1f2937;
+      --cream: #fff8ef;
+      --cream-2: #f8ecdf;
+      --paper: rgba(255,255,255,.96);
+      --paper-solid: #fffdf9;
+      --brown: #6b4635;
+      --brown-dark: #3f2c25;
+      --brown-soft: #9c7b67;
+      --line: #ead8c8;
+      --line-strong: #dcc5b0;
+      --green: #6e805b;
+      --green-soft: #edf3e9;
+      --rose: #ca5663;
+      --rose-soft: #fff0f2;
+      --text: #1f2937;
+      --muted: #7d8490;
+      --shadow: 0 12px 32px rgba(76, 52, 39, .08);
+      --shadow-strong: 0 24px 64px rgba(52, 36, 28, .20);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 15px;
     }
 
     * { box-sizing: border-box; }
-    html { background: var(--ner-cream); }
+    html, body { margin: 0; min-height: 100%; background: var(--cream); }
     body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--text);
       background:
-        radial-gradient(circle at 10% 6%, rgba(235,205,177,.28), transparent 25%),
-        radial-gradient(circle at 91% 18%, rgba(201,218,176,.25), transparent 25%),
-        linear-gradient(180deg, #fffaf3 0%, #fffdf9 48%, #fbf2e6 100%);
-      color: var(--ner-text);
-      min-height: 100vh;
+        radial-gradient(circle at 7% 5%, rgba(239,211,188,.35), transparent 24rem),
+        radial-gradient(circle at 95% 16%, rgba(210,223,189,.32), transparent 28rem),
+        linear-gradient(180deg, #fff9f1 0%, #fffdf8 48%, #f9efe4 100%);
       overflow-x: hidden;
     }
+    button, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
 
-    .team-decor { position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-    .team-sticker {
-      position: absolute;
-      background-image: url('assets/ner-team-bg.webp');
-      background-repeat: no-repeat;
-      filter: saturate(.98) contrast(1.02);
-      opacity: .97;
+    /* Decoration is fully isolated from interactions. */
+    #decor-layer {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none !important;
+      user-select: none;
       z-index: 0;
     }
-    .team-sticker::after { content: ''; position: absolute; inset: 0; }
-    .team-a { width: 178px; height: 255px; left: -82px; top: 82px; background-size: 930px auto; background-position: left top; border-radius: 0 40px 40px 0; }
-    .team-a::after { background: linear-gradient(90deg, transparent 58%, var(--ner-cream) 100%); }
-    .team-b { width: 170px; height: 250px; left: -86px; top: 760px; background-size: 930px auto; background-position: left bottom; border-radius: 0 40px 40px 0; }
-    .team-b::after { background: linear-gradient(90deg, transparent 58%, var(--ner-cream) 100%); }
-    .team-c { width: 172px; height: 286px; right: -86px; top: 470px; background-size: 930px auto; background-position: right center; border-radius: 40px 0 0 40px; }
-    .team-c::after { background: linear-gradient(270deg, transparent 58%, var(--ner-cream) 100%); }
-    body > :not(.team-decor) { position: relative; z-index: 2; }
-
-    .app-hero {
-      background: var(--ner-paper);
-      border: 1px solid var(--ner-line);
-      box-shadow: 0 14px 40px rgba(91,61,43,.09);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+    .decor-person {
+      position: absolute;
+      display: block;
+      pointer-events: none !important;
+      user-select: none;
+      background-image: url('assets/ner-team-bg.webp');
+      background-repeat: no-repeat;
+      background-size: 540px auto;
+      opacity: .82;
+      filter: saturate(.92) contrast(.98);
     }
-    .app-card {
+    .decor-a { width: 145px; height: 195px; left: -105px; top: 178px; background-position: left top; -webkit-mask-image: linear-gradient(90deg,#000 55%,transparent 100%); mask-image: linear-gradient(90deg,#000 55%,transparent 100%); }
+    .decor-b { width: 145px; height: 195px; left: -105px; top: 1000px; background-position: left bottom; opacity: .64; -webkit-mask-image: linear-gradient(90deg,#000 55%,transparent 100%); mask-image: linear-gradient(90deg,#000 55%,transparent 100%); }
+    .decor-c { width: 145px; height: 220px; right: -105px; top: 680px; background-position: right center; opacity: .70; -webkit-mask-image: linear-gradient(270deg,#000 55%,transparent 100%); mask-image: linear-gradient(270deg,#000 55%,transparent 100%); }
+
+    #app-shell {
+      position: relative;
+      z-index: 10;
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: max(22px, env(safe-area-inset-top)) 0 calc(96px + env(safe-area-inset-bottom));
+    }
+
+    .hero {
+      border: 1px solid var(--line);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius-xl);
+      padding: 26px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .hero-row {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand-title {
+      margin: 0;
+      font-size: clamp(26px, 4.2vw, 40px);
+      line-height: 1.15;
+      font-weight: 800;
+      letter-spacing: -.03em;
+      color: #131b2d;
+    }
+    .brand-title .accent { color: #5b4fde; }
+    .brand-subtitle {
+      margin: 10px 0 0;
+      color: #7c8492;
+      line-height: 1.6;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .manager-btn {
+      min-height: 52px;
+      padding: 0 22px;
+      border: 0;
+      border-radius: 17px;
+      background: linear-gradient(135deg, #6d4a39, #432e25);
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      box-shadow: 0 10px 25px rgba(67,46,37,.18);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .manager-btn:active { transform: scale(.985); }
+
+    #app-menus { margin-top: 34px; }
+    .category-block { margin-bottom: 34px; }
+    .category-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 14px;
+      padding: 13px 16px;
+      color: var(--brown-dark);
+      font-size: 21px;
+      font-weight: 800;
+      border: 1px solid rgba(234,216,200,.72);
+      border-radius: 18px;
+      background: rgba(255,249,242,.86);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .category-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #f1dfcf;
+      font-size: 17px;
+      flex: 0 0 auto;
+    }
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .menu-card {
+      min-height: 116px;
+      width: 100%;
+      border: 1px solid #e7d8cb;
+      border-radius: 20px;
       background: rgba(255,255,255,.97);
-      border-color: #eadfd4;
-      box-shadow: 0 8px 22px rgba(91,61,43,.055);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 8px 22px rgba(76,52,39,.055);
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      text-align: left;
+      color: inherit;
+      cursor: pointer;
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
     }
-    .app-card:hover { border-color: #cfb49e; box-shadow: 0 12px 28px rgba(91,61,43,.10); transform: translateY(-1px); }
-    .brand-accent { color: #5b50dc; }
-    .manager-btn { background: linear-gradient(135deg, #654534 0%, #422e25 100%); box-shadow: 0 10px 22px rgba(66,46,37,.20); }
-    .section-title {
-      color: var(--ner-brown-dark);
-      background: rgba(255,250,243,.90);
-      backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px);
-      border-radius: 16px;
-      padding: .65rem .85rem;
-      margin-left: -.35rem;
-      margin-right: -.35rem;
-      border-bottom-color: #e9d7c7 !important;
+    .menu-card:hover { border-color: #cdb39e; box-shadow: 0 12px 28px rgba(76,52,39,.10); transform: translateY(-1px); }
+    .menu-card:active { transform: scale(.992); }
+    .menu-card-title { font-size: 17px; font-weight: 800; color: #3e312b; line-height: 1.3; }
+    .menu-card-subtitle { margin-top: 5px; color: #9a8b7e; font-size: 12px; font-weight: 700; }
+    .menu-card-subtitle.single { color: var(--green); }
+    .menu-arrow {
+      width: 38px; height: 38px; flex: 0 0 38px;
+      border-radius: 50%; display: grid; place-items: center;
+      color: var(--brown); background: #f8eee5; font-size: 25px; line-height: 1;
     }
-    .section-icon { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; background: #f2e2d2; border-radius: 999px; margin-right: .5rem; font-size: 15px; vertical-align: middle; }
-    .menu-card-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .menu-card-arrow { flex: 0 0 auto; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; background: #f8efe6; color: var(--ner-brown); font-size: 22px; }
+    .loading, .empty-state {
+      padding: 64px 20px;
+      text-align: center;
+      color: #9aa0aa;
+      font-weight: 700;
+    }
 
-    #calculatorModal { background: rgba(54,45,40,.58); }
-    #calculatorModal > div { background: #fffdf9; border-color: #ead8c8 !important; box-shadow: 0 28px 70px rgba(42,30,23,.28); }
-    #calculatorModal > div > div:first-child { background: linear-gradient(180deg, #fffaf4, #fbf2e8) !important; border-bottom-color: #ead8c8 !important; }
-    #calcMenuTitle { color: var(--ner-brown-dark) !important; }
-    #calcMenuSubtitle { color: #8b7b70 !important; }
-    #leftPanel { background: #fffdf9 !important; border-right-color: #ecded1 !important; }
-    #rightPanel { background: #fbf5ed !important; }
-    #leftPanel > h3 { color: var(--ner-rose) !important; }
-    #rightPanel > h3 { color: var(--ner-green) !important; }
-    #leftPanel > h3 > span { background: var(--ner-rose) !important; }
-    #rightPanel > h3 > span { background: var(--ner-green) !important; }
+    /* Modal foundation: no dependency on Tailwind's hidden class. */
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      background: rgba(52,43,38,.60);
+      backdrop-filter: blur(7px);
+      -webkit-backdrop-filter: blur(7px);
+    }
+    .is-hidden { display: none !important; }
+    .modal-card {
+      width: min(1120px, 100%);
+      max-height: 94vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: var(--paper-solid);
+      border: 1px solid #e9d8ca;
+      border-radius: 28px;
+      box-shadow: var(--shadow-strong);
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 22px;
+      border-bottom: 1px solid #eadccf;
+      background: linear-gradient(180deg, #fffaf4, #fbf2e8);
+    }
+    .modal-title { margin: 0; font-size: 24px; line-height: 1.25; font-weight: 800; color: var(--brown-dark); }
+    .modal-subtitle { margin: 5px 0 0; color: #887b72; font-size: 13px; line-height: 1.5; }
+    .close-btn {
+      width: 46px; height: 46px; flex: 0 0 46px;
+      border: 1px solid #dfd0c3; border-radius: 50%;
+      background: #fff; color: #64574f; font-size: 22px; cursor: pointer;
+      box-shadow: 0 4px 12px rgba(80,56,42,.06);
+    }
 
+    .calculator-body { min-height: 0; display: grid; grid-template-columns: 45% 55%; }
+    .calc-panel { overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 22px; min-height: 0; }
+    #leftPanel { background: #fffdf9; border-right: 1px solid #eddfd3; }
+    #rightPanel { background: #fbf5ed; }
+    .panel-title {
+      display: flex; align-items: center; gap: 9px; margin: 0 0 16px;
+      font-size: 14px; font-weight: 800; line-height: 1.45;
+    }
+    .panel-title.reject { color: var(--rose); }
+    .panel-title.result { color: var(--green); }
+    .dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
+    .reject .dot { background: var(--rose); }
+    .result .dot { background: var(--green); }
+
+    .exclude-item { margin-bottom: 11px; }
     .exclude-btn {
-      width: 100%; padding: .82rem 1rem; border-radius: 16px; border: 1.5px solid #e5d8cc;
-      background: #fff; color: #394150; font-size: .92rem; font-weight: 700; text-align: left;
-      display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: .16s ease;
+      width: 100%; min-height: 52px; padding: 12px 15px;
+      border: 1.5px solid #e4d8cd; border-radius: 16px;
+      background: #fff; color: #394150; font-weight: 800; font-size: 14px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      text-align: left; cursor: pointer;
     }
-    .exclude-btn:active { transform: scale(.992); }
-    .exclude-btn.is-excluded { border-color: #e46c75; background: var(--ner-rose-soft); color: #b83c49; box-shadow: inset 0 0 0 1px rgba(228,108,117,.13); }
-    .exclude-status { white-space: nowrap; font-size: .78rem; font-weight: 800; }
+    .exclude-btn.is-excluded { border-color: #df6873; color: #b83d49; background: var(--rose-soft); }
+    .exclude-status { flex: 0 0 auto; font-size: 12px; font-weight: 800; }
 
-    .replacement-wrap { margin: .55rem .15rem .2rem 1.15rem; padding-left: .75rem; border-left: 3px solid #d8c3ae; }
+    .replacement-wrap { margin: 8px 2px 4px 14px; padding-left: 10px; border-left: 3px solid #d9c2ae; }
     .replacement-trigger {
-      width: 100%; min-height: 46px; padding: .7rem .85rem; border-radius: 14px; border: 1.5px solid #ddcbbb;
-      background: #fffaf4; color: var(--ner-brown-dark); display: flex; align-items: center; justify-content: space-between;
-      gap: 12px; font-weight: 800; font-size: .9rem; text-align: left;
+      width: 100%; min-height: 50px; border: 1.5px solid #ddcbbb; border-radius: 14px;
+      background: #fffaf4; color: var(--brown-dark); padding: 10px 12px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      text-align: left; font-size: 14px; font-weight: 800; cursor: pointer;
     }
-    .replacement-trigger .hint { color: #9c8777; font-size: .72rem; font-weight: 600; display: block; margin-top: 2px; }
-    .picker-chevron { color: #9a755d; font-size: 18px; transition: transform .16s ease; }
-    .replacement-trigger.is-open .picker-chevron { transform: rotate(180deg); }
+    .replacement-trigger small { display: block; margin-top: 2px; font-size: 11px; font-weight: 600; color: #9b8878; }
+    .chevron { font-size: 19px; color: #99735a; transition: transform .14s ease; }
+    .replacement-trigger.is-open .chevron { transform: rotate(180deg); }
     .replacement-menu {
-      margin-top: .45rem; border: 1px solid #e1d1c3; background: rgba(255,255,255,.99); border-radius: 16px;
-      overflow: hidden; box-shadow: 0 14px 28px rgba(73,49,38,.13); max-height: 300px; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      margin-top: 7px; max-height: 285px; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      border: 1px solid #e2d2c4; border-radius: 15px; background: #fff;
+      box-shadow: 0 12px 26px rgba(73,49,38,.12);
     }
     .replacement-option {
-      width: 100%; min-height: 48px; padding: .72rem .9rem; display: flex; align-items: center; justify-content: space-between;
-      gap: 12px; border: 0; border-bottom: 1px solid #f0e5dc; background: #fff; color: #374151; text-align: left; font-size: .9rem; font-weight: 700;
+      width: 100%; min-height: 49px; padding: 11px 13px;
+      border: 0; border-bottom: 1px solid #f0e5dc;
+      background: #fff; color: #38404d; font-size: 14px; font-weight: 700;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      text-align: left;
     }
     .replacement-option:last-child { border-bottom: 0; }
-    .replacement-option.selectable:active { background: #f7efe8; }
-    .replacement-option.selected { background: #f3eee7; color: var(--ner-brown-dark); }
+    .replacement-option.selectable { cursor: pointer; }
+    .replacement-option.selectable:active { background: #f8efe7; }
+    .replacement-option.selected { background: #f2ede7; color: var(--brown-dark); }
     .replacement-option.disabled { color: #aaa19a; background: #fbf8f5; cursor: not-allowed; }
-    .replacement-option .option-note { flex: 0 0 auto; font-size: .7rem; font-weight: 800; padding: .28rem .5rem; border-radius: 999px; color: #9c6b6f; background: #f6e9e9; }
-    .replacement-option .selected-mark { color: var(--ner-green); font-weight: 900; }
-    .picker-empty { padding: .9rem; color: #9a8e84; font-size: .82rem; font-weight: 700; }
+    .option-note {
+      flex: 0 0 auto; padding: 4px 8px; border-radius: 999px;
+      background: #f4e6e7; color: #98666b; font-size: 10px; font-weight: 800;
+    }
+    .selected-mark { color: var(--green); font-size: 11px; font-weight: 800; }
+    .picker-empty { padding: 14px; color: #968a80; font-size: 12px; font-weight: 700; }
 
-    .net-card { background: rgba(255,255,255,.97); border: 1px solid #e6d9ce; box-shadow: 0 4px 12px rgba(82,59,43,.04); }
-    .net-card.modified { background: var(--ner-green-soft); border: 2px solid #a9b99a; }
-    .net-card.modified .net-name, .net-card.modified .net-qty { color: #526743 !important; }
+    #netResultList { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .net-card {
+      min-height: 60px; padding: 13px;
+      border: 1px solid #e6d9ce; border-radius: 15px; background: #fff;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      box-shadow: 0 4px 12px rgba(82,59,43,.035);
+    }
+    .net-card.modified { background: var(--green-soft); border: 2px solid #a9b99a; }
+    .net-name { min-width: 0; font-size: 12px; line-height: 1.3; font-weight: 800; color: #4b3a31; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .net-amount { display: flex; align-items: baseline; gap: 4px; flex: 0 0 auto; }
+    .net-qty { font-size: 22px; line-height: 1; font-weight: 800; color: #2d2926; }
+    .net-unit { font-size: 10px; font-weight: 800; color: #8d7f74; }
+    .modified .net-name, .modified .net-qty { color: #526743; }
 
-    #pinModal { background: rgba(54,45,40,.58); }
-    #pinModal > div { background: #fffdf9; border-color: #ead8c8 !important; }
-    #pinModal input { background: #fffaf4 !important; border-color: #e2d1c2 !important; }
-    #pinModal button:last-child { background: var(--ner-brown-dark) !important; }
-    #matrixModal { background: rgba(54,45,40,.68); }
-    #matrixModal > div { background: #fffdf9; }
-    #matrixModal > div > div:first-child { background: var(--ner-brown-dark) !important; border-bottom-color: #806250 !important; }
-    #tableContainer { background: #fbf5ed !important; }
+    /* PIN */
+    .pin-card { width: min(390px, 100%); padding: 28px; text-align: center; }
+    .pin-title { margin: 0 0 16px; color: var(--brown-dark); font-size: 21px; font-weight: 800; }
+    .pin-input {
+      width: 100%; padding: 15px; border: 2px solid #e1d1c3; border-radius: 17px;
+      background: #fffaf4; text-align: center; font-size: 28px; letter-spacing: .35em; outline: none;
+    }
+    .pin-input:focus { border-color: #a98971; }
+    .pin-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+    .pin-actions button { min-height: 48px; border: 0; border-radius: 15px; font-weight: 800; cursor: pointer; }
+    .btn-secondary { background: #f1ebe5; color: #65564d; }
+    .btn-primary { background: var(--brown-dark); color: #fff; }
 
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: #f5ece4; border-radius: 4px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cdb9a8; border-radius: 4px; }
-    .sticky-col-1 { position: sticky; left: 0; min-width: 150px; max-width: 150px; border-right: 1px solid #e7d8cc; }
-    .sticky-col-2 { position: sticky; left: 150px; min-width: 160px; max-width: 160px; border-right: 2px solid #d8c4b2; }
-    thead th { position: sticky; top: 0; z-index: 20; background-color: #f8eee6; border-bottom: 2px solid #decbb9; }
-    thead .sticky-col-1, thead .sticky-col-2 { z-index: 30; background-color: #f3e7dc; }
-    tbody .sticky-col-1, tbody .sticky-col-2 { z-index: 10; background-color: #fffdf9; }
+    /* Matrix */
+    #matrixModal { z-index: 110; padding: 8px; }
+    .matrix-card { width: 98vw; height: 96vh; max-height: 96vh; border-radius: 22px; }
+    .matrix-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      padding: 14px 16px; color: #fff; background: var(--brown-dark); border-bottom: 1px solid #7e6253;
+    }
+    .matrix-title { margin: 0; font-size: 17px; font-weight: 800; }
+    .matrix-note { margin: 4px 0 0; color: #d8c9c0; font-size: 11px; }
+    .matrix-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .matrix-actions button, .upload-label {
+      min-height: 40px; padding: 0 12px; border: 1px solid rgba(255,255,255,.14); border-radius: 12px;
+      font-size: 11px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .upload-label { background: #725742; color: #fff; }
+    .upload-label input { display: none; }
+    .download-btn { background: #cfb26f; color: #352a22; }
+    .matrix-close { background: #6c584d; color: #fff; }
+    #tableContainer { flex: 1; overflow: auto; padding: 12px; background: #fbf5ed; }
+    .matrix-table { border-collapse: collapse; width: 100%; min-width: 980px; white-space: nowrap; background: #fffdf9; font-size: 11px; }
+    .matrix-table th, .matrix-table td { padding: 10px; border-bottom: 1px solid #eee2d8; text-align: center; }
+    .matrix-table th { position: sticky; top: 0; z-index: 6; background: #f4e7dc; color: #4a382e; font-size: 10px; }
+    .matrix-table .sticky-1 { position: sticky; left: 0; z-index: 5; min-width: 145px; text-align: left; background: #fffdf9; }
+    .matrix-table .sticky-2 { position: sticky; left: 145px; z-index: 5; min-width: 150px; text-align: left; background: #fffdf9; }
+    .matrix-table th.sticky-1, .matrix-table th.sticky-2 { z-index: 8; background: #efe0d4; }
+    .matrix-cell-edit { background: #fff8f1; color: #6d4937; font-weight: 800; cursor: pointer; }
+    .matrix-cell-edit:hover { background: #f2e0d0; }
 
-    @media (max-width: 767px) {
-      body { padding-left: 14px !important; padding-right: 14px !important; }
-      .app-hero { border-radius: 28px; }
-      .app-card { border-radius: 21px; }
-      .team-a { width: 150px; height: 222px; left: -78px; top: 58px; background-size: 820px auto; }
-      .team-b { width: 145px; height: 230px; left: -79px; top: 890px; background-size: 820px auto; }
-      .team-c { width: 150px; height: 245px; right: -81px; top: 520px; background-size: 820px auto; }
-      #calculatorModal { padding: 8px !important; }
-      #calculatorModal > div { max-height: 94vh !important; border-radius: 28px !important; }
-      #calculatorModal > div > div:first-child { padding: 1rem !important; }
-      #leftPanel, #rightPanel { padding: 1rem !important; }
-      .replacement-wrap { margin-left: .55rem; }
-      .replacement-menu { max-height: 250px; }
+    @media (max-width: 960px) {
+      .menu-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .decor-a { left: -112px; }
+      .decor-b { left: -112px; }
+      .decor-c { right: -112px; }
     }
 
-    @media (min-width: 768px) {
-      .team-a { width: 230px; height: 330px; left: -98px; top: 70px; background-size: 1180px auto; }
-      .team-b { width: 220px; height: 325px; left: -105px; top: 720px; background-size: 1180px auto; }
-      .team-c { width: 235px; height: 370px; right: -104px; top: 420px; background-size: 1180px auto; }
+    @media (max-width: 767px) {
+      #app-shell { width: min(100% - 24px, 680px); padding-top: max(18px, env(safe-area-inset-top)); }
+      .hero { padding: 20px; border-radius: 25px; }
+      .hero-row { flex-direction: column; align-items: stretch; }
+      .brand-title { font-size: 25px; }
+      .brand-subtitle { font-size: 13px; }
+      .manager-btn { width: 100%; }
+      #app-menus { margin-top: 28px; }
+      .category-title { margin-left: -2px; margin-right: -2px; font-size: 20px; padding: 12px 14px; }
+      .menu-grid { grid-template-columns: 1fr; gap: 14px; }
+      .menu-card { min-height: 116px; padding: 18px; }
+
+      /* On phones the art peeks out rather than sitting beneath controls. */
+      .decor-a { width: 135px; height: 182px; left: -105px; top: 270px; opacity: .66; background-size: 520px auto; }
+      .decor-b { width: 132px; height: 178px; left: -103px; top: 1130px; opacity: .50; background-size: 520px auto; }
+      .decor-c { width: 132px; height: 205px; right: -103px; top: 790px; opacity: .53; background-size: 520px auto; }
+
+      .modal { padding: 7px; align-items: flex-start; padding-top: max(7px, env(safe-area-inset-top)); }
+      .modal-card { max-height: calc(100dvh - 14px - env(safe-area-inset-top)); border-radius: 24px; }
+      .modal-header { padding: 16px; }
+      .modal-title { font-size: 22px; }
+      .calculator-body { display: flex; flex-direction: column; overflow-y: auto; }
+      .calc-panel { overflow: visible; padding: 16px; }
+      #leftPanel { border-right: 0; border-bottom: 1px solid #eddfd3; }
+      #rightPanel { flex: 0 0 auto; }
+      #netResultList { grid-template-columns: 1fr; }
+      .replacement-wrap { margin-left: 7px; }
+      .replacement-menu { max-height: 235px; }
+
+      .matrix-card { width: 100%; height: calc(100dvh - 14px); max-height: calc(100dvh - 14px); }
+      .matrix-header { align-items: flex-start; flex-direction: column; }
+      .matrix-actions { width: 100%; }
     }
   </style>
 </head>
-<body class="p-4 md:p-8 max-w-7xl mx-auto pb-24 text-slate-800">
-  <div class="team-decor" aria-hidden="true">
-    <div class="team-sticker team-a"></div>
-    <div class="team-sticker team-b"></div>
-    <div class="team-sticker team-c"></div>
+<body>
+  <div id="decor-layer" aria-hidden="true">
+    <div class="decor-person decor-a"></div>
+    <div class="decor-person decor-b"></div>
+    <div class="decor-person decor-c"></div>
   </div>
 
-
-  <!-- Header -->
-  <div class="app-hero flex flex-col md:flex-row justify-between items-start md:items-center mb-8 p-5 md:p-6 rounded-3xl gap-4">
-    <div>
-      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">NER แจ่วฮ้อน <span class="brand-accent">Smart Recipe</span></h1>
-      <p class="text-sm text-slate-500 mt-1">ระบบคำนวณวัตถุดิบสุทธิ (จัดลำดับ Default เลือกตัวแทนหมวดเดียวกันอัตโนมัติ)</p>
-    </div>
-    <div class="flex gap-2 w-full md:w-auto">
-      <button onclick="openPinModal()" class="manager-btn hover:opacity-95 text-white px-5 py-3 rounded-2xl text-sm font-bold active:scale-95 transition flex items-center gap-2 w-full md:w-auto justify-center">
-        <span>⚙️</span> จัดการหลังบ้าน (Matrix UI)
-      </button>
-    </div>
-  </div>
-
-  <!-- Main Menu Grid -->
-  <div id="app-menus" class="space-y-8">
-    <div class="text-center py-20 text-slate-400 font-medium">กำลังโหลดข้อมูลสูตรอาหารจากระบบกลาง...</div>
-  </div>
-
-  <!-- Modal 1: Front-end Calculator -->
-  <div id="calculatorModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-40 transition-opacity">
-    <div class="bg-white rounded-3xl w-full max-w-6xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden border border-slate-100">
-      <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+  <main id="app-shell">
+    <section class="hero" aria-label="NER Smart Recipe">
+      <div class="hero-row">
         <div>
-          <h2 id="calcMenuTitle" class="text-2xl font-bold text-slate-900">ชื่อเมนู</h2>
-          <p id="calcMenuSubtitle" class="text-sm text-slate-500 mt-1">ติ๊กเลือกสิ่งที่ไม่รับ และเลือกวัตถุดิบทดแทน</p>
+          <h1 class="brand-title">NER แจ่วฮ้อน <span class="accent">Smart Recipe</span></h1>
+          <p class="brand-subtitle">ระบบคำนวณวัตถุดิบสุทธิ (จัดลำดับ Default เลือกตัวแทนหมวดเดียวกันอัตโนมัติ)</p>
         </div>
-        <button onclick="closeCalculator()" class="w-12 h-12 rounded-full bg-white border-2 border-[#dfcdbc] text-[#6d4937] font-bold hover:bg-[#f8efe6] transition shadow-sm text-lg">✕</button>
+        <button id="managerButton" class="manager-btn" type="button">⚙️ &nbsp;จัดการหลังบ้าน (Matrix UI)</button>
       </div>
+    </section>
 
-      <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
-        <div id="leftPanel" class="w-full md:w-[45%] p-6 border-r border-slate-100 overflow-y-auto bg-white custom-scrollbar">
-          <h3 class="text-sm font-bold text-rose-600 mb-4 flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-rose-600"></span> ❌ สิ่งที่ลูกค้า "ไม่รับ" (เลือกได้หลายอัน)
-          </h3>
-          <div id="excludeOptions" class="space-y-3"></div>
-        </div>
+    <section id="app-menus" aria-live="polite">
+      <div class="loading">กำลังโหลดข้อมูลสูตรอาหารจากระบบกลาง...</div>
+    </section>
+  </main>
 
-        <div id="rightPanel" class="w-full md:w-[55%] p-6 bg-slate-50 overflow-y-auto custom-scrollbar">
-          <h3 class="text-sm font-bold text-indigo-600 mb-4 flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-indigo-600"></span> ⚖️ ปริมาณสุทธิ (เตรียมจัดเสิร์ฟ)
-          </h3>
-          <div id="netResultList" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal 2: Matrix & Management -->
-  <div id="matrixModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden flex items-center justify-center p-2 z-50">
-    <div class="bg-white rounded-3xl w-full max-w-[98vw] h-[95vh] flex flex-col shadow-2xl overflow-hidden">
-      <div class="p-4 border-b border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-900 text-white gap-3">
+  <div id="calculatorModal" class="modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="calcMenuTitle">
+    <div class="modal-card">
+      <header class="modal-header">
         <div>
-          <h2 class="text-lg font-bold flex items-center gap-2">📊 ตารางสูตรการแทนที่ (Replace Use Matrix)</h2>
-          <p class="text-xs text-slate-300 font-light mt-1">คลิกที่ตัวเลขเพื่อแก้ไข > อัปโหลด Excel > ดาวน์โหลด JSON ไปวางบน GitHub</p>
+          <h2 id="calcMenuTitle" class="modal-title">ชื่อเมนู</h2>
+          <p class="modal-subtitle">ติ๊กเลือกสิ่งที่ไม่รับ และเลือกวัตถุดิบทดแทน</p>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <label class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 rounded-xl text-xs font-bold cursor-pointer shadow-md transition flex items-center gap-2 border border-indigo-400">
-            <span>📥 1. อัปโหลด Excel</span>
-            <input type="file" accept=".xlsx, .xls" class="hidden" onchange="importExcelData(event)">
-          </label>
-          <button onclick="downloadJSON()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 px-4 py-2.5 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-2">
-            <span>💾 2. ดาวน์โหลดไฟล์ JSON</span>
-          </button>
-          <div class="w-px h-8 bg-slate-700 mx-1 hidden md:block"></div>
-          <button onclick="closeMatrix()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2.5 rounded-xl text-sm font-bold transition">ปิดหน้าต่าง</button>
-        </div>
+        <button id="closeCalculatorButton" class="close-btn" type="button" aria-label="ปิด">✕</button>
+      </header>
+      <div class="calculator-body">
+        <section id="leftPanel" class="calc-panel">
+          <h3 class="panel-title reject"><span class="dot"></span>❌ สิ่งที่ลูกค้า “ไม่รับ” (เลือกได้หลายอัน)</h3>
+          <div id="excludeOptions"></div>
+        </section>
+        <section id="rightPanel" class="calc-panel">
+          <h3 class="panel-title result"><span class="dot"></span>⚖️ ปริมาณสุทธิ (เตรียมจัดเสิร์ฟ)</h3>
+          <div id="netResultList"></div>
+        </section>
       </div>
-      <div class="flex-1 overflow-auto custom-scrollbar bg-slate-50 relative p-4" id="tableContainer"></div>
     </div>
   </div>
 
-  <!-- Modal 3: PIN -->
-  <div id="pinModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-[60]">
-    <div class="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl text-center border border-slate-100">
-      <h3 class="text-xl font-bold text-slate-900 mb-2">PIN ผู้จัดการ</h3>
-      <input type="password" id="pinInput" placeholder="••••••" maxlength="6" class="w-full px-4 py-4 border-2 border-slate-200 rounded-2xl text-center text-3xl tracking-[0.5em] mb-6 bg-slate-50 focus:border-indigo-600 outline-none">
-      <div class="flex gap-3">
-        <button onclick="document.getElementById('pinModal').classList.add('hidden')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3.5 rounded-2xl font-bold text-sm">ยกเลิก</button>
-        <button onclick="verifyPin()" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white py-3.5 rounded-2xl font-bold text-sm">ยืนยัน</button>
+  <div id="matrixModal" class="modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="matrixTitle">
+    <div class="modal-card matrix-card">
+      <header class="matrix-header">
+        <div>
+          <h2 id="matrixTitle" class="matrix-title">📊 ตารางสูตรการแทนที่ (Replace Use Matrix)</h2>
+          <p class="matrix-note">คลิกตัวเลขเพื่อแก้ไข · อัปโหลด Excel · ดาวน์โหลด JSON</p>
+        </div>
+        <div class="matrix-actions">
+          <label class="upload-label">📥 อัปโหลด Excel<input id="excelInput" type="file" accept=".xlsx,.xls"></label>
+          <button id="downloadJsonButton" class="download-btn" type="button">💾 ดาวน์โหลด JSON</button>
+          <button id="closeMatrixButton" class="matrix-close" type="button">ปิดหน้าต่าง</button>
+        </div>
+      </header>
+      <div id="tableContainer"></div>
+    </div>
+  </div>
+
+  <div id="pinModal" class="modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="pinTitle">
+    <div class="modal-card pin-card">
+      <h2 id="pinTitle" class="pin-title">PIN ผู้จัดการ</h2>
+      <input id="pinInput" class="pin-input" type="password" inputmode="numeric" autocomplete="off" placeholder="••••••" maxlength="6">
+      <div class="pin-actions">
+        <button id="cancelPinButton" class="btn-secondary" type="button">ยกเลิก</button>
+        <button id="verifyPinButton" class="btn-primary" type="button">ยืนยัน</button>
       </div>
     </div>
   </div>
 
   <script>
     const unitMap = {
-      "กุ้ง": "ตัว",
-      "ไข่ไก่": "ฟอง",
-      "ไข่ไก่สด": "ฟอง",
-      "มาม่า": "ก้อน",
-      "หมี่หยก": "ก้อน",
-      "หมี่หยก(สด)": "ก้อน",
-      "เส้นอุด้ง": "g",
-      "เต้าหู้ปลา": "ชิ้น",
-      "เต้าหู้ไข่": "หลอด",
-      "เต้าหู้ชีส": "ชิ้น",
-      "ฟองเต้าหู้แท่ง": "แท่ง",
-      "ฟองเต้าหู้ทอด": "ม้วน",
-      "ซาโมซ่ากล้วย": "ชิ้น",
-      "สละลอยแก้ว": "ถ้วย",
-      "ลูกตาลลอยแก้ว": "ถ้วย",
-      "โมจิไอศครีม": "ลูก",
-      "ปลาหมึก": "กรัม"
-    };
-
-    const getUnit = (item) => {
-      let cleanItem = String(item).trim();
-      return unitMap[cleanItem] || "กรัม";
+      "กุ้ง": "ตัว", "ไข่ไก่": "ฟอง", "ไข่ไก่สด": "ฟอง", "มาม่า": "ก้อน",
+      "หมี่หยก": "ก้อน", "หมี่หยก(สด)": "ก้อน", "เส้นอุด้ง": "g", "เต้าหู้ปลา": "ชิ้น",
+      "เต้าหู้ไข่": "หลอด", "เต้าหู้ชีส": "ชิ้น", "ฟองเต้าหู้แท่ง": "แท่ง",
+      "ฟองเต้าหู้ทอด": "ม้วน", "ซาโมซ่ากล้วย": "ชิ้น", "สละลอยแก้ว": "ถ้วย",
+      "ลูกตาลลอยแก้ว": "ถ้วย", "โมจิไอศครีม": "ลูก", "ปลาหมึก": "กรัม"
     };
 
     const ingredientNameAliases = {
       "ปลากหมึก": "ปลาหมึก",
       "เนื้อเสื้อร้องให้สไลซ์": "เนื้อเสือร้องไห้สไลซ์"
-    };
-
-    const canonicalIngredientName = (item) => {
-      let cleanItem = String(item || "").trim();
-      return ingredientNameAliases[cleanItem] || cleanItem;
     };
 
     const GITHUB_JSON_URL = "https://raw.githubusercontent.com/twentybkk-boop/NER-Menu-quantity/main/recipe_master.json";
@@ -307,313 +482,162 @@
     let originalMenu = {};
     let replaceUseRules = [];
     let allIngredientsList = [];
-
     let currentActiveMenu = null;
     let excludedItemsMap = {};
     let openReplacementPicker = null;
 
     const veggieGroups = [
-      "กะหล่ำปลี", "ผักบุ้ง", "ผักชีฝรั่ง", "โหระพา", "ใบชะพลู",
-      "วุ้นเส้น", "ไข่ไก่", "ไข่ไก่สด", "เต้าหู้ปลา", "เต้าหู้ไข่", "เต้าหู้ชีส", "ฟองเต้าหู้แท่ง", "ฟองเต้าหู้ทอด"
+      "กะหล่ำปลี", "ผักบุ้ง", "ผักชีฝรั่ง", "โหระพา", "ใบชะพลู", "วุ้นเส้น",
+      "ไข่ไก่", "ไข่ไก่สด", "เต้าหู้ปลา", "เต้าหู้ไข่", "เต้าหู้ชีส", "ฟองเต้าหู้แท่ง", "ฟองเต้าหู้ทอด"
     ];
 
-    window.onload = async () => {
-      try {
-        const res = await fetch(GITHUB_JSON_URL + "?t=" + new Date().getTime(), { cache: "no-store" });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.baseMenu && data.replaceRules) {
-            originalMenu = data.baseMenu;
-            menuCategories = data.categories || {};
-            replaceUseRules = data.replaceRules;
-            allIngredientsList = data.ingredients || [];
-            initMenus();
-            renderMatrixTable();
-            return;
-          }
-        }
-      } catch (e) {
-        console.log("No remote file found.");
-      }
-      document.getElementById('app-menus').innerHTML = `
-        <div class="bg-rose-50 border border-rose-200 p-8 rounded-3xl text-center max-w-lg mx-auto shadow-sm">
-          <p class="text-rose-700 font-bold text-lg mb-2">❌ ไม่พบไฟล์ข้อมูลกลาง (recipe_master.json)</p>
-          <p class="text-xs text-rose-600 mb-6">กรุณากดจัดการหลังบ้าน (รหัส 206738) เพื่ออัปโหลดไฟล์ Excel ใหม่</p>
-        </div>
-      `;
+    const el = (id) => document.getElementById(id);
+    const getUnit = (item) => unitMap[String(item).trim()] || "กรัม";
+    const canonicalIngredientName = (item) => {
+      const clean = String(item || "").trim();
+      return ingredientNameAliases[clean] || clean;
     };
+    const escapeHtml = (value) => String(value)
+      .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+
+    function showModal(id) {
+      el(id).classList.remove('is-hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    function hideModal(id) {
+      el(id).classList.add('is-hidden');
+      if (el('calculatorModal').classList.contains('is-hidden') && el('matrixModal').classList.contains('is-hidden') && el('pinModal').classList.contains('is-hidden')) {
+        document.body.style.overflow = '';
+      }
+    }
 
     function applySmartRounding(itemName, rawValue) {
-      if (rawValue === undefined || rawValue === null || rawValue === "") return 0;
-      let num = Number(rawValue);
-      if (isNaN(num)) return 0;
-      return Math.round(num);
+      if (rawValue === undefined || rawValue === null || rawValue === '') return 0;
+      const num = Number(rawValue);
+      return Number.isNaN(num) ? 0 : Math.round(num);
     }
 
     function calculateNetRecipe(menuName) {
       const baseRecipe = originalMenu[menuName];
       if (!baseRecipe) return [];
-      let netRecipeMap = { ...baseRecipe };
-      let modifiedFlags = {};
+      const netRecipeMap = { ...baseRecipe };
+      const modifiedFlags = {};
 
-      for (let ex of Object.keys(excludedItemsMap)) {
-        delete netRecipeMap[ex];
-      }
+      Object.keys(excludedItemsMap).forEach(ex => delete netRecipeMap[ex]);
 
-      for (let [ex, rep] of Object.entries(excludedItemsMap)) {
-        if (rep && rep !== "") {
-          let cleanMenu = String(menuName).trim();
-          let cleanEx = String(ex).trim();
-          let rule = replaceUseRules.find(r => String(r.menu).trim() === cleanMenu && String(r.exclude).trim() === cleanEx);
-
-          if (rule && rule.replace && rule.replace[rep] !== undefined) {
-            let addAmt = Number(rule.replace[rep]) || 0;
-            let currentAmt = Number(netRecipeMap[rep]) || 0;
-            netRecipeMap[rep] = currentAmt + addAmt;
-            modifiedFlags[rep] = true;
-          }
+      Object.entries(excludedItemsMap).forEach(([ex, rep]) => {
+        if (!rep) return;
+        const rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(ex).trim());
+        if (rule?.replace?.[rep] !== undefined) {
+          const addAmt = Number(rule.replace[rep]) || 0;
+          netRecipeMap[rep] = (Number(netRecipeMap[rep]) || 0) + addAmt;
+          modifiedFlags[rep] = true;
         }
-      }
+      });
 
-      const results = [];
-      for (const [item, rawTotal] of Object.entries(netRecipeMap)) {
-        let unit = getUnit(item);
-        let finalDisplayQty = applySmartRounding(item, rawTotal);
-
-        if (finalDisplayQty > 0 || unit !== "กรัม") {
-          results.push({ name: item, qty: finalDisplayQty, unit: unit, isModified: modifiedFlags[item] === true });
-        }
-      }
-      return results;
+      return Object.entries(netRecipeMap).flatMap(([item, rawTotal]) => {
+        const unit = getUnit(item);
+        const qty = applySmartRounding(item, rawTotal);
+        if (qty <= 0 && unit === 'กรัม') return [];
+        return [{ name: item, qty, unit, isModified: modifiedFlags[item] === true }];
+      });
     }
 
     function getSortedReplacementOptions(menuName, excludedItem) {
       const menuBaseIngredients = Object.keys(originalMenu[menuName] || {});
-      let rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(excludedItem).trim());
-      let options = [];
-      if (rule && rule.replace) {
+      const rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(excludedItem).trim());
+      const options = [];
+
+      if (rule?.replace) {
         Object.entries(rule.replace).forEach(([repItem, repQty]) => {
           if (repItem === excludedItem) return;
-          let hasInBaseMenu = menuBaseIngredients.includes(repItem);
-          let isNotExcluded = excludedItemsMap[repItem] === undefined;
-          let qty = Number(repQty);
-          if (hasInBaseMenu && isNotExcluded && repQty !== undefined && !Number.isNaN(qty)) {
-            options.push({ name: repItem, qty: qty, selectable: qty > 0 });
+          const qty = Number(repQty);
+          if (menuBaseIngredients.includes(repItem) && excludedItemsMap[repItem] === undefined && repQty !== undefined && !Number.isNaN(qty)) {
+            options.push({ name: repItem, qty, selectable: qty > 0 });
           }
         });
       }
 
-      let isExcludedVeggie = veggieGroups.includes(excludedItem);
-      if (isExcludedVeggie) {
-        options.sort((a, b) => {
-          let aIsVeg = veggieGroups.includes(a.name);
-          let bIsVeg = veggieGroups.includes(b.name);
-          if (aIsVeg && !bIsVeg) return -1;
-          if (!aIsVeg && bIsVeg) return 1;
-          return 0;
-        });
+      if (veggieGroups.includes(excludedItem)) {
+        options.sort((a, b) => Number(veggieGroups.includes(b.name)) - Number(veggieGroups.includes(a.name)));
       }
-
       return options;
     }
 
     function getSortedValidReplacements(menuName, excludedItem) {
-      return getSortedReplacementOptions(menuName, excludedItem)
-        .filter(option => option.selectable)
-        .map(option => option.name);
+      return getSortedReplacementOptions(menuName, excludedItem).filter(x => x.selectable).map(x => x.name);
     }
 
     function checkAndFixFallbacks() {
-      for (let ex of Object.keys(excludedItemsMap)) {
-        let currentRep = excludedItemsMap[ex];
-        let validReps = getSortedValidReplacements(currentActiveMenu, ex);
-        if (excludedItemsMap[currentRep] !== undefined || !validReps.includes(currentRep)) {
-          excludedItemsMap[ex] = validReps.length > 0 ? validReps[0] : "";
-        }
-      }
+      Object.keys(excludedItemsMap).forEach(ex => {
+        const currentRep = excludedItemsMap[ex];
+        const valid = getSortedValidReplacements(currentActiveMenu, ex);
+        if (excludedItemsMap[currentRep] !== undefined || !valid.includes(currentRep)) excludedItemsMap[ex] = valid[0] || '';
+      });
     }
 
-    function importExcelData(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-
-      reader.onload = function(e) {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, {type: 'array'});
-
-          const sheetOrig = workbook.Sheets['Original menu'];
-          const jsonOrig = XLSX.utils.sheet_to_json(sheetOrig, {header: 1, defval: ""});
-          let newOriginalMenu = {};
-          let newMenuCategories = {};
-
-          let origHeaderRowIdx = jsonOrig.findIndex(row => row.some(cell => String(cell).trim() === "หมูหมัก"));
-          let headerRowOrig = jsonOrig[origHeaderRowIdx];
-
-          let lastCategory = "อื่นๆ";
-          let lastOrigMenuName = "";
-          for(let r = origHeaderRowIdx + 2; r < jsonOrig.length; r++) {
-            let row = jsonOrig[r];
-            let cat = String(row[0] || "").trim();
-            if (cat && cat !== "-") lastCategory = cat;
-
-            let menuName = String(row[1] || "").trim();
-            if(menuName && menuName !== "-") {
-              lastOrigMenuName = menuName;
-            } else {
-              menuName = lastOrigMenuName;
-            }
-            if(!menuName) continue;
-
-            let recipe = {};
-            for(let i=2; i<headerRowOrig.length; i++) {
-              let ingName = canonicalIngredientName(headerRowOrig[i]);
-              if(ingName && ingName !== "-") {
-                let val = row[i];
-                if(val !== undefined && val !== "" && val !== "-") {
-                  let num = parseFloat(val);
-                  if(!isNaN(num) && num >= 0) {
-                    recipe[ingName] = (recipe[ingName] || 0) + num;
-                  }
-                }
-              }
-            }
-            if(Object.keys(recipe).length > 0) {
-              newOriginalMenu[menuName] = recipe;
-              newMenuCategories[menuName] = lastCategory;
-            }
-          }
-
-          const sheetRep = workbook.Sheets['Replace Use'];
-          const jsonRep = XLSX.utils.sheet_to_json(sheetRep, {header: 1, defval: ""});
-          let newReplaceRules = [];
-
-          let repHeaderRowIdx = jsonRep.findIndex(row => row.some(cell => String(cell).trim() === "หมูหมัก"));
-          let headerRowRep = jsonRep[repHeaderRowIdx];
-
-          let repIngredientsList = [];
-          for(let i=2; i<headerRowRep.length; i++) {
-            let h = canonicalIngredientName(headerRowRep[i]);
-            if(h && h!=="-" && !repIngredientsList.includes(h)) repIngredientsList.push(h);
-          }
-
-          let lastReplaceMenu = "";
-          for(let r = repHeaderRowIdx + 1; r < jsonRep.length; r++) {
-            let row = jsonRep[r];
-            let menuName = String(row[0] || "").trim();
-            if(menuName && menuName !== "-") {
-              lastReplaceMenu = menuName;
-            } else {
-              menuName = lastReplaceMenu;
-            }
-
-            let excludeName = canonicalIngredientName(row[1]);
-            if(!menuName || !excludeName) continue;
-
-            let reps = {};
-            for(let i=2; i<headerRowRep.length; i++) {
-              let ingName = canonicalIngredientName(headerRowRep[i]);
-              if(ingName && ingName !== "-") {
-                let val = row[i];
-                if(val !== undefined && val !== "" && val !== "-") {
-                  let num = parseFloat(val);
-                  if(!isNaN(num)) {
-                    reps[ingName] = (reps[ingName] || 0) + num;
-                  }
-                }
-              }
-            }
-            if(Object.keys(reps).length > 0) newReplaceRules.push({ menu: menuName, exclude: excludeName, replace: reps });
-          }
-
-          originalMenu = newOriginalMenu;
-          menuCategories = newMenuCategories;
-          replaceUseRules = newReplaceRules;
-          allIngredientsList = repIngredientsList;
-
-          initMenus();
-          renderMatrixTable();
-          alert("อัปโหลดและแปลงข้อมูลสำเร็จ!");
-
-        } catch (err) { alert("Error: " + err.message); }
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
-    function downloadJSON() {
-      if(Object.keys(originalMenu).length === 0) {
-        alert("ยังไม่มีข้อมูลสูตรอาหาร กรุณาอัปโหลดไฟล์ Excel ก่อนครับ");
-        return;
+    async function loadData() {
+      try {
+        const res = await fetch(`${GITHUB_JSON_URL}?t=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!data.baseMenu || !data.replaceRules) throw new Error('Invalid recipe_master.json');
+        originalMenu = data.baseMenu;
+        menuCategories = data.categories || {};
+        replaceUseRules = data.replaceRules;
+        allIngredientsList = data.ingredients || [];
+        initMenus();
+        renderMatrixTable();
+      } catch (err) {
+        console.error(err);
+        el('app-menus').innerHTML = '<div class="empty-state">❌ ไม่พบไฟล์ข้อมูลกลาง (recipe_master.json)<br><small>กรุณาเข้าหลังบ้านเพื่ออัปโหลด Excel ใหม่</small></div>';
       }
-      const payload = {
-        categories: menuCategories,
-        baseMenu: originalMenu,
-        replaceRules: replaceUseRules,
-        ingredients: allIngredientsList
-      };
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", "recipe_master.json");
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-      alert("ดาวน์โหลดไฟล์ 'recipe_master.json' เรียบร้อย!");
     }
 
     function initMenus() {
-      const app = document.getElementById('app-menus');
-      let html = '';
-      let grouped = {};
+      const grouped = {};
       Object.keys(originalMenu).forEach(menu => {
-        let cat = menuCategories[menu] || "อื่นๆ";
-        if(!grouped[cat]) grouped[cat] = [];
-        grouped[cat].push(menu);
+        const cat = menuCategories[menu] || 'อื่นๆ';
+        (grouped[cat] ||= []).push(menu);
       });
 
-      for(let cat in grouped) {
-        html += `<div class="mb-8"><h2 class="section-title text-xl font-bold mb-4 border-b"><span class="section-icon">🍲</span>${cat}</h2><div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">`;
-        grouped[cat].forEach(menuName => {
-          let isSingle = Object.keys(originalMenu[menuName]).length === 1;
-          html += `
-            <div onclick="openCalculator('${menuName}')" class="app-card p-5 rounded-2xl border transition cursor-pointer">
-              <div class="menu-card-row">
-                <div class="min-w-0">
-                  <h3 class="font-bold text-lg text-[#3f312a] leading-tight mb-1">${menuName}</h3>
-                  <p class="text-xs font-semibold ${isSingle ? 'text-[#70835c]' : 'text-[#a08f82]'}">${isSingle ? 'วัตถุดิบเดี่ยว' : 'จัดการสูตรตัดออก'}</p>
-                </div>
-                <span class="menu-card-arrow">›</span>
-              </div>
-            </div>
-          `;
-        });
-        html += `</div></div>`;
-      }
-      app.innerHTML = html;
+      el('app-menus').innerHTML = Object.entries(grouped).map(([cat, menus]) => `
+        <section class="category-block">
+          <h2 class="category-title"><span class="category-icon">🍲</span>${escapeHtml(cat)}</h2>
+          <div class="menu-grid">
+            ${menus.map(menuName => {
+              const single = Object.keys(originalMenu[menuName]).length === 1;
+              return `<button type="button" class="menu-card" data-menu="${escapeHtml(menuName)}">
+                <span>
+                  <span class="menu-card-title">${escapeHtml(menuName)}</span>
+                  <span class="menu-card-subtitle ${single ? 'single' : ''}" style="display:block">${single ? 'วัตถุดิบเดี่ยว' : 'จัดการสูตรตัดออก'}</span>
+                </span>
+                <span class="menu-arrow" aria-hidden="true">›</span>
+              </button>`;
+            }).join('')}
+          </div>
+        </section>`).join('');
     }
 
     function openCalculator(menuName) {
+      if (!originalMenu[menuName]) return;
       currentActiveMenu = menuName;
       excludedItemsMap = {};
       openReplacementPicker = null;
-      document.getElementById('calcMenuTitle').innerText = menuName;
+      el('calcMenuTitle').textContent = menuName;
 
-      if (Object.keys(originalMenu[menuName]).length === 1) {
-        document.getElementById('leftPanel').classList.add('hidden');
-        document.getElementById('rightPanel').className = "w-full p-6 bg-slate-50 overflow-y-auto";
-      } else {
-        document.getElementById('leftPanel').classList.remove('hidden');
-        document.getElementById('rightPanel').className = "w-full md:w-[55%] p-6 bg-slate-50 overflow-y-auto custom-scrollbar";
-      }
-      document.getElementById('calculatorModal').classList.remove('hidden');
+      const single = Object.keys(originalMenu[menuName]).length === 1;
+      el('leftPanel').style.display = single ? 'none' : '';
+      el('rightPanel').style.width = single ? '100%' : '';
+
       renderExcludeOptions();
       renderNetResults();
+      showModal('calculatorModal');
     }
 
     function closeCalculator() {
       openReplacementPicker = null;
-      document.getElementById('calculatorModal').classList.add('hidden');
+      hideModal('calculatorModal');
     }
 
     function toggleExclude(item) {
@@ -621,8 +645,8 @@
         delete excludedItemsMap[item];
         if (openReplacementPicker === item) openReplacementPicker = null;
       } else {
-        let validReps = getSortedValidReplacements(currentActiveMenu, item);
-        excludedItemsMap[item] = validReps.length > 0 ? validReps[0] : "";
+        const valid = getSortedValidReplacements(currentActiveMenu, item);
+        excludedItemsMap[item] = valid[0] || '';
         openReplacementPicker = item;
       }
       checkAndFixFallbacks();
@@ -636,8 +660,8 @@
     }
 
     function setReplacement(excludedItem, replacementItem) {
-      let validReps = getSortedValidReplacements(currentActiveMenu, excludedItem);
-      if (!validReps.includes(replacementItem)) return;
+      const valid = getSortedValidReplacements(currentActiveMenu, excludedItem);
+      if (!valid.includes(replacementItem)) return;
       excludedItemsMap[excludedItem] = replacementItem;
       openReplacementPicker = null;
       renderExcludeOptions();
@@ -645,131 +669,240 @@
     }
 
     function renderExcludeOptions() {
-      const container = document.getElementById('excludeOptions');
-      let html = '';
-      const menuBaseIngredients = Object.keys(originalMenu[currentActiveMenu] || {});
+      const ingredients = Object.keys(originalMenu[currentActiveMenu] || {});
+      el('excludeOptions').innerHTML = ingredients.map(item => {
+        const excluded = excludedItemsMap[item] !== undefined;
+        let replacement = '';
+        if (excluded) {
+          const options = getSortedReplacementOptions(currentActiveMenu, item);
+          const selected = excludedItemsMap[item] || '';
+          const isOpen = openReplacementPicker === item;
+          const optionHtml = options.length ? options.map(opt => opt.selectable
+            ? `<button type="button" class="replacement-option selectable ${selected === opt.name ? 'selected' : ''}" data-replace-for="${escapeHtml(item)}" data-replacement="${escapeHtml(opt.name)}"><span>${escapeHtml(opt.name)}</span>${selected === opt.name ? '<span class="selected-mark">✓ เลือกอยู่</span>' : ''}</button>`
+            : `<button type="button" class="replacement-option disabled" disabled><span>${escapeHtml(opt.name)}</span><span class="option-note">แทนไม่ได้</span></button>`
+          ).join('') : '<div class="picker-empty">ไม่มีข้อมูลการแทนสำหรับรายการนี้</div>';
 
-      menuBaseIngredients.forEach(item => {
-        const isExcluded = excludedItemsMap[item] !== undefined;
-        html += `<div class="mb-3">
-          <button onclick="toggleExclude('${item}')" class="exclude-btn ${isExcluded ? 'is-excluded' : ''}">
-            <span>${item}</span>${isExcluded ? '<span class="exclude-status">✓ ตัดออก</span>' : ''}
-          </button>
-        `;
-
-        if (isExcluded) {
-          let replacementOptions = getSortedReplacementOptions(currentActiveMenu, item);
-          let selectedValue = excludedItemsMap[item] || '';
-          let selectedLabel = selectedValue || 'ไม่มีรายการที่แทนได้';
-          let isOpen = openReplacementPicker === item;
-          let optionsHtml = '';
-
-          if (replacementOptions.length === 0) {
-            optionsHtml = `<div class="picker-empty">ไม่มีข้อมูลการแทนสำหรับรายการนี้</div>`;
-          } else {
-            replacementOptions.forEach(option => {
-              if (option.selectable) {
-                let selected = selectedValue === option.name;
-                optionsHtml += `
-                  <button type="button" class="replacement-option selectable ${selected ? 'selected' : ''}" onclick="setReplacement('${item}', '${option.name}')">
-                    <span>${option.name}</span>
-                    ${selected ? '<span class="selected-mark">✓ เลือกอยู่</span>' : ''}
-                  </button>`;
-              } else {
-                optionsHtml += `
-                  <button type="button" class="replacement-option disabled" disabled aria-disabled="true">
-                    <span>${option.name}</span>
-                    <span class="option-note">แทนไม่ได้</span>
-                  </button>`;
-              }
-            });
-          }
-
-          html += `
-            <div class="replacement-wrap">
-              <button type="button" onclick="toggleReplacementPicker('${item}')" class="replacement-trigger ${isOpen ? 'is-open' : ''}" aria-expanded="${isOpen}">
-                <span><span>${selectedLabel}</span><span class="hint">เลือกวัตถุดิบทดแทน</span></span>
-                <span class="picker-chevron">⌄</span>
-              </button>
-              ${isOpen ? `<div class="replacement-menu custom-scrollbar">${optionsHtml}</div>` : ''}
-            </div>
-          `;
+          replacement = `<div class="replacement-wrap">
+            <button type="button" class="replacement-trigger ${isOpen ? 'is-open' : ''}" data-picker="${escapeHtml(item)}" aria-expanded="${isOpen}">
+              <span><span>${escapeHtml(selected || 'ไม่มีรายการที่แทนได้')}</span><small>เลือกวัตถุดิบทดแทน</small></span>
+              <span class="chevron">⌄</span>
+            </button>
+            ${isOpen ? `<div class="replacement-menu">${optionHtml}</div>` : ''}
+          </div>`;
         }
-        html += `</div>`;
-      });
-      container.innerHTML = html;
+        return `<div class="exclude-item">
+          <button type="button" class="exclude-btn ${excluded ? 'is-excluded' : ''}" data-exclude="${escapeHtml(item)}">
+            <span>${escapeHtml(item)}</span>${excluded ? '<span class="exclude-status">✓ ตัดออก</span>' : ''}
+          </button>${replacement}
+        </div>`;
+      }).join('');
     }
 
     function renderNetResults() {
-      const container = document.getElementById('netResultList');
-      let html = '';
-      calculateNetRecipe(currentActiveMenu).forEach(res => {
-        html += `
-          <div class="net-card ${res.isModified ? 'modified' : ''} flex justify-between items-center p-3 rounded-xl">
-            <span class="net-name font-bold text-xs text-[#4b3a31] leading-tight truncate mr-2">${res.name}</span>
-            <div class="flex items-baseline gap-1 shrink-0">
-              <span class="net-qty text-xl font-black text-[#2d2926]">${res.qty}</span>
-              <span class="text-[10px] font-bold text-[#8d7f74]">${res.unit}</span>
-            </div>
-          </div>
-        `;
-      });
-      container.innerHTML = html;
+      el('netResultList').innerHTML = calculateNetRecipe(currentActiveMenu).map(res => `
+        <div class="net-card ${res.isModified ? 'modified' : ''}">
+          <span class="net-name">${escapeHtml(res.name)}</span>
+          <span class="net-amount"><span class="net-qty">${res.qty}</span><span class="net-unit">${escapeHtml(res.unit)}</span></span>
+        </div>`).join('');
     }
 
-    function openPinModal() { document.getElementById('pinModal').classList.remove('hidden'); document.getElementById('pinInput').value = ''; document.getElementById('pinInput').focus(); }
-    function verifyPin() {
-      if (document.getElementById('pinInput').value === '206738') {
-        document.getElementById('pinModal').classList.add('hidden');
-        openMatrix();
-      } else alert('รหัสผ่านไม่ถูกต้อง');
+    function openPinModal() {
+      el('pinInput').value = '';
+      showModal('pinModal');
+      setTimeout(() => el('pinInput').focus(), 80);
     }
-    function openMatrix() { document.getElementById('matrixModal').classList.remove('hidden'); renderMatrixTable(); }
-    function closeMatrix() { document.getElementById('matrixModal').classList.add('hidden'); }
+    async function verifyPin() {
+      const bytes = new TextEncoder().encode(el('pinInput').value);
+      const digest = await crypto.subtle.digest('SHA-256', bytes);
+      const hash = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+      if (hash === '22dbfd569af550fb73ceb471588d0f7a30c8a13ca97701c1bc326ae324e49f73') {
+        hideModal('pinModal');
+        openMatrix();
+      } else {
+        alert('รหัสผ่านไม่ถูกต้อง');
+      }
+    }
+    function openMatrix() { renderMatrixTable(); showModal('matrixModal'); }
+    function closeMatrix() { hideModal('matrixModal'); }
+
+    function importExcelData(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          if (typeof XLSX === 'undefined') throw new Error('ไม่สามารถโหลดตัวอ่าน Excel ได้');
+          const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+          const sheetOrig = workbook.Sheets['Original menu'];
+          const sheetRep = workbook.Sheets['Replace Use'];
+          if (!sheetOrig || !sheetRep) throw new Error('ไม่พบชีต Original menu หรือ Replace Use');
+
+          const jsonOrig = XLSX.utils.sheet_to_json(sheetOrig, { header: 1, defval: '' });
+          const origHeaderRowIdx = jsonOrig.findIndex(row => row.some(cell => String(cell).trim() === 'หมูหมัก'));
+          if (origHeaderRowIdx < 0) throw new Error('หา header ของ Original menu ไม่พบ');
+          const headerRowOrig = jsonOrig[origHeaderRowIdx];
+          const newOriginalMenu = {};
+          const newMenuCategories = {};
+          let lastCategory = 'อื่นๆ';
+          let lastOrigMenuName = '';
+
+          for (let r = origHeaderRowIdx + 2; r < jsonOrig.length; r++) {
+            const row = jsonOrig[r];
+            const cat = String(row[0] || '').trim();
+            if (cat && cat !== '-') lastCategory = cat;
+            let menuName = String(row[1] || '').trim();
+            if (menuName && menuName !== '-') lastOrigMenuName = menuName; else menuName = lastOrigMenuName;
+            if (!menuName) continue;
+            const recipe = {};
+            for (let i = 2; i < headerRowOrig.length; i++) {
+              const ingName = canonicalIngredientName(headerRowOrig[i]);
+              if (!ingName || ingName === '-') continue;
+              const val = row[i];
+              if (val === undefined || val === '' || val === '-') continue;
+              const num = parseFloat(val);
+              if (!Number.isNaN(num) && num >= 0) recipe[ingName] = (recipe[ingName] || 0) + num;
+            }
+            if (Object.keys(recipe).length) {
+              newOriginalMenu[menuName] = recipe;
+              newMenuCategories[menuName] = lastCategory;
+            }
+          }
+
+          const jsonRep = XLSX.utils.sheet_to_json(sheetRep, { header: 1, defval: '' });
+          const repHeaderRowIdx = jsonRep.findIndex(row => row.some(cell => String(cell).trim() === 'หมูหมัก'));
+          if (repHeaderRowIdx < 0) throw new Error('หา header ของ Replace Use ไม่พบ');
+          const headerRowRep = jsonRep[repHeaderRowIdx];
+          const repIngredientsList = [];
+          for (let i = 2; i < headerRowRep.length; i++) {
+            const h = canonicalIngredientName(headerRowRep[i]);
+            if (h && h !== '-' && !repIngredientsList.includes(h)) repIngredientsList.push(h);
+          }
+
+          const newReplaceRules = [];
+          let lastReplaceMenu = '';
+          for (let r = repHeaderRowIdx + 1; r < jsonRep.length; r++) {
+            const row = jsonRep[r];
+            let menuName = String(row[0] || '').trim();
+            if (menuName && menuName !== '-') lastReplaceMenu = menuName; else menuName = lastReplaceMenu;
+            const excludeName = canonicalIngredientName(row[1]);
+            if (!menuName || !excludeName) continue;
+            const reps = {};
+            for (let i = 2; i < headerRowRep.length; i++) {
+              const ingName = canonicalIngredientName(headerRowRep[i]);
+              if (!ingName || ingName === '-') continue;
+              const val = row[i];
+              if (val === undefined || val === '' || val === '-') continue;
+              const num = parseFloat(val);
+              if (!Number.isNaN(num)) reps[ingName] = (reps[ingName] || 0) + num;
+            }
+            if (Object.keys(reps).length) newReplaceRules.push({ menu: menuName, exclude: excludeName, replace: reps });
+          }
+
+          originalMenu = newOriginalMenu;
+          menuCategories = newMenuCategories;
+          replaceUseRules = newReplaceRules;
+          allIngredientsList = repIngredientsList;
+          initMenus();
+          renderMatrixTable();
+          alert('อัปโหลดและแปลงข้อมูลสำเร็จ!');
+        } catch (err) {
+          alert('Error: ' + err.message);
+        } finally {
+          event.target.value = '';
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function downloadJSON() {
+      if (!Object.keys(originalMenu).length) return alert('ยังไม่มีข้อมูลสูตรอาหาร กรุณาอัปโหลดไฟล์ Excel ก่อนครับ');
+      const payload = { categories: menuCategories, baseMenu: originalMenu, replaceRules: replaceUseRules, ingredients: allIngredientsList };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'recipe_master.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
 
     function editMatrixCell(rowIndex, ingredient, currentValue) {
-      let newVal = prompt(`แก้ไขปริมาณแทนที่:\nเมนู: ${replaceUseRules[rowIndex].menu}\nหัก: ${replaceUseRules[rowIndex].exclude}\nแทนด้วย: ${ingredient}\n\nกรอกตัวเลขใหม่:`, currentValue);
-      if (newVal !== null && !isNaN(parseFloat(newVal))) {
-        replaceUseRules[rowIndex].replace[ingredient] = parseFloat(newVal);
+      const row = replaceUseRules[rowIndex];
+      if (!row) return;
+      const newVal = prompt(`แก้ไขปริมาณแทนที่:\nเมนู: ${row.menu}\nหัก: ${row.exclude}\nแทนด้วย: ${ingredient}\n\nกรอกตัวเลขใหม่:`, currentValue);
+      if (newVal !== null && !Number.isNaN(parseFloat(newVal))) {
+        row.replace[ingredient] = parseFloat(newVal);
         renderMatrixTable();
       }
     }
 
     function renderMatrixTable() {
-      const container = document.getElementById('tableContainer');
-      if (replaceUseRules.length === 0) { container.innerHTML = '<div class="text-center py-20 text-slate-400">ยังไม่มีข้อมูลสูตร กรุณาอัปโหลดไฟล์ Excel ด้านบน</div>'; return; }
-
-      let html = `<table class="w-full text-left border-collapse text-xs whitespace-nowrap bg-white shadow-sm"><thead><tr class="text-slate-800 uppercase tracking-wider text-[10px] font-bold"><th class="p-3 sticky-col-1">ชื่อเมนู (COL A)</th><th class="p-3 sticky-col-2">ไม่เอา... (COL B)</th>`;
-      allIngredientsList.forEach(h => html += `<th class="p-3 text-center min-w-[80px] border-b border-slate-200">${h}</th>`);
-      html += `</tr></thead><tbody class="divide-y divide-slate-100">`;
-
-      replaceUseRules.forEach((row, rIdx) => {
-        html += `<tr class="hover:bg-slate-50 transition group"><td class="p-3 sticky-col-1 font-bold text-slate-800 bg-white group-hover:bg-slate-50">${row.menu}</td><td class="p-3 sticky-col-2 text-rose-600 font-bold bg-white group-hover:bg-slate-50">❌ ${row.exclude}</td>`;
-        allIngredientsList.forEach(ing => {
-          let rawVal = row.replace[ing];
-          let displayVal = '-';
-
-          if (rawVal !== undefined && rawVal !== null && rawVal !== "") {
-             let num = parseFloat(rawVal);
-             if (!isNaN(num)) {
-               let rounded = applySmartRounding(ing, num);
-               let unit = getUnit(ing);
-               displayVal = (rounded > 0 || unit !== "กรัม") ? rounded : '-';
-             } else {
-               displayVal = '-';
-             }
+      if (!replaceUseRules.length) {
+        el('tableContainer').innerHTML = '<div class="empty-state">ยังไม่มีข้อมูลสูตร กรุณาอัปโหลดไฟล์ Excel ด้านบน</div>';
+        return;
+      }
+      const headers = allIngredientsList.map(h => `<th>${escapeHtml(h)}</th>`).join('');
+      const rows = replaceUseRules.map((row, rIdx) => {
+        const cells = allIngredientsList.map(ing => {
+          const raw = row.replace[ing];
+          let display = '-';
+          if (raw !== undefined && raw !== null && raw !== '') {
+            const num = parseFloat(raw);
+            if (!Number.isNaN(num)) {
+              const rounded = applySmartRounding(ing, num);
+              display = (rounded > 0 || getUnit(ing) !== 'กรัม') ? rounded : '-';
+            }
           }
-
-          let isHasValue = (rawVal !== undefined && rawVal !== null && rawVal !== "" && parseFloat(rawVal) >= 0);
-          let cellStyle = isHasValue ? 'text-[#6d4937] font-bold bg-[#fff7ef] cursor-pointer hover:bg-[#f3e3d4]' : 'text-[#c4b9b0]';
-
-          html += `<td class="p-3 text-center border-b border-slate-100 ${cellStyle}" onclick="editMatrixCell(${rIdx}, '${ing}', ${rawVal || 0})">${displayVal}</td>`;
-        });
-        html += `</tr>`;
-      });
-      html += `</tbody></table>`;
-      container.innerHTML = html;
+          const editable = raw !== undefined && raw !== null && raw !== '' && !Number.isNaN(parseFloat(raw));
+          return `<td class="${editable ? 'matrix-cell-edit' : ''}" data-row="${rIdx}" data-ing="${escapeHtml(ing)}" data-raw="${editable ? raw : 0}">${display}</td>`;
+        }).join('');
+        return `<tr><td class="sticky-1"><strong>${escapeHtml(row.menu)}</strong></td><td class="sticky-2" style="color:#b84a55;font-weight:800">❌ ${escapeHtml(row.exclude)}</td>${cells}</tr>`;
+      }).join('');
+      el('tableContainer').innerHTML = `<table class="matrix-table"><thead><tr><th class="sticky-1">ชื่อเมนู</th><th class="sticky-2">ไม่เอา...</th>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
     }
+
+    function bindEvents() {
+      el('managerButton').addEventListener('click', openPinModal);
+      el('closeCalculatorButton').addEventListener('click', closeCalculator);
+      el('cancelPinButton').addEventListener('click', () => hideModal('pinModal'));
+      el('verifyPinButton').addEventListener('click', verifyPin);
+      el('pinInput').addEventListener('keydown', e => { if (e.key === 'Enter') verifyPin(); });
+      el('closeMatrixButton').addEventListener('click', closeMatrix);
+      el('downloadJsonButton').addEventListener('click', downloadJSON);
+      el('excelInput').addEventListener('change', importExcelData);
+
+      el('app-menus').addEventListener('click', e => {
+        const card = e.target.closest('[data-menu]');
+        if (card) openCalculator(card.dataset.menu);
+      });
+
+      el('excludeOptions').addEventListener('click', e => {
+        const replacement = e.target.closest('[data-replacement]');
+        if (replacement) return setReplacement(replacement.dataset.replaceFor, replacement.dataset.replacement);
+        const picker = e.target.closest('[data-picker]');
+        if (picker) return toggleReplacementPicker(picker.dataset.picker);
+        const exclude = e.target.closest('[data-exclude]');
+        if (exclude) toggleExclude(exclude.dataset.exclude);
+      });
+
+      el('tableContainer').addEventListener('click', e => {
+        const cell = e.target.closest('.matrix-cell-edit');
+        if (cell) editMatrixCell(Number(cell.dataset.row), cell.dataset.ing, Number(cell.dataset.raw));
+      });
+
+      [el('calculatorModal'), el('pinModal')].forEach(modal => {
+        modal.addEventListener('click', e => {
+          if (e.target === modal) hideModal(modal.id);
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      bindEvents();
+      loadData();
+    });
   </script>
 </body>
 </html>
