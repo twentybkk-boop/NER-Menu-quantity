@@ -1,6 +1,7 @@
 /* NER MENU VISUAL POLISH — 2026-09-24 */
 /* Decorative characters are viewport-anchored and never intercept input. */
-#decor-layer{position:static!important;inset:auto!important;width:0!important;height:0!important;overflow:visible!important;z-index:auto!important;pointer-events:none!important}
+#decor-layer{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;overflow:hidden!important;z-index:10!important;pointer-events:none!important}
+#decor-layer::before,#decor-layer::after{pointer-events:none!important}
 #app-shell{position:relative!important;z-index:auto!important}
 .decor-person{position:fixed!important;z-index:12!important;pointer-events:none!important;user-select:none!important;background-repeat:no-repeat!important;background-position:center!important;background-size:contain!important;mix-blend-mode:normal!important;opacity:1!important;filter:saturate(1.02) contrast(1.01) drop-shadow(0 10px 16px rgba(74,50,38,.10))!important}
 .hero,.menu-card,.category-title{position:relative!important;z-index:auto!important;isolation:auto!important}
@@ -47,7 +48,7 @@
  .decor-c{width:220px!important;height:420px!important;left:auto!important;right:-30px!important;top:auto!important;bottom:-4px!important}
 }
 @media(min-width:1024px){
- .decor-a{width:260px!important;height:272px!important;left:max(4px,calc(50vw - 620px))!important;right:auto!important;top:max(34px,calc(env(safe-area-inset-top) + 16px))!important;bottom:auto!important}
+ .decor-a{width:260px!important;height:272px!important;left:max(4px,calc(50vw - 620px))!important;right:auto!important;top:max(34px,calc(env(safe-area-inset-top) + 18px))!important;bottom:auto!important}
  .decor-b{width:252px!important;height:235px!important;left:max(6px,calc(50vw - 620px))!important;right:auto!important;top:auto!important;bottom:-5px!important}
  .decor-c{width:240px!important;height:458px!important;left:auto!important;right:max(8px,calc(50vw - 620px))!important;top:auto!important;bottom:-8px!important}
 }
