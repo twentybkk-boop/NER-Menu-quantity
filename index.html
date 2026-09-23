@@ -503,7 +503,7 @@
       container.innerHTML = html;
     }
 
-    function openPinModal() { document.getElementById('pinModal').classList.add('hidden'); document.getElementById('pinInput').value = ''; document.getElementById('pinInput').focus(); }
+    function openPinModal() { document.getElementById('pinModal').classList.remove('hidden'); document.getElementById('pinInput').value = ''; document.getElementById('pinInput').focus(); }
     function verifyPin() {
       if (document.getElementById('pinInput').value === '206738') {
         document.getElementById('pinModal').classList.add('hidden');
