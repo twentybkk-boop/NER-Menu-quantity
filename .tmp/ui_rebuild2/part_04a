@@ -1,0 +1,103 @@
+          <h2 class="category-title"><span class="category-icon">🍲</span>${escapeHtml(cat)}</h2>
+          <div class="menu-grid">
+            ${menus.map(menuName => {
+              const single = Object.keys(originalMenu[menuName]).length === 1;
+              return `<button type="button" class="menu-card" data-menu="${escapeHtml(menuName)}">
+                <span>
+                  <span class="menu-card-title">${escapeHtml(menuName)}</span>
+                  <span class="menu-card-subtitle ${single ? 'single' : ''}" style="display:block">${single ? 'วัตถุดิบเดี่ยว' : 'จัดการสูตรตัดออก'}</span>
+                </span>
+                <span class="menu-arrow" aria-hidden="true">›</span>
+              </button>`;
+            }).join('')}
+          </div>
+        </section>`).join('');
+    }
+
+    function openCalculator(menuName) {
+      if (!originalMenu[menuName]) return;
+      currentActiveMenu = menuName;
+      excludedItemsMap = {};
+      openReplacementPicker = null;
+      el('calcMenuTitle').textContent = menuName;
+
+      const single = Object.keys(originalMenu[menuName]).length === 1;
+      el('leftPanel').style.display = single ? 'none' : '';
+      el('rightPanel').style.width = single ? '100%' : '';
+
+      renderExcludeOptions();
+      renderNetResults();
+      showModal('calculatorModal');
+    }
+
+    function closeCalculator() {
+      openReplacementPicker = null;
+      hideModal('calculatorModal');
+    }
+
+    function toggleExclude(item) {
+      if (excludedItemsMap[item] !== undefined) {
+        delete excludedItemsMap[item];
+        if (openReplacementPicker === item) openReplacementPicker = null;
+      } else {
+        const valid = getSortedValidReplacements(currentActiveMenu, item);
+        excludedItemsMap[item] = valid[0] || '';
+        openReplacementPicker = item;
+      }
+      checkAndFixFallbacks();
+      renderExcludeOptions();
+      renderNetResults();
+    }
+
+    function toggleReplacementPicker(item) {
+      openReplacementPicker = openReplacementPicker === item ? null : item;
+      renderExcludeOptions();
+    }
+
+    function setReplacement(excludedItem, replacementItem) {
+      const valid = getSortedValidReplacements(currentActiveMenu, excludedItem);
+      if (!valid.includes(replacementItem)) return;
+      excludedItemsMap[excludedItem] = replacementItem;
+      openReplacementPicker = null;
+      renderExcludeOptions();
+      renderNetResults();
+    }
+
+    function renderExcludeOptions() {
+      const ingredients = Object.keys(originalMenu[currentActiveMenu] || {});
+      el('excludeOptions').innerHTML = ingredients.map(item => {
+        const excluded = excludedItemsMap[item] !== undefined;
+        let replacement = '';
+        if (excluded) {
+          const options = getSortedReplacementOptions(currentActiveMenu, item);
+          const selected = excludedItemsMap[item] || '';
+          const isOpen = openReplacementPicker === item;
+          const optionHtml = options.length ? options.map(opt => opt.selectable
+            ? `<button type="button" class="replacement-option selectable ${selected === opt.name ? 'selected' : ''}" data-replace-for="${escapeHtml(item)}" data-replacement="${escapeHtml(opt.name)}"><span>${escapeHtml(opt.name)}</span>${selected === opt.name ? '<span class="selected-mark">✓ เลือกอยู่</span>' : ''}</button>`
+            : `<button type="button" class="replacement-option disabled" disabled><span>${escapeHtml(opt.name)}</span><span class="option-note">แทนไม่ได้</span></button>`
+          ).join('') : '<div class="picker-empty">ไม่มีข้อมูลการแทนสำหรับรายการนี้</div>';
+
+          replacement = `<div class="replacement-wrap">
+            <button type="button" class="replacement-trigger ${isOpen ? 'is-open' : ''}" data-picker="${escapeHtml(item)}" aria-expanded="${isOpen}">
+              <span><span>${escapeHtml(selected || 'ไม่มีรายการที่แทนได้')}</span><small>เลือกวัตถุดิบทดแทน</small></span>
+              <span class="chevron">⌄</span>
+            </button>
+            ${isOpen ? `<div class="replacement-menu">${optionHtml}</div>` : ''}
+          </div>`;
+        }
+        return `<div class="exclude-item">
+          <button type="button" class="exclude-btn ${excluded ? 'is-excluded' : ''}" data-exclude="${escapeHtml(item)}">
+            <span>${escapeHtml(item)}</span>${excluded ? '<span class="exclude-status">✓ ตัดออก</span>' : ''}
+          </button>${replacement}
+        </div>`;
+      }).join('');
+    }
+
+    function renderNetResults() {
+      el('netResultList').innerHTML = calculateNetRecipe(currentActiveMenu).map(res => `
+        <div class="net-card ${res.isModified ? 'modified' : ''}">
+          <span class="net-name">${escapeHtml(res.name)}</span>
+          <span class="net-amount"><span class="net-qty">${res.qty}</span><span class="net-unit">${escapeHtml(res.unit)}</span></span>
+        </div>`).join('');
+    }
+
