@@ -24,7 +24,8 @@ jobs:
           python-version: '3.12'
 
       - name: Normalize helper source encoding
-        run: sed -i '1i# -*- coding: cp874 -*-' tools/ui_visual_polish.py
+        run: |
+          sed -i '1i# -*- coding: cp874 -*-' tools/ui_visual_polish.py
 
       - name: Apply presentation polish
         run: python tools/ui_visual_polish.py apply
