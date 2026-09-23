@@ -1,31 +1,4 @@
 @import url("menu-thumbnail-map.css");
-
-/* Phase 1 thumbnail integration. Phase 2 owns the full responsive visual layer. */
-.menu-card::before{
-  content:"";
-  width:84px;
-  height:62px;
-  flex:0 0 84px;
-  border-radius:14px;
-  background-color:#fbefe1;
-  background-image:var(--menu-art);
-  background-size:cover;
-  background-position:center;
-  background-repeat:no-repeat;
-  box-shadow:inset 0 0 0 1px rgba(108,70,53,.10),0 4px 12px rgba(79,54,41,.06);
-}
-.menu-card[data-menu="ชุดจุ่มหมูทะเล"]::before,
-.menu-card[data-menu="ชุดจุ่มเนื้อ"]::before,
-.menu-card[data-menu="ชุดจุ่มหมู"]::before,
-.menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]::before{
-  width:104px;
-  height:72px;
-  flex-basis:104px;
-}
-@media(max-width:767px){
-  .menu-card::before{width:92px;height:64px;flex-basis:92px}
-  .menu-card[data-menu="ชุดจุ่มหมูทะเล"]::before,
-  .menu-card[data-menu="ชุดจุ่มเนื้อ"]::before,
-  .menu-card[data-menu="ชุดจุ่มหมู"]::before,
-  .menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]::before{width:112px;height:74px;flex-basis:112px}
-}
+@import url("visual-core.css");
+@import url("visual-modal.css");
+@import url("visual-responsive.css");

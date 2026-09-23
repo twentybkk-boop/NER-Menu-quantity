@@ -1,0 +1,247 @@
+/* NER Smart Recipe — presentation-only visual layer.
+   Business / recipe / replacement / Matrix behavior intentionally untouched. */
+:root{
+  --ner-ivory:#fff9f0;
+  --ner-paper:rgba(255,253,248,.94);
+  --ner-paper-strong:#fffdf9;
+  --ner-brown:#6d4736;
+  --ner-brown-deep:#493027;
+  --ner-brown-soft:#9c7863;
+  --ner-green:#6f8657;
+  --ner-green-soft:#eef4e8;
+  --ner-rose:#c8616c;
+  --ner-rose-soft:#fff0f1;
+  --ner-line:rgba(184,145,118,.28);
+  --ner-shadow:0 10px 28px rgba(79,51,35,.10);
+  --ner-shadow-soft:0 6px 18px rgba(79,51,35,.065);
+  --ner-safe-top:max(12px,env(safe-area-inset-top));
+  --ner-safe-bottom:max(12px,env(safe-area-inset-bottom));
+}
+
+html{background:var(--ner-ivory);overflow-x:hidden;}
+body{
+  min-height:100vh;
+  min-height:100dvh;
+  overflow-x:clip;
+  color:#3f342f;
+  background:var(--ner-ivory);
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  user-select:none;
+  background-color:var(--ner-ivory);
+  background-image:url("background-master.webp");
+  background-repeat:no-repeat;
+  background-position:center top;
+  background-size:cover;
+}
+
+/* ---------- Intentional layer architecture ----------
+   0 background master / 20 normal UI surface / 30 foreground art / 40 critical UI content / 100+ modals. */
+#decor-layer{
+  position:fixed!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100vh!important;
+  height:100dvh!important;
+  overflow:hidden!important;
+  pointer-events:none!important;
+  user-select:none!important;
+  z-index:30!important;
+}
+.decor-person{
+  position:absolute!important;
+  display:block!important;
+  pointer-events:none!important;
+  user-select:none!important;
+  background-repeat:no-repeat!important;
+  background-position:center!important;
+  background-size:contain!important;
+  opacity:1!important;
+  filter:drop-shadow(0 8px 14px rgba(73,45,31,.08))!important;
+  mix-blend-mode:normal!important;
+  -webkit-mask-image:none!important;
+  mask-image:none!important;
+}
+.decor-a{background-image:url("overlay-top-left.webp")!important;}
+.decor-b{background-image:url("overlay-bottom-left.webp")!important;}
+.decor-c{background-image:url("overlay-right.webp")!important;}
+#app-shell{position:relative!important;z-index:auto!important;}
+.brand-masthead,.menu-card{position:relative!important;z-index:auto!important;}
+.hero{position:relative!important;z-index:35!important;}
+.category-title{position:relative!important;z-index:40!important;}
+.brand-masthead>*,.hero-row,.category-title>*,.menu-card::before,.menu-card>span,.menu-arrow,.manager-btn{position:relative!important;z-index:40!important;}
+.modal{z-index:100!important;}
+#matrixModal{z-index:110!important;}
+
+/* ---------- Brand / hero ---------- */
+#app-shell{
+  width:min(960px,calc(100% - 28px))!important;
+  margin:0 auto!important;
+  padding:var(--ner-safe-top) 0 calc(88px + var(--ner-safe-bottom))!important;
+}
+.brand-masthead{
+  width:min(650px,100%)!important;
+  min-height:auto!important;
+  margin:0 auto 12px!important;
+  padding:10px 8px 7px!important;
+  text-align:center!important;
+  color:var(--ner-brown)!important;
+}
+.brand-mark{
+  font-size:clamp(54px,8.2vw,86px)!important;
+  line-height:.88!important;
+  letter-spacing:.035em!important;
+  color:#744b39!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.7)!important;
+}
+.brand-thai{font-size:clamp(23px,3.8vw,34px)!important;margin-top:6px!important;line-height:1!important;color:#674232!important;}
+.brand-english{margin-top:8px!important;font-size:clamp(9px,1.3vw,12px)!important;letter-spacing:.38em!important;color:#8f6653!important;}
+.brand-note{margin:10px 0 0!important;font-size:clamp(11px,1.5vw,14px)!important;color:#a16e5b!important;font-weight:700!important;}
+.hero{
+  width:min(720px,100%)!important;
+  margin:0 auto!important;
+  padding:20px 22px!important;
+  border:1px solid rgba(211,177,151,.50)!important;
+  border-radius:24px!important;
+  background:linear-gradient(135deg,rgba(255,253,249,.96),rgba(255,247,237,.94))!important;
+  box-shadow:var(--ner-shadow)!important;
+  backdrop-filter:blur(10px)!important;
+  -webkit-backdrop-filter:blur(10px)!important;
+}
+.hero-row{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:18px!important;text-align:left!important;}
+.brand-title{margin:0!important;font-size:clamp(21px,3vw,28px)!important;line-height:1.15!important;color:var(--ner-brown-deep)!important;}
+.brand-title .accent{color:#8b5d46!important;}
+.brand-subtitle{margin:7px 0 0!important;max-width:430px!important;font-size:13px!important;line-height:1.55!important;color:#7f7068!important;font-weight:600!important;}
+.manager-btn{
+  min-height:48px!important;
+  padding:0 16px!important;
+  border-radius:15px!important;
+  background:linear-gradient(135deg,#75503d,#4a3027)!important;
+  color:#fff!important;
+  box-shadow:0 8px 20px rgba(73,48,38,.16)!important;
+  font-size:12.5px!important;
+  font-weight:800!important;
+  flex:0 0 auto!important;
+}
+.manager-btn::after{content:"›";margin-left:9px;font-size:22px;font-weight:500;line-height:1;}
+
+/* ---------- Category hierarchy ---------- */
+#app-menus{width:min(900px,100%)!important;margin:24px auto 0!important;}
+.category-block{margin-bottom:26px!important;}
+.category-title{
+  width:fit-content!important;
+  max-width:100%!important;
+  min-height:44px!important;
+  margin:0 0 11px!important;
+  padding:6px 12px 7px 5px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  color:#654333!important;
+  font-size:20px!important;
+  font-weight:800!important;
+  line-height:1.2!important;
+}
+.category-title::after{
+  content:"";
+  position:absolute;
+  left:8px;
+  right:12%;
+  bottom:0;
+  height:3px;
+  border-radius:999px;
+  background:linear-gradient(90deg,#d99175,rgba(217,145,117,0));
+  transform:rotate(-.6deg);
+}
+.category-icon{
+  width:34px!important;
+  height:34px!important;
+  flex:0 0 34px!important;
+  font-size:18px!important;
+  background:#f4dfcf!important;
+  box-shadow:inset 0 0 0 1px rgba(121,78,57,.06)!important;
+}
+.category-block:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"]) .category-title{
+  font-size:23px!important;
+  color:#55362a!important;
+}
+.category-block:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"]) .category-title::after{height:4px;right:4%;background:linear-gradient(90deg,#d37d5e,rgba(211,125,94,0));}
+
+/* ---------- Menu cards + Phase 1 thumbnails ---------- */
+.menu-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;}
+.menu-card{
+  --menu-art:none;
+  min-width:0!important;
+  min-height:86px!important;
+  padding:10px 11px!important;
+  gap:11px!important;
+  border:1px solid rgba(203,174,153,.48)!important;
+  border-radius:18px!important;
+  background:rgba(255,255,255,.955)!important;
+  box-shadow:var(--ner-shadow-soft)!important;
+  overflow:hidden!important;
+  touch-action:manipulation!important;
+  position:relative!important;
+}
+.menu-card:hover{transform:none!important;border-color:rgba(175,133,105,.58)!important;box-shadow:0 10px 24px rgba(79,51,35,.10)!important;}
+.menu-card:active{transform:none!important;background:rgba(255,250,244,.98)!important;}
+.menu-card::before{
+  content:""!important;
+  width:92px!important;
+  height:66px!important;
+  flex:0 0 92px!important;
+  border-radius:14px!important;
+  background-color:#f8e8d7!important;
+  background-image:var(--menu-art)!important;
+  background-size:600% 400%!important;
+  background-position:var(--menu-art-x,50%) var(--menu-art-y,50%)!important;
+  background-repeat:no-repeat!important;
+  box-shadow:inset 0 0 0 1px rgba(108,70,53,.10),0 4px 12px rgba(79,54,41,.06)!important;
+}
+.menu-card>span:first-of-type{min-width:0!important;flex:1 1 auto!important;}
+.menu-card-title{display:block!important;font-size:14px!important;line-height:1.32!important;color:#42332c!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;font-weight:800!important;}
+.menu-card-subtitle{display:block!important;margin-top:4px!important;font-size:10px!important;line-height:1.35!important;color:#938378!important;font-weight:700!important;white-space:normal!important;}
+.menu-card-subtitle.single{color:var(--ner-green)!important;}
+.menu-arrow{
+  width:34px!important;
+  height:34px!important;
+  flex:0 0 34px!important;
+  border-radius:50%!important;
+  display:grid!important;
+  place-items:center!important;
+  color:#6f4d3c!important;
+  background:#f8e9dc!important;
+  font-size:24px!important;
+  font-weight:500!important;
+  box-shadow:inset 0 0 0 1px rgba(123,82,60,.08)!important;
+}
+.menu-card[data-menu="ชุดจุ่มหมูทะเล"],
+.menu-card[data-menu="ชุดจุ่มเนื้อ"],
+.menu-card[data-menu="ชุดจุ่มหมู"],
+.menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]{
+  min-height:104px!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.985),rgba(255,247,238,.98))!important;
+  border-color:rgba(202,153,118,.50)!important;
+}
+.menu-card[data-menu="ชุดจุ่มหมูทะเล"]::before,
+.menu-card[data-menu="ชุดจุ่มเนื้อ"]::before,
+.menu-card[data-menu="ชุดจุ่มหมู"]::before,
+.menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]::before{
+  width:118px!important;
+  height:78px!important;
+  flex-basis:118px!important;
+  border-radius:15px!important;
+}
+.menu-card[data-menu="ชุดจุ่มหมูทะเล"] .menu-card-title,
+.menu-card[data-menu="ชุดจุ่มเนื้อ"] .menu-card-title,
+.menu-card[data-menu="ชุดจุ่มหมู"] .menu-card-title,
+.menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"] .menu-card-title{font-size:15px!important;}
+

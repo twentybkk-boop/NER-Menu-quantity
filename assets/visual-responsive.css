@@ -1,0 +1,82 @@
+/* ---------- Phone portrait ---------- */
+@media(max-width:767px){
+  body::before{background-size:auto 100vh;background-size:auto 100dvh;background-position:center top;}
+  #app-shell{width:min(calc(100% - 18px),620px)!important;padding-top:max(8px,env(safe-area-inset-top))!important;padding-bottom:calc(78px + env(safe-area-inset-bottom))!important;}
+  .brand-masthead{padding:3px 4px 6px!important;margin-bottom:7px!important;}
+  .brand-mark{font-size:52px!important;}.brand-thai{font-size:22px!important;margin-top:4px!important;}.brand-english{font-size:8.5px!important;margin-top:6px!important;}.brand-note{font-size:10.5px!important;margin-top:8px!important;}
+  .hero{padding:16px 15px!important;border-radius:21px!important;}
+  .hero-row{flex-direction:column!important;align-items:stretch!important;gap:12px!important;text-align:center!important;}
+  .brand-title{font-size:20px!important;}.brand-subtitle{font-size:11.5px!important;margin-left:auto!important;margin-right:auto!important;}
+  .manager-btn{width:100%!important;min-height:47px!important;font-size:12px!important;}
+  #app-menus{margin-top:19px!important;}
+  .category-block{margin-bottom:21px!important;}
+  .category-title{font-size:18px!important;min-height:40px!important;padding-left:3px!important;}
+  .category-block:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"]) .category-title{font-size:20px!important;}
+  .category-icon{width:31px!important;height:31px!important;flex-basis:31px!important;font-size:16px!important;}
+  .menu-grid{grid-template-columns:1fr!important;gap:8px!important;}
+  .menu-card{min-height:78px!important;padding:8px 9px!important;border-radius:16px!important;gap:9px!important;}
+  .menu-card::before{width:90px!important;height:62px!important;flex-basis:90px!important;border-radius:13px!important;}
+  .menu-card-title{font-size:13.5px!important;}.menu-card-subtitle{font-size:9.8px!important;}.menu-arrow{width:32px!important;height:32px!important;flex-basis:32px!important;font-size:23px!important;}
+  .menu-card[data-menu="ชุดจุ่มหมูทะเล"],.menu-card[data-menu="ชุดจุ่มเนื้อ"],.menu-card[data-menu="ชุดจุ่มหมู"],.menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]{min-height:92px!important;}
+  .menu-card[data-menu="ชุดจุ่มหมูทะเล"]::before,.menu-card[data-menu="ชุดจุ่มเนื้อ"]::before,.menu-card[data-menu="ชุดจุ่มหมู"]::before,.menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]::before{width:108px!important;height:72px!important;flex-basis:108px!important;}
+  /* all 3 team members stay present together; edges are intentionally clipped, never content */
+  .decor-a{width:118px!important;height:108px!important;left:-31px!important;top:max(18px,calc(env(safe-area-inset-top) + 8px))!important;right:auto!important;bottom:auto!important;}
+  .decor-b{width:135px!important;height:104px!important;left:-39px!important;top:auto!important;bottom:max(4px,calc(env(safe-area-inset-bottom) + 2px))!important;right:auto!important;}
+  .decor-c{width:102px!important;height:149px!important;right:-31px!important;left:auto!important;top:auto!important;bottom:max(4px,calc(env(safe-area-inset-bottom) + 2px))!important;}
+  .modal{align-items:flex-start!important;padding-top:max(6px,env(safe-area-inset-top))!important;padding-bottom:max(8px,env(safe-area-inset-bottom))!important;}
+  .modal-card{max-height:calc(100dvh - max(14px,env(safe-area-inset-top)) - max(14px,env(safe-area-inset-bottom)))!important;border-radius:20px!important;}
+  .modal-header{padding:13px 14px!important;}.modal-title{font-size:19px!important;}.modal-subtitle{font-size:10.5px!important;}.close-btn{width:38px!important;height:38px!important;flex-basis:38px!important;}
+  .calculator-body{display:flex!important;flex-direction:column!important;overflow-y:auto!important;overflow-x:hidden!important;padding-bottom:calc(14px + env(safe-area-inset-bottom))!important;scrollbar-gutter:stable;}
+  .calc-panel{overflow:visible!important;padding:13px!important;}
+  #leftPanel{border-right:0!important;border-bottom:1px solid rgba(214,183,160,.42)!important;}
+  #rightPanel{flex:0 0 auto!important;}
+  #netResultList{grid-template-columns:1fr!important;}
+  .replacement-wrap{margin-left:6px!important;}.replacement-menu{max-height:235px!important;overflow-y:auto!important;}
+  .matrix-card{width:100%!important;height:calc(100dvh - 12px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;max-height:calc(100dvh - 12px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;}
+  .matrix-header{align-items:flex-start!important;flex-direction:column!important;gap:8px!important;padding:10px!important;}
+  .matrix-actions{width:100%!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;}
+  .matrix-actions button,.upload-label{min-height:38px!important;padding:0 7px!important;justify-content:center!important;font-size:10px!important;}.matrix-close{grid-column:1/-1!important;}
+  #tableContainer{--matrix-col-1:82px;--matrix-col-2:86px;--matrix-data-col:50px;padding:3px!important;}
+}
+
+/* ---------- iPad portrait ---------- */
+@media(min-width:768px) and (max-width:1023px){
+  body::before{background-size:auto 100vh;background-size:auto 100dvh;background-position:center top;}
+  #app-shell{width:min(calc(100% - 34px),820px)!important;padding-top:max(12px,env(safe-area-inset-top))!important;}
+  .brand-masthead{width:min(620px,100%)!important;}
+  .hero{width:min(690px,100%)!important;}
+  #app-menus{width:min(760px,100%)!important;}
+  .menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;}
+  .decor-a{width:170px!important;height:155px!important;left:-35px!important;top:max(20px,calc(env(safe-area-inset-top) + 8px))!important;right:auto!important;bottom:auto!important;}
+  .decor-b{width:190px!important;height:146px!important;left:-42px!important;top:auto!important;bottom:max(6px,calc(env(safe-area-inset-bottom) + 4px))!important;right:auto!important;}
+  .decor-c{width:142px!important;height:208px!important;right:-30px!important;left:auto!important;top:auto!important;bottom:max(4px,calc(env(safe-area-inset-bottom) + 2px))!important;}
+  .calculator-body{display:flex!important;flex-direction:column!important;overflow-y:auto!important;}
+  .calc-panel{overflow:visible!important;}
+  #leftPanel{border-right:0!important;border-bottom:1px solid rgba(214,183,160,.42)!important;}
+  #rightPanel{flex:0 0 auto!important;}
+  .replacement-menu{max-height:260px!important;overflow-y:auto!important;}
+  #tableContainer{--matrix-col-1:92px;--matrix-col-2:96px;--matrix-data-col:52px;}
+}
+
+/* ---------- iPad landscape / wide ---------- */
+@media(min-width:1024px){
+  body::before{background-size:cover;background-position:center top;}
+  #app-shell{width:min(1000px,calc(100% - 54px))!important;}
+  #app-menus{width:min(920px,100%)!important;}
+  .menu-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+  .decor-a{width:205px!important;height:188px!important;left:max(-24px,calc(50vw - 620px))!important;top:max(18px,calc(env(safe-area-inset-top) + 6px))!important;right:auto!important;bottom:auto!important;}
+  .decor-b{width:220px!important;height:169px!important;left:max(-28px,calc(50vw - 630px))!important;top:auto!important;bottom:max(3px,calc(env(safe-area-inset-bottom) + 1px))!important;right:auto!important;}
+  .decor-c{width:164px!important;height:240px!important;right:max(-20px,calc(50vw - 625px))!important;left:auto!important;top:auto!important;bottom:max(1px,env(safe-area-inset-bottom))!important;}
+  .calculator-body{grid-template-columns:minmax(0,43%) minmax(0,57%)!important;}
+}
+
+@media(min-width:1024px) and (max-height:860px){
+  .brand-masthead{padding-top:2px!important;margin-bottom:6px!important;}
+  .brand-mark{font-size:58px!important;}.brand-thai{font-size:24px!important;}.brand-english{margin-top:5px!important;}.brand-note{margin-top:6px!important;}
+  .hero{padding:16px 20px!important;}.brand-title{font-size:21px!important;}.manager-btn{min-height:44px!important;}
+  #app-menus{margin-top:17px!important;}.category-block{margin-bottom:20px!important;}.category-title{margin-bottom:8px!important;}
+  .menu-card{min-height:78px!important;padding:8px 9px!important;}.menu-card::before{width:82px!important;height:58px!important;flex-basis:82px!important;}
+  .menu-card[data-menu="ชุดจุ่มหมูทะเล"]::before,.menu-card[data-menu="ชุดจุ่มเนื้อ"]::before,.menu-card[data-menu="ชุดจุ่มหมู"]::before,.menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]::before{width:100px!important;height:68px!important;flex-basis:100px!important;}
+}
+
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important;}}
