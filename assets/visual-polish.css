@@ -1,0 +1,53 @@
+/* NER MENU VISUAL POLISH — 2026-09-24 */
+/* Decorative characters are viewport-anchored and never intercept input. */
+#decor-layer{position:static!important;inset:auto!important;width:0!important;height:0!important;overflow:visible!important;z-index:auto!important;pointer-events:none!important}
+#app-shell{position:relative!important;z-index:auto!important}
+.decor-person{position:fixed!important;z-index:12!important;pointer-events:none!important;user-select:none!important;background-repeat:no-repeat!important;background-position:center!important;background-size:contain!important;mix-blend-mode:normal!important;opacity:1!important;filter:saturate(1.02) contrast(1.01) drop-shadow(0 10px 16px rgba(74,50,38,.10))!important}
+.hero,.menu-card,.category-title{position:relative!important;z-index:auto!important;isolation:auto!important}
+.hero-row,.menu-card>span,.menu-card:before,.category-title>*{position:relative!important;z-index:24!important}
+.manager-btn,.menu-arrow{position:relative!important;z-index:25!important}
+.decor-person:before,.decor-person:after{content:"";position:absolute;display:block;pointer-events:none;background-repeat:no-repeat;background-position:center;background-size:contain}
+.decor-a:after{width:48%;height:30%;left:27%;top:21%;background-image:url('accessory-glasses.svg');transform:rotate(-4deg)}
+.decor-c:after{width:66%;height:64%;right:-10%;top:25%;background-image:url('accessory-white-backpack.svg');transform:rotate(3deg)}
+.decor-b:before{width:64%;height:48%;left:43%;top:55%;border-radius:50%;background:radial-gradient(ellipse,rgba(255,248,239,.99) 0 58%,rgba(255,248,239,.88) 70%,transparent 76%)}
+.decor-b:after{width:64%;height:52%;left:43%;top:52%;background-image:url('accessory-gray-fullface-helmet.svg');transform:rotate(-4deg)}
+
+/* Local illustrated menu thumbnails; default is ready-pot, semantic selectors override from real recipe menu names. */
+.menu-card{--menu-art:url('menu-art/ready-pot.svg')}
+.menu-card[data-menu="ชุดจุ่มหมูทะเล"]{--menu-art:url('menu-art/set-seafood.svg')}
+.menu-card[data-menu="ชุดจุ่มเนื้อ"]{--menu-art:url('menu-art/set-beef.svg')}
+.menu-card[data-menu="ชุดจุ่มหมู"]{--menu-art:url('menu-art/set-pork.svg')}
+.menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]{--menu-art:url('menu-art/set-pork-single.svg')}
+.menu-card[data-menu*="เนื้อ"]{--menu-art:url('menu-art/beef.svg')}
+.menu-card[data-menu*="หมู"],.menu-card[data-menu="ตับหมู"],.menu-card[data-menu="เซ่งจี๊หมู"]{--menu-art:url('menu-art/pork.svg')}
+.menu-card[data-menu*="กุ้ง"],.menu-card[data-menu*="ปลาหมึก"],.menu-card[data-menu*="ปลา"],.menu-card[data-menu*="คาลามารี"]{--menu-art:url('menu-art/seafood.svg')}
+.menu-card[data-menu*="ผัก"],.menu-card[data-menu="กะหล่ำปลี"],.menu-card[data-menu="โหระพา"],.menu-card[data-menu="ใบชะพลู"]{--menu-art:url('menu-art/greens.svg')}
+.menu-card[data-menu*="เส้น"],.menu-card[data-menu="วุ้นเส้น"],.menu-card[data-menu="มาม่า"],.menu-card[data-menu*="หมี่หยก"]{--menu-art:url('menu-art/noodles.svg')}
+.menu-card[data-menu*="ไข่"],.menu-card[data-menu*="เต้าหู้"],.menu-card[data-menu*="ฟองเต้าหู้"]{--menu-art:url('menu-art/egg-tofu.svg')}
+.menu-card[data-menu*="ข้าวเปล่า"]{--menu-art:url('menu-art/rice.svg')}
+.menu-card[data-menu*="ไก่ป๊อป"],.menu-card[data-menu*="แฮชบราวน์"],.menu-card[data-menu*="ข้าวเกรียบ"]{--menu-art:url('menu-art/fried.svg')}
+.menu-card[data-menu*="ซาโมซ่า"],.menu-card[data-menu*="ลอยแก้ว"],.menu-card[data-menu*="โมจิ"]{--menu-art:url('menu-art/dessert.svg')}
+.menu-card[data-menu*="อิ่มเดี่ยว"]{--menu-art:url('menu-art/ready-pot.svg')}
+/* exact set mappings intentionally come last */
+.menu-card[data-menu="ชุดจุ่มหมูทะเล"]{--menu-art:url('menu-art/set-seafood.svg')}
+.menu-card[data-menu="ชุดจุ่มเนื้อ"]{--menu-art:url('menu-art/set-beef.svg')}
+.menu-card[data-menu="ชุดจุ่มหมู"]{--menu-art:url('menu-art/set-pork.svg')}
+.menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]{--menu-art:url('menu-art/set-pork-single.svg')}
+.menu-card:before{content:""!important;background-image:var(--menu-art)!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;color:transparent!important;box-shadow:inset 0 0 0 1px rgba(156,123,103,.10),0 4px 10px rgba(79,54,41,.06)!important}
+
+@media(max-width:767px){
+ .decor-a{width:190px!important;height:200px!important;left:-32px!important;right:auto!important;top:max(30px,calc(env(safe-area-inset-top) + 12px))!important;bottom:auto!important}
+ .decor-b{width:192px!important;height:178px!important;left:-29px!important;right:auto!important;top:auto!important;bottom:max(-5px,calc(env(safe-area-inset-bottom) - 12px))!important}
+ .decor-c{width:180px!important;height:342px!important;left:auto!important;right:-42px!important;top:auto!important;bottom:max(-12px,calc(env(safe-area-inset-bottom) - 18px))!important}
+ #app-shell{padding-bottom:calc(126px + env(safe-area-inset-bottom))!important}
+}
+@media(min-width:768px) and (max-width:1023px){
+ .decor-a{width:232px!important;height:243px!important;left:-31px!important;right:auto!important;top:max(40px,calc(env(safe-area-inset-top) + 18px))!important;bottom:auto!important}
+ .decor-b{width:240px!important;height:224px!important;left:-32px!important;right:auto!important;top:auto!important;bottom:-4px!important}
+ .decor-c{width:220px!important;height:420px!important;left:auto!important;right:-30px!important;top:auto!important;bottom:-4px!important}
+}
+@media(min-width:1024px){
+ .decor-a{width:260px!important;height:272px!important;left:max(4px,calc(50vw - 620px))!important;right:auto!important;top:max(34px,calc(env(safe-area-inset-top) + 16px))!important;bottom:auto!important}
+ .decor-b{width:252px!important;height:235px!important;left:max(6px,calc(50vw - 620px))!important;right:auto!important;top:auto!important;bottom:-5px!important}
+ .decor-c{width:240px!important;height:458px!important;left:auto!important;right:max(8px,calc(50vw - 620px))!important;top:auto!important;bottom:-8px!important}
+}
