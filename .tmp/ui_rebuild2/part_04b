@@ -1,0 +1,42 @@
+    function openPinModal() {
+      el('pinInput').value = '';
+      showModal('pinModal');
+      setTimeout(() => el('pinInput').focus(), 80);
+    }
+    async function verifyPin() {
+      const bytes = new TextEncoder().encode(el('pinInput').value);
+      const digest = await crypto.subtle.digest('SHA-256', bytes);
+      const hash = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+      if (hash === '22dbfd569af550fb73ceb471588d0f7a30c8a13ca97701c1bc326ae324e49f73') {
+        hideModal('pinModal');
+        openMatrix();
+      } else {
+        alert('รหัสผ่านไม่ถูกต้อง');
+      }
+    }
+    function openMatrix() { renderMatrixTable(); showModal('matrixModal'); }
+    function closeMatrix() { hideModal('matrixModal'); }
+
+    function importExcelData(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          if (typeof XLSX === 'undefined') throw new Error('ไม่สามารถโหลดตัวอ่าน Excel ได้');
+          const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+          const sheetOrig = workbook.Sheets['Original menu'];
+          const sheetRep = workbook.Sheets['Replace Use'];
+          if (!sheetOrig || !sheetRep) throw new Error('ไม่พบชีต Original menu หรือ Replace Use');
+
+          const jsonOrig = XLSX.utils.sheet_to_json(sheetOrig, { header: 1, defval: '' });
+          const origHeaderRowIdx = jsonOrig.findIndex(row => row.some(cell => String(cell).trim() === 'หมูหมัก'));
+          if (origHeaderRowIdx < 0) throw new Error('หา header ของ Original menu ไม่พบ');
+          const headerRowOrig = jsonOrig[origHeaderRowIdx];
+          const newOriginalMenu = {};
+          const newMenuCategories = {};
+          let lastCategory = 'อื่นๆ';
+          let lastOrigMenuName = '';
+
+          for (let r = origHeaderRowIdx + 2; r < jsonOrig.length; r++) {
+            const row = jsonOrig[r];
