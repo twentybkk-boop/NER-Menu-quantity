@@ -1,0 +1,140 @@
+name: Final real-device UI polish
+
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/final-real-device-polish.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  polish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+
+      - name: Refine transparent character assets and calculator presentation
+        run: |
+          python -m pip install --quiet pillow numpy
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          import numpy as np
+
+          # Remove the remaining cream rectangle from the generated character crops
+          # while preserving the high-contrast character/food pixels.
+          for name in (
+              'ner-character-top-left.png',
+              'ner-character-bottom-left.png',
+              'ner-character-right.png',
+          ):
+              path=Path('assets')/name
+              im=Image.open(path).convert('RGBA')
+              arr=np.asarray(im).astype(np.float32)
+              rgb=arr[:,:,:3]
+              old_alpha=arr[:,:,3]/255.0
+              mean=rgb.mean(axis=2)
+              sat=rgb.max(axis=2)-rgb.min(axis=2)
+              signal=np.maximum((255.0-mean)*0.90, sat*1.20)
+              keep=np.clip((signal-18.0)/42.0,0.0,1.0)
+              arr[:,:,3]=np.clip(old_alpha*keep*255.0,0,255)
+              Image.fromarray(arr.astype(np.uint8),'RGBA').save(path,optimize=True)
+
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          marker='/* FINAL REAL DEVICE POLISH 2026-09-23 */'
+          if marker in s:
+              raise SystemExit('final polish already present')
+
+          s=s.replace('❌ สิ่งที่ลูกค้า “ไม่รับ” (เลือกได้หลายอัน)','สิ่งที่ลูกค้าไม่รับ',1)
+          s=s.replace('⚖️ ปริมาณสุทธิ (เตรียมจัดเสิร์ฟ)','ปริมาณสุทธิ',1)
+
+          css=r'''
+          /* FINAL REAL DEVICE POLISH 2026-09-23 */
+          .panel-title{
+            min-height:24px;
+            margin-bottom:14px!important;
+            font-size:15px!important;
+            line-height:1.35!important;
+            white-space:normal;
+          }
+          .panel-title .dot{width:8px;height:8px}
+
+          @media(max-width:767px){
+            #decor-layer{height:1320px!important}
+            .decor-a{
+              width:188px!important;height:197px!important;
+              left:-23px!important;top:16px!important;
+            }
+            .decor-b{
+              width:184px!important;height:171px!important;
+              left:-27px!important;top:930px!important;
+            }
+            .decor-c{
+              width:174px!important;height:332px!important;
+              right:-26px!important;top:748px!important;
+            }
+            .panel-title{font-size:14px!important;margin-bottom:12px!important}
+            .calc-panel{padding-top:14px!important}
+          }
+          @media(min-width:768px) and (max-width:1023px){
+            .decor-a{width:210px!important;height:220px!important;left:-12px!important;top:38px!important}
+            .decor-b{width:218px!important;height:203px!important;left:-10px!important;top:850px!important}
+            .decor-c{width:202px!important;height:385px!important;right:-8px!important;top:675px!important}
+          }
+          @media(min-width:1024px){
+            .decor-a{width:246px!important;height:258px!important;left:8px!important;top:34px!important}
+            .decor-b{width:246px!important;height:229px!important;left:8px!important;top:535px!important}
+            .decor-c{width:236px!important;height:450px!important;right:8px!important;top:330px!important}
+          }
+          '''
+          s=s.replace('</style>',css+'\n</style>',1)
+          for token in ('selectable: qty > 0','option.disabled = true','function calculateNetRecipe','function renderMatrixTable'):
+              if token not in s: raise SystemExit('business logic token missing: '+token)
+          p.write_text(s,encoding='utf-8')
+          PY
+
+      - name: Verify responsive interactions and capture screenshots
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          inline=[x for x in re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S) if x.strip()]
+          Path('/tmp/app.js').write_text(inline[-1],encoding='utf-8')
+          PY
+          node --check /tmp/app.js
+          npm init -y >/dev/null 2>&1
+          npm install --no-save playwright@1.55.0 >/dev/null
+          npx playwright install --with-deps chromium webkit >/dev/null
+          python -m http.server 8000 >/tmp/server.log 2>&1 &
+          PID=$!; trap 'kill $PID || true' EXIT; sleep 2
+          cat >/tmp/check.cjs <<'JS'
+          const fs=require('fs'),assert=require('assert'),{chromium,webkit}=require(process.cwd()+'/node_modules/playwright');
+          const recipe=fs.readFileSync('recipe_master.json','utf8');
+          const sizes=[['iphone',390,844],['ipadp',820,1180],['ipadl',1180,820],['ipadp2',1024,1366],['ipadl2',1366,1024]];
+          async function pageAt(b,w,h){const p=await b.newPage({viewport:{width:w,height:h}});await p.route('https://raw.githubusercontent.com/**',r=>r.fulfill({status:200,contentType:'application/json',body:recipe}));await p.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded'});await p.locator('.menu-card').first().waitFor();return p}
+          async function flow(b,engine,name,w,h,capture){const p=await pageAt(b,w,h);const base=await p.evaluate(()=>({sw:document.documentElement.scrollWidth,iw:innerWidth,pe:getComputedStyle(document.querySelector('#decor-layer')).pointerEvents,imgs:[...document.querySelectorAll('.decor-person')].map(e=>getComputedStyle(e).backgroundImage)}));assert(base.sw<=base.iw+1,`page overflow ${w}x${h}`);assert.equal(base.pe,'none');assert(base.imgs.every(x=>x.includes('ner-character-')));if(capture)await p.screenshot({path:`/tmp/review/${name}-home.png`,fullPage:false});await p.locator('.menu-card').first().click();await p.locator('#calculatorModal:not(.is-hidden)').waitFor();assert(await p.evaluate(()=>{const r=document.querySelector('#calculatorModal .modal-card').getBoundingClientRect();return r.left>=-1&&r.top>=-1&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1}));const title=await p.locator('#leftPanel .panel-title').evaluate(e=>e.getBoundingClientRect());const first=await p.locator('.exclude-item').first().evaluate(e=>e.getBoundingClientRect());assert(title.bottom<=first.top+1,'section heading overlaps first item');const ex=p.locator('.exclude-btn').first();if(await ex.count()){await ex.click();await p.locator('.replacement-wrap').first().waitFor();assert(await p.evaluate(()=>{const row=document.querySelector('.exclude-item'),wrap=row?.querySelector('.replacement-wrap'),next=row?.nextElementSibling;if(!row||!wrap||!next)return true;return wrap.getBoundingClientRect().bottom<=next.getBoundingClientRect().top+2}),'replacement overlap');}if(capture)await p.screenshot({path:`/tmp/review/${name}-calc.png`,fullPage:false});await p.locator('#closeCalculatorButton').click();await p.locator('#managerButton').click();await p.locator('#pinInput').fill('206738');await p.locator('#verifyPinButton').click();await p.locator('#matrixModal:not(.is-hidden)').waitFor();await p.locator('.matrix-table').waitFor();const m=await p.evaluate(()=>{const s=document.querySelector('#tableContainer');const overflow=s.scrollWidth>s.clientWidth;if(overflow)s.scrollLeft=300;return{page:document.documentElement.scrollWidth<=innerWidth+1,contained:s.getBoundingClientRect().right<=innerWidth+1,overflow,scrolled:s.scrollLeft>0}});assert(m.page&&m.contained);if(m.overflow)assert(m.scrolled);await p.close();console.log('PASS',engine,name,w+'x'+h)}
+          async function rotate(b){const p=await pageAt(b,820,1180);await p.locator('.menu-card').first().click();assert.equal(await p.locator('.calculator-body').evaluate(e=>getComputedStyle(e).display),'flex');await p.setViewportSize({width:1180,height:820});await p.waitForTimeout(120);assert.equal(await p.locator('.calculator-body').evaluate(e=>getComputedStyle(e).display),'grid');assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await p.setViewportSize({width:820,height:1180});await p.waitForTimeout(120);assert.equal(await p.locator('.calculator-body').evaluate(e=>getComputedStyle(e).display),'flex');await p.close();console.log('PASS rotate')}
+          async function run(){fs.mkdirSync('/tmp/review',{recursive:true});for(const [ename,engine,list] of [['chromium',chromium,sizes],['webkit',webkit,sizes.slice(0,3)]]){const b=await engine.launch({headless:true});try{for(const [n,w,h] of list)await flow(b,ename,ename+'-'+n,w,h,ename==='chromium');await rotate(b);console.log('ENGINE PASS',ename)}finally{await b.close()}}}run().catch(e=>{console.error(e);process.exit(1)});
+          JS
+          node /tmp/check.cjs
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-real-device-polish-review
+          path: /tmp/review
+          retention-days: 1
+
+      - name: Commit verified final polish
+        run: |
+          rm -rf node_modules package.json package-lock.json
+          rm -f .github/workflows/final-real-device-polish.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html assets/ner-character-*.png .github/workflows/final-real-device-polish.yml
+          git commit -m "Polish character framing and calculator layout"
+          git push origin HEAD:main
