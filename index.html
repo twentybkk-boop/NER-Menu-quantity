@@ -481,6 +481,50 @@ body{min-height:100vh;min-height:100dvh;color:var(--text);overflow-x:clip;backgr
 @media(min-width:768px) and (max-width:1023px){#decor-layer{height:1180px!important}#app-shell{width:min(calc(100% - 100px),720px)!important}#app-menus{width:min(700px,100%)!important}.decor-person{background-size:600px 400px!important}.decor-a{width:190px!important;height:218px!important;left:-18px!important;top:46px!important;background-position:0 0!important}.decor-b{width:190px!important;height:208px!important;left:-18px!important;top:845px!important;background-position:0 -184px!important}.decor-c{width:190px!important;height:292px!important;right:-16px!important;top:690px!important;background-position:-411px -76px!important}#tableContainer{--matrix-col-1:84px;--matrix-col-2:88px;--matrix-data-col:50px}}
 @media(min-width:1024px){#decor-layer{height:820px!important}#app-shell{width:min(840px,calc(100% - 300px))!important}#app-menus{width:min(760px,100%)!important}.menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.decor-person{background-size:720px 480px!important}.decor-a{width:220px!important;height:258px!important;left:4px!important;top:44px!important;background-position:0 0!important}.decor-b{width:220px!important;height:245px!important;left:6px!important;top:546px!important;background-position:0 -220px!important}.decor-c{width:220px!important;height:330px!important;right:4px!important;top:385px!important;background-position:-500px -92px!important}.brand-masthead{width:min(500px,100%)!important}.hero{width:min(620px,100%)!important}#tableContainer{--matrix-col-1:96px;--matrix-col-2:100px;--matrix-data-col:54px}}
 
+
+/* TRANSPARENT CHARACTER ASSETS 2026-09-23 */
+.decor-person{
+  background-color:transparent!important;
+  background-repeat:no-repeat!important;
+  background-position:center!important;
+  background-size:contain!important;
+  opacity:1!important;
+  pointer-events:none!important;
+}
+.decor-a{
+  background-image:url('assets/ner-character-top-left.png')!important;
+  width:168px!important;height:176px!important;
+  left:-12px!important;right:auto!important;top:22px!important;bottom:auto!important;
+}
+.decor-b{
+  background-image:url('assets/ner-character-bottom-left.png')!important;
+  width:188px!important;height:175px!important;
+  left:-18px!important;right:auto!important;top:690px!important;bottom:auto!important;
+}
+.decor-c{
+  background-image:url('assets/ner-character-right.png')!important;
+  width:160px!important;height:305px!important;
+  left:auto!important;right:-10px!important;top:520px!important;bottom:auto!important;
+}
+@media(max-width:767px){
+  #decor-layer{height:900px!important}
+  .decor-a{width:154px!important;height:161px!important;left:-18px!important;top:20px!important}
+  .decor-b{width:168px!important;height:156px!important;left:-22px!important;top:684px!important}
+  .decor-c{width:154px!important;height:294px!important;right:-18px!important;top:520px!important}
+}
+@media(min-width:768px) and (max-width:1023px){
+  #decor-layer{height:1180px!important}
+  .decor-a{width:194px!important;height:203px!important;left:-8px!important;top:44px!important}
+  .decor-b{width:205px!important;height:191px!important;left:-8px!important;top:830px!important}
+  .decor-c{width:190px!important;height:362px!important;right:-6px!important;top:665px!important}
+}
+@media(min-width:1024px){
+  #decor-layer{height:820px!important}
+  .decor-a{width:230px!important;height:241px!important;left:12px!important;top:42px!important}
+  .decor-b{width:238px!important;height:222px!important;left:12px!important;top:530px!important}
+  .decor-c{width:224px!important;height:427px!important;right:12px!important;top:338px!important}
+}
+
 </style>
 </head>
 <body>
