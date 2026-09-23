@@ -1,3 +1,4 @@
+# Retry after containing viewport-fixed artwork.
 name: Temporary UI Visual Polish QA
 
 on:
