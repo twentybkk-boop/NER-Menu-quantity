@@ -467,7 +467,21 @@ body{min-height:100vh;min-height:100dvh;color:var(--text);overflow-x:clip;backgr
 @media(min-width:1280px){#app-shell{width:min(1020px,calc(100% - 80px))}#app-menus{width:min(920px,100%)}.decor-a{left:max(-48px,calc(50% - 710px))}.decor-b{left:max(-52px,calc(50% - 716px))}.decor-c{right:max(-50px,calc(50% - 714px))}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}}
 
-  </style>
+  
+/* REAL DEVICE REVIEW OVERRIDES 2026-09-23 */
+#decor-layer{position:absolute!important;inset:0 0 auto 0!important;width:100%!important;height:980px!important;overflow:hidden!important;pointer-events:none!important;z-index:4!important}
+.decor-person{position:absolute!important;background-image:url('assets/ner-team-bg.webp')!important;background-repeat:no-repeat!important;background-size:540px 360px!important;opacity:1!important;filter:saturate(1.02) contrast(1.015)!important;-webkit-mask-image:none!important;mask-image:none!important;pointer-events:none!important}
+.decor-a{width:170px!important;height:195px!important;left:-22px!important;right:auto!important;top:26px!important;bottom:auto!important;background-position:0 0!important}
+.decor-b{width:170px!important;height:188px!important;left:-22px!important;right:auto!important;top:690px!important;bottom:auto!important;background-position:0 -166px!important}
+.decor-c{width:170px!important;height:262px!important;left:auto!important;right:-20px!important;top:540px!important;bottom:auto!important;background-position:-370px -68px!important}
+#app-shell{position:relative;z-index:20}.hero{isolation:isolate}.hero,.menu-card,.category-title{position:relative;z-index:1}.brand-subtitle{max-width:460px}.menu-card{transition:transform .12s ease,box-shadow .12s ease}.menu-card:active{transform:scale(.992)}
+.modal-card{background:#fffdf9;border:1px solid #eadbcf;box-shadow:0 24px 70px rgba(55,37,29,.24)}.modal-header{position:sticky;top:0;z-index:6;background:rgba(255,253,249,.98);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}#leftPanel{background:#fffdf9}#rightPanel{background:#f8f1e7}.panel-title{margin-bottom:12px}.exclude-item{margin-bottom:8px}.exclude-btn{min-height:46px;padding:10px 12px;border:1px solid #eadbcf;border-radius:13px;background:#fff;box-shadow:0 3px 10px rgba(73,49,38,.035)}.exclude-btn.is-excluded{background:#fff1f1;border-color:#e6b9bd}.replacement-wrap{margin:7px 0 2px;padding:8px;border-left:3px solid #caa690;border-radius:0 13px 13px 0;background:#fbf4eb}.replacement-trigger{min-height:44px;border-radius:11px;background:#fff}.replacement-menu{margin-top:6px;border:1px solid #eadbcf;border-radius:11px;background:#fff;box-shadow:none}.replacement-option{min-height:43px}.net-card{min-height:52px;border:1px solid #eadbcf;background:#fff;box-shadow:0 3px 10px rgba(73,49,38,.035)}
+#tableContainer{--matrix-col-1:88px;--matrix-col-2:92px;--matrix-data-col:52px;max-width:100%;overflow:auto;-webkit-overflow-scrolling:touch}.matrix-table th,.matrix-table td{padding:3px 2px}
+@media(max-width:767px){#decor-layer{height:900px!important}#app-shell{width:min(calc(100% - 46px),620px)!important}.brand-masthead{width:min(270px,78vw)!important;min-height:146px!important;margin-left:auto!important;margin-right:12px!important}.brand-mark{font-size:56px!important}.brand-note{max-width:220px;line-height:1.35}.decor-a{width:162px!important;height:188px!important;left:-28px!important;top:22px!important}.decor-b{width:164px!important;height:184px!important;left:-30px!important;top:694px!important}.decor-c{width:164px!important;height:250px!important;right:-30px!important;top:548px!important}.hero{padding:19px 16px!important}.brand-title{font-size:22px!important}.brand-subtitle{font-size:12px!important}#app-menus{margin-top:22px!important}.menu-card{min-height:72px!important}.modal-card{border-radius:18px!important}.modal-header{padding:13px 14px!important}.modal-title{font-size:20px!important}.calc-panel{padding:13px!important}#netResultList{grid-template-columns:1fr!important}#tableContainer{--matrix-col-1:72px;--matrix-col-2:76px;--matrix-data-col:48px;padding:2px!important}.matrix-table{font-size:8.25px!important}.matrix-table th{font-size:7.25px!important}}
+@media(min-width:768px) and (max-width:1023px){#decor-layer{height:1180px!important}#app-shell{width:min(calc(100% - 100px),720px)!important}#app-menus{width:min(700px,100%)!important}.decor-person{background-size:600px 400px!important}.decor-a{width:190px!important;height:218px!important;left:-18px!important;top:46px!important;background-position:0 0!important}.decor-b{width:190px!important;height:208px!important;left:-18px!important;top:845px!important;background-position:0 -184px!important}.decor-c{width:190px!important;height:292px!important;right:-16px!important;top:690px!important;background-position:-411px -76px!important}#tableContainer{--matrix-col-1:84px;--matrix-col-2:88px;--matrix-data-col:50px}}
+@media(min-width:1024px){#decor-layer{height:820px!important}#app-shell{width:min(840px,calc(100% - 300px))!important}#app-menus{width:min(760px,100%)!important}.menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.decor-person{background-size:720px 480px!important}.decor-a{width:220px!important;height:258px!important;left:4px!important;top:44px!important;background-position:0 0!important}.decor-b{width:220px!important;height:245px!important;left:6px!important;top:546px!important;background-position:0 -220px!important}.decor-c{width:220px!important;height:330px!important;right:4px!important;top:385px!important;background-position:-500px -92px!important}.brand-masthead{width:min(500px,100%)!important}.hero{width:min(620px,100%)!important}#tableContainer{--matrix-col-1:96px;--matrix-col-2:100px;--matrix-data-col:54px}}
+
+</style>
 </head>
 <body>
   <div id="decor-layer" aria-hidden="true">
@@ -487,7 +501,7 @@ body{min-height:100vh;min-height:100dvh;color:var(--text);overflow-x:clip;backgr
       <div class="hero-row">
         <div>
           <h1 class="brand-title">NER แจ่วฮ้อน <span class="accent">Smart Recipe</span></h1>
-          <p class="brand-subtitle">ระบบคำนวณวัตถุดิบสุทธิ (จัดลำดับ Default เลือกตัวแทนหมวดเดียวกันอัตโนมัติ)</p>
+          <p class="brand-subtitle">ระบบคำนวณวัตถุดิบสุทธิ สำหรับร้านแจ่วฮ้อน</p>
         </div>
         <button id="managerButton" class="manager-btn" type="button">⚙️ &nbsp;จัดการหลังบ้าน (Matrix UI)</button>
       </div>
@@ -696,7 +710,7 @@ body{min-height:100vh;min-height:100dvh;color:var(--text);overflow-x:clip;backgr
               return `<button type="button" class="menu-card" data-menu="${escapeHtml(menuName)}">
                 <span>
                   <span class="menu-card-title">${escapeHtml(menuName)}</span>
-                  <span class="menu-card-subtitle ${single ? 'single' : ''}" style="display:block">${single ? 'วัตถุดิบเดี่ยว' : 'จัดการสูตรตัดออก'}</span>
+                  <span class="menu-card-subtitle ${single ? 'single' : ''}" style="display:block">${single ? 'พร้อมจัดเสิร์ฟ' : 'ปรับวัตถุดิบ'}</span>
                 </span>
                 <span class="menu-arrow" aria-hidden="true">›</span>
               </button>`;
