@@ -1,0 +1,28 @@
+      el('excludeOptions').addEventListener('click', e => {
+        const replacement = e.target.closest('[data-replacement]');
+        if (replacement) return setReplacement(replacement.dataset.replaceFor, replacement.dataset.replacement);
+        const picker = e.target.closest('[data-picker]');
+        if (picker) return toggleReplacementPicker(picker.dataset.picker);
+        const exclude = e.target.closest('[data-exclude]');
+        if (exclude) toggleExclude(exclude.dataset.exclude);
+      });
+
+      el('tableContainer').addEventListener('click', e => {
+        const cell = e.target.closest('.matrix-cell-edit');
+        if (cell) editMatrixCell(Number(cell.dataset.row), cell.dataset.ing, Number(cell.dataset.raw));
+      });
+
+      [el('calculatorModal'), el('pinModal')].forEach(modal => {
+        modal.addEventListener('click', e => {
+          if (e.target === modal) hideModal(modal.id);
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      bindEvents();
+      loadData();
+    });
+  </script>
+</body>
+</html>
