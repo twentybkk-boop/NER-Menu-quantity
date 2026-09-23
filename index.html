@@ -8,30 +8,112 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-    body { font-family: 'Plus+Jakarta+Sans', sans-serif; background-color: #f8fafc; }
-    
+    :root {
+      --ner-cream: #fffaf3;
+      --ner-cream-2: #fdf5ea;
+      --ner-brown: #5f4031;
+      --ner-brown-dark: #3f2f28;
+      --ner-line: #eadfd1;
+      --ner-indigo: #5452e8;
+    }
+    html { background: var(--ner-cream); }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background:
+        linear-gradient(rgba(255,250,243,.90), rgba(255,250,243,.94)),
+        url('assets/ner-team-bg.webp') center top / min(1180px, 100vw) auto no-repeat fixed;
+      background-color: var(--ner-cream);
+      min-height: 100vh;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        radial-gradient(circle at 8% 13%, rgba(250, 218, 190, .20), transparent 24%),
+        radial-gradient(circle at 93% 18%, rgba(207, 225, 181, .18), transparent 24%),
+        linear-gradient(to bottom, rgba(255,255,255,.04), rgba(255,250,243,.20));
+    }
+    body > * { position: relative; z-index: 1; }
+
+    .app-hero {
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(234,223,209,.95);
+      box-shadow: 0 14px 40px rgba(78, 59, 44, .08);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .app-card {
+      background: rgba(255,255,255,.94);
+      border-color: rgba(226,232,240,.96);
+      box-shadow: 0 8px 24px rgba(78, 59, 44, .055);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .app-card:hover {
+      border-color: #c9b59f;
+      box-shadow: 0 12px 28px rgba(78, 59, 44, .10);
+      transform: translateY(-1px);
+    }
+    .brand-accent { color: var(--ner-indigo); }
+    .manager-btn {
+      background: linear-gradient(135deg, #273349 0%, #172235 100%);
+      box-shadow: 0 10px 24px rgba(23,34,53,.18);
+    }
+    .section-title {
+      background: rgba(255,250,243,.72);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border-radius: 14px;
+      padding: .5rem .75rem;
+      margin-left: -.75rem;
+      margin-right: -.75rem;
+    }
+
     .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    
+
     .sticky-col-1 { position: sticky; left: 0; min-width: 150px; max-width: 150px; border-right: 1px solid #e2e8f0; }
     .sticky-col-2 { position: sticky; left: 150px; min-width: 160px; max-width: 160px; border-right: 2px solid #cbd5e1; }
-    
+
     thead th { position: sticky; top: 0; z-index: 20; background-color: #f8fafc; border-bottom: 2px solid #e2e8f0; }
     thead .sticky-col-1, thead .sticky-col-2 { z-index: 30; background-color: #f1f5f9; }
     tbody .sticky-col-1, tbody .sticky-col-2 { z-index: 10; background-color: #ffffff; }
+
+    @media (max-width: 767px) {
+      body {
+        background:
+          linear-gradient(rgba(255,250,243,.93), rgba(255,250,243,.95)),
+          url('assets/ner-team-bg.webp') center top / 820px auto no-repeat fixed;
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+      }
+      .app-hero { border-radius: 28px; }
+      .app-card { border-radius: 20px; }
+    }
+
+    @media (min-width: 768px) {
+      body {
+        background:
+          linear-gradient(rgba(255,250,243,.86), rgba(255,250,243,.92)),
+          url('assets/ner-team-bg.webp') center top / min(1250px, 96vw) auto no-repeat fixed;
+      }
+    }
   </style>
 </head>
 <body class="p-4 md:p-8 max-w-7xl mx-auto pb-24 text-slate-800">
-  
+
   <!-- Header -->
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-5 md:p-6 rounded-3xl shadow-sm border border-slate-100 gap-4">
+  <div class="app-hero flex flex-col md:flex-row justify-between items-start md:items-center mb-8 p-5 md:p-6 rounded-3xl gap-4">
     <div>
-      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">NER แจ่วฮ้อน <span class="text-indigo-600">Smart Recipe</span></h1>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">NER แจ่วฮ้อน <span class="brand-accent">Smart Recipe</span></h1>
       <p class="text-sm text-slate-500 mt-1">ระบบคำนวณวัตถุดิบสุทธิ (จัดลำดับ Default เลือกตัวแทนหมวดเดียวกันอัตโนมัติ)</p>
     </div>
     <div class="flex gap-2 w-full md:w-auto">
-      <button onclick="openPinModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-2xl text-sm font-bold shadow-md active:scale-95 transition flex items-center gap-2 w-full md:w-auto justify-center">
+      <button onclick="openPinModal()" class="manager-btn hover:opacity-95 text-white px-5 py-3 rounded-2xl text-sm font-bold active:scale-95 transition flex items-center gap-2 w-full md:w-auto justify-center">
         <span>⚙️</span> จัดการหลังบ้าน (Matrix UI)
       </button>
     </div>
@@ -52,17 +134,15 @@
         </div>
         <button onclick="closeCalculator()" class="w-12 h-12 rounded-full bg-white border-2 border-slate-200 text-slate-600 font-bold hover:bg-slate-100 transition shadow-sm text-lg">✕</button>
       </div>
-      
+
       <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
-        <!-- ฝั่งซ้าย -->
         <div id="leftPanel" class="w-full md:w-[45%] p-6 border-r border-slate-100 overflow-y-auto bg-white custom-scrollbar">
           <h3 class="text-sm font-bold text-rose-600 mb-4 flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-rose-600"></span> ❌ สิ่งที่ลูกค้า "ไม่รับ" (เลือกได้หลายอัน)
           </h3>
           <div id="excludeOptions" class="space-y-3"></div>
         </div>
-        
-        <!-- ฝั่งขวา -->
+
         <div id="rightPanel" class="w-full md:w-[55%] p-6 bg-slate-50 overflow-y-auto custom-scrollbar">
           <h3 class="text-sm font-bold text-indigo-600 mb-4 flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-indigo-600"></span> ⚖️ ปริมาณสุทธิ (เตรียมจัดเสิร์ฟ)
@@ -110,8 +190,8 @@
   </div>
 
   <script>
-    const unitMap = { 
-      "กุ้ง": "ตัว", 
+    const unitMap = {
+      "กุ้ง": "ตัว",
       "ไข่ไก่": "ฟอง",
       "ไข่ไก่สด": "ฟอง",
       "มาม่า": "ก้อน",
@@ -135,30 +215,28 @@
       return unitMap[cleanItem] || "กรัม";
     };
 
-    // Canonical names protect the app from old/typo names in imported Excel files.
-  const ingredientNameAliases = {
-    "ปลากหมึก": "ปลาหมึก",
-    "เนื้อเสื้อร้องให้สไลซ์": "เนื้อเสือร้องไห้สไลซ์"
-  };
+    const ingredientNameAliases = {
+      "ปลากหมึก": "ปลาหมึก",
+      "เนื้อเสื้อร้องให้สไลซ์": "เนื้อเสือร้องไห้สไลซ์"
+    };
 
-  const canonicalIngredientName = (item) => {
-    let cleanItem = String(item || "").trim();
-    return ingredientNameAliases[cleanItem] || cleanItem;
-  };
+    const canonicalIngredientName = (item) => {
+      let cleanItem = String(item || "").trim();
+      return ingredientNameAliases[cleanItem] || cleanItem;
+    };
 
     const GITHUB_JSON_URL = "https://raw.githubusercontent.com/twentybkk-boop/NER-Menu-quantity/main/recipe_master.json";
 
-    let menuCategories = {}; 
-    let originalMenu = {}; 
+    let menuCategories = {};
+    let originalMenu = {};
     let replaceUseRules = [];
     let allIngredientsList = [];
 
     let currentActiveMenu = null;
-    let excludedItemsMap = {}; 
+    let excludedItemsMap = {};
 
-    // รายชื่อหมวดหมู่กลุ่มผักและเครื่องเคียง (สำหรับจัดลำดับ Smart Default)
     const veggieGroups = [
-      "กะหล่ำปลี", "ผักบุ้ง", "ผักชีฝรั่ง", "โหระพา", "ใบชะพลู", 
+      "กะหล่ำปลี", "ผักบุ้ง", "ผักชีฝรั่ง", "โหระพา", "ใบชะพลู",
       "วุ้นเส้น", "ไข่ไก่", "ไข่ไก่สด", "เต้าหู้ปลา", "เต้าหู้ไข่", "เต้าหู้ชีส", "ฟองเต้าหู้แท่ง", "ฟองเต้าหู้ทอด"
     ];
 
@@ -204,13 +282,13 @@
       for (let ex of Object.keys(excludedItemsMap)) {
         delete netRecipeMap[ex];
       }
-      
+
       for (let [ex, rep] of Object.entries(excludedItemsMap)) {
         if (rep && rep !== "") {
           let cleanMenu = String(menuName).trim();
           let cleanEx = String(ex).trim();
           let rule = replaceUseRules.find(r => String(r.menu).trim() === cleanMenu && String(r.exclude).trim() === cleanEx);
-          
+
           if (rule && rule.replace && rule.replace[rep] !== undefined) {
             let addAmt = Number(rule.replace[rep]) || 0;
             let currentAmt = Number(netRecipeMap[rep]) || 0;
@@ -219,12 +297,12 @@
           }
         }
       }
-      
+
       const results = [];
       for (const [item, rawTotal] of Object.entries(netRecipeMap)) {
         let unit = getUnit(item);
         let finalDisplayQty = applySmartRounding(item, rawTotal);
-        
+
         if (finalDisplayQty > 0 || unit !== "กรัม") {
           results.push({ name: item, qty: finalDisplayQty, unit: unit, isModified: modifiedFlags[item] === true });
         }
@@ -233,41 +311,40 @@
     }
 
     function getSortedReplacementOptions(menuName, excludedItem) {
-    const menuBaseIngredients = Object.keys(originalMenu[menuName] || {});
-    let rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(excludedItem).trim());
-    let options = [];
-    if (rule && rule.replace) {
-      Object.entries(rule.replace).forEach(([repItem, repQty]) => {
-        if (repItem === excludedItem) return;
-        let hasInBaseMenu = menuBaseIngredients.includes(repItem);
-        let isNotExcluded = excludedItemsMap[repItem] === undefined;
-        let qty = Number(repQty);
-        if (hasInBaseMenu && isNotExcluded && repQty !== undefined && !Number.isNaN(qty)) {
-          options.push({ name: repItem, qty: qty, selectable: qty > 0 });
-        }
-      });
+      const menuBaseIngredients = Object.keys(originalMenu[menuName] || {});
+      let rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(excludedItem).trim());
+      let options = [];
+      if (rule && rule.replace) {
+        Object.entries(rule.replace).forEach(([repItem, repQty]) => {
+          if (repItem === excludedItem) return;
+          let hasInBaseMenu = menuBaseIngredients.includes(repItem);
+          let isNotExcluded = excludedItemsMap[repItem] === undefined;
+          let qty = Number(repQty);
+          if (hasInBaseMenu && isNotExcluded && repQty !== undefined && !Number.isNaN(qty)) {
+            options.push({ name: repItem, qty: qty, selectable: qty > 0 });
+          }
+        });
+      }
+
+      let isExcludedVeggie = veggieGroups.includes(excludedItem);
+      if (isExcludedVeggie) {
+        options.sort((a, b) => {
+          let aIsVeg = veggieGroups.includes(a.name);
+          let bIsVeg = veggieGroups.includes(b.name);
+          if (aIsVeg && !bIsVeg) return -1;
+          if (!aIsVeg && bIsVeg) return 1;
+          return 0;
+        });
+      }
+
+      return options;
     }
 
-    // Smart Default still prefers vegetables/sides when the excluded item is in that group.
-    let isExcludedVeggie = veggieGroups.includes(excludedItem);
-    if (isExcludedVeggie) {
-      options.sort((a, b) => {
-        let aIsVeg = veggieGroups.includes(a.name);
-        let bIsVeg = veggieGroups.includes(b.name);
-        if (aIsVeg && !bIsVeg) return -1;
-        if (!aIsVeg && bIsVeg) return 1;
-        return 0;
-      });
+    function getSortedValidReplacements(menuName, excludedItem) {
+      return getSortedReplacementOptions(menuName, excludedItem)
+        .filter(option => option.selectable)
+        .map(option => option.name);
     }
-
-    return options;
-  }
-
-  function getSortedValidReplacements(menuName, excludedItem) {
-    return getSortedReplacementOptions(menuName, excludedItem)
-      .filter(option => option.selectable)
-      .map(option => option.name);
-  }
 
     function checkAndFixFallbacks() {
       for (let ex of Object.keys(excludedItemsMap)) {
@@ -283,27 +360,27 @@
       const file = event.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      
+
       reader.onload = function(e) {
         try {
           const data = new Uint8Array(e.target.result);
           const workbook = XLSX.read(data, {type: 'array'});
-          
+
           const sheetOrig = workbook.Sheets['Original menu'];
           const jsonOrig = XLSX.utils.sheet_to_json(sheetOrig, {header: 1, defval: ""});
           let newOriginalMenu = {};
           let newMenuCategories = {};
-          
+
           let origHeaderRowIdx = jsonOrig.findIndex(row => row.some(cell => String(cell).trim() === "หมูหมัก"));
           let headerRowOrig = jsonOrig[origHeaderRowIdx];
-          
+
           let lastCategory = "อื่นๆ";
           let lastOrigMenuName = "";
           for(let r = origHeaderRowIdx + 2; r < jsonOrig.length; r++) {
             let row = jsonOrig[r];
             let cat = String(row[0] || "").trim();
-            if (cat && cat !== "-") lastCategory = cat; 
-            
+            if (cat && cat !== "-") lastCategory = cat;
+
             let menuName = String(row[1] || "").trim();
             if(menuName && menuName !== "-") {
               lastOrigMenuName = menuName;
@@ -311,7 +388,7 @@
               menuName = lastOrigMenuName;
             }
             if(!menuName) continue;
-            
+
             let recipe = {};
             for(let i=2; i<headerRowOrig.length; i++) {
               let ingName = canonicalIngredientName(headerRowOrig[i]);
@@ -330,20 +407,20 @@
               newMenuCategories[menuName] = lastCategory;
             }
           }
-          
+
           const sheetRep = workbook.Sheets['Replace Use'];
           const jsonRep = XLSX.utils.sheet_to_json(sheetRep, {header: 1, defval: ""});
           let newReplaceRules = [];
-          
+
           let repHeaderRowIdx = jsonRep.findIndex(row => row.some(cell => String(cell).trim() === "หมูหมัก"));
           let headerRowRep = jsonRep[repHeaderRowIdx];
-          
+
           let repIngredientsList = [];
           for(let i=2; i<headerRowRep.length; i++) {
             let h = canonicalIngredientName(headerRowRep[i]);
             if(h && h!=="-" && !repIngredientsList.includes(h)) repIngredientsList.push(h);
           }
-          
+
           let lastReplaceMenu = "";
           for(let r = repHeaderRowIdx + 1; r < jsonRep.length; r++) {
             let row = jsonRep[r];
@@ -353,10 +430,10 @@
             } else {
               menuName = lastReplaceMenu;
             }
-            
+
             let excludeName = canonicalIngredientName(row[1]);
             if(!menuName || !excludeName) continue;
-            
+
             let reps = {};
             for(let i=2; i<headerRowRep.length; i++) {
               let ingName = canonicalIngredientName(headerRowRep[i]);
@@ -372,16 +449,16 @@
             }
             if(Object.keys(reps).length > 0) newReplaceRules.push({ menu: menuName, exclude: excludeName, replace: reps });
           }
-          
+
           originalMenu = newOriginalMenu;
           menuCategories = newMenuCategories;
           replaceUseRules = newReplaceRules;
           allIngredientsList = repIngredientsList;
-          
+
           initMenus();
           renderMatrixTable();
           alert("อัปโหลดและแปลงข้อมูลสำเร็จ!");
-          
+
         } catch (err) { alert("Error: " + err.message); }
       };
       reader.readAsArrayBuffer(file);
@@ -417,13 +494,13 @@
         if(!grouped[cat]) grouped[cat] = [];
         grouped[cat].push(menu);
       });
-      
+
       for(let cat in grouped) {
-        html += `<div class="mb-8"><h2 class="text-xl font-bold text-slate-800 mb-4 pb-2 border-b border-slate-200">▪ ${cat}</h2><div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">`;
+        html += `<div class="mb-8"><h2 class="section-title text-xl font-bold text-slate-800 mb-4 pb-2 border-b border-slate-200">▪ ${cat}</h2><div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">`;
         grouped[cat].forEach(menuName => {
           let isSingle = Object.keys(originalMenu[menuName]).length === 1;
           html += `
-            <div onclick="openCalculator('${menuName}')" class="bg-white p-5 rounded-2xl border border-slate-200 hover:border-indigo-500 hover:shadow-md transition cursor-pointer">
+            <div onclick="openCalculator('${menuName}')" class="app-card p-5 rounded-2xl border transition cursor-pointer">
               <h3 class="font-bold text-lg text-slate-800 leading-tight mb-1">${menuName}</h3>
               <p class="text-xs font-semibold ${isSingle ? 'text-emerald-500' : 'text-slate-400'}">${isSingle ? 'วัตถุดิบเดี่ยว' : 'จัดการสูตรตัดออก'}</p>
             </div>
@@ -436,9 +513,9 @@
 
     function openCalculator(menuName) {
       currentActiveMenu = menuName;
-      excludedItemsMap = {}; 
+      excludedItemsMap = {};
       document.getElementById('calcMenuTitle').innerText = menuName;
-      
+
       if (Object.keys(originalMenu[menuName]).length === 1) {
         document.getElementById('leftPanel').classList.add('hidden');
         document.getElementById('rightPanel').className = "w-full p-6 bg-slate-50 overflow-y-auto";
@@ -450,9 +527,9 @@
       renderExcludeOptions();
       renderNetResults();
     }
-    
+
     function closeCalculator() { document.getElementById('calculatorModal').classList.add('hidden'); }
-    
+
     function toggleExclude(item) {
       if (excludedItemsMap[item] !== undefined) {
         delete excludedItemsMap[item];
@@ -466,14 +543,14 @@
     }
 
     function setReplacement(excludedItem, replacementItem) {
-    let validReps = getSortedValidReplacements(currentActiveMenu, excludedItem);
-    if (!validReps.includes(replacementItem)) {
-      renderExcludeOptions();
-      return;
+      let validReps = getSortedValidReplacements(currentActiveMenu, excludedItem);
+      if (!validReps.includes(replacementItem)) {
+        renderExcludeOptions();
+        return;
+      }
+      excludedItemsMap[excludedItem] = replacementItem;
+      renderNetResults();
     }
-    excludedItemsMap[excludedItem] = replacementItem;
-    renderNetResults();
-  }
 
     function renderExcludeOptions() {
       const container = document.getElementById('excludeOptions');
@@ -487,37 +564,37 @@
             <span>${item}</span>${isExcluded ? '<span>✅ ตัดออก</span>' : ''}
           </button>
         `;
-        
+
         if (isExcluded) {
-        let replacementOptions = getSortedReplacementOptions(currentActiveMenu, item);
-        let selectableOptions = replacementOptions.filter(option => option.selectable);
-        let optionsHtml = '';
+          let replacementOptions = getSortedReplacementOptions(currentActiveMenu, item);
+          let selectableOptions = replacementOptions.filter(option => option.selectable);
+          let optionsHtml = '';
 
-        if (selectableOptions.length === 0) {
-          optionsHtml += `<option value="" selected disabled>ไม่มีรายการที่แทนได้</option>`;
-        }
-
-        replacementOptions.forEach(option => {
-          if (option.selectable) {
-            let selected = excludedItemsMap[item] === option.name ? 'selected' : '';
-            optionsHtml += `<option value="${option.name}" ${selected}>${option.name}</option>`;
-          } else {
-            optionsHtml += `<option value="" disabled>${option.name} - แทนไม่ได้</option>`;
+          if (selectableOptions.length === 0) {
+            optionsHtml += `<option value="" selected disabled>ไม่มีรายการที่แทนได้</option>`;
           }
-        });
 
-        if (replacementOptions.length === 0) {
-          optionsHtml = `<option value="" selected disabled>ไม่มีข้อมูลการแทนสำหรับรายการนี้</option>`;
+          replacementOptions.forEach(option => {
+            if (option.selectable) {
+              let selected = excludedItemsMap[item] === option.name ? 'selected' : '';
+              optionsHtml += `<option value="${option.name}" ${selected}>${option.name}</option>`;
+            } else {
+              optionsHtml += `<option value="" disabled>${option.name} - แทนไม่ได้</option>`;
+            }
+          });
+
+          if (replacementOptions.length === 0) {
+            optionsHtml = `<option value="" selected disabled>ไม่มีข้อมูลการแทนสำหรับรายการนี้</option>`;
+          }
+
+          html += `
+            <div class="mt-2 ml-4 pl-3 border-l-2 border-indigo-200">
+              <select onchange="setReplacement('${item}', this.value)" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white font-bold text-indigo-700">
+                ${optionsHtml}
+              </select>
+            </div>
+          `;
         }
-
-        html += `
-          <div class="mt-2 ml-4 pl-3 border-l-2 border-indigo-200">
-            <select onchange="setReplacement('${item}', this.value)" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white font-bold text-indigo-700">
-              ${optionsHtml}
-            </select>
-          </div>
-        `;
-      }
         html += `</div>`;
       });
       container.innerHTML = html;
@@ -565,13 +642,13 @@
       let html = `<table class="w-full text-left border-collapse text-xs whitespace-nowrap bg-white shadow-sm"><thead><tr class="text-slate-800 uppercase tracking-wider text-[10px] font-bold"><th class="p-3 sticky-col-1">ชื่อเมนู (COL A)</th><th class="p-3 sticky-col-2">ไม่เอา... (COL B)</th>`;
       allIngredientsList.forEach(h => html += `<th class="p-3 text-center min-w-[80px] border-b border-slate-200">${h}</th>`);
       html += `</tr></thead><tbody class="divide-y divide-slate-100">`;
-      
+
       replaceUseRules.forEach((row, rIdx) => {
         html += `<tr class="hover:bg-slate-50 transition group"><td class="p-3 sticky-col-1 font-bold text-slate-800 bg-white group-hover:bg-slate-50">${row.menu}</td><td class="p-3 sticky-col-2 text-rose-600 font-bold bg-white group-hover:bg-slate-50">❌ ${row.exclude}</td>`;
         allIngredientsList.forEach(ing => {
           let rawVal = row.replace[ing];
           let displayVal = '-';
-          
+
           if (rawVal !== undefined && rawVal !== null && rawVal !== "") {
              let num = parseFloat(rawVal);
              if (!isNaN(num)) {
@@ -585,7 +662,7 @@
 
           let isHasValue = (rawVal !== undefined && rawVal !== null && rawVal !== "" && parseFloat(rawVal) >= 0);
           let cellStyle = isHasValue ? 'text-indigo-700 font-bold bg-indigo-50/40 cursor-pointer hover:bg-indigo-200' : 'text-slate-300';
-          
+
           html += `<td class="p-3 text-center border-b border-slate-100 ${cellStyle}" onclick="editMatrixCell(${rIdx}, '${ing}', ${rawVal || 0})">${displayVal}</td>`;
         });
         html += `</tr>`;
