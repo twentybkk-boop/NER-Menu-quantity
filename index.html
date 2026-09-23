@@ -53,7 +53,7 @@
       overflow: hidden;
       pointer-events: none !important;
       user-select: none;
-      z-index: 0;
+      z-index: 12;
     }
     .decor-person {
       position: absolute;
@@ -62,17 +62,32 @@
       user-select: none;
       background-image: url('assets/ner-team-bg.webp');
       background-repeat: no-repeat;
-      background-size: 540px auto;
-      opacity: .82;
-      filter: saturate(.92) contrast(.98);
+      background-size: 680px auto;
+      filter: saturate(.98) contrast(1.01);
+      opacity: .90;
     }
-    .decor-a { width: 145px; height: 195px; left: -105px; top: 178px; background-position: left top; -webkit-mask-image: linear-gradient(90deg,#000 55%,transparent 100%); mask-image: linear-gradient(90deg,#000 55%,transparent 100%); }
-    .decor-b { width: 145px; height: 195px; left: -105px; top: 1000px; background-position: left bottom; opacity: .64; -webkit-mask-image: linear-gradient(90deg,#000 55%,transparent 100%); mask-image: linear-gradient(90deg,#000 55%,transparent 100%); }
-    .decor-c { width: 145px; height: 220px; right: -105px; top: 680px; background-position: right center; opacity: .70; -webkit-mask-image: linear-gradient(270deg,#000 55%,transparent 100%); mask-image: linear-gradient(270deg,#000 55%,transparent 100%); }
+    .decor-a {
+      width: 190px; height: 245px; left: -38px; top: 455px;
+      background-position: left top;
+      -webkit-mask-image: linear-gradient(90deg,#000 0 58%,rgba(0,0,0,.75) 72%,transparent 100%);
+      mask-image: linear-gradient(90deg,#000 0 58%,rgba(0,0,0,.75) 72%,transparent 100%);
+    }
+    .decor-b {
+      width: 190px; height: 245px; left: -48px; top: 1220px;
+      background-position: left bottom; opacity: .84;
+      -webkit-mask-image: linear-gradient(90deg,#000 0 58%,rgba(0,0,0,.72) 72%,transparent 100%);
+      mask-image: linear-gradient(90deg,#000 0 58%,rgba(0,0,0,.72) 72%,transparent 100%);
+    }
+    .decor-c {
+      width: 185px; height: 280px; right: -42px; top: 820px;
+      background-position: right center; opacity: .86;
+      -webkit-mask-image: linear-gradient(270deg,#000 0 58%,rgba(0,0,0,.72) 72%,transparent 100%);
+      mask-image: linear-gradient(270deg,#000 0 58%,rgba(0,0,0,.72) 72%,transparent 100%);
+    }
 
     #app-shell {
       position: relative;
-      z-index: 10;
+      z-index: 20;
       width: min(1180px, calc(100% - 28px));
       margin: 0 auto;
       padding: max(22px, env(safe-area-inset-top)) 0 calc(96px + env(safe-area-inset-bottom));
@@ -247,13 +262,14 @@
     .reject .dot { background: var(--rose); }
     .result .dot { background: var(--green); }
 
-    .exclude-item { margin-bottom: 11px; }
+    #excludeOptions { display: block !important; min-height: 1px; }
+    .exclude-item { display: block; margin-bottom: 11px; position: relative; z-index: 1; }
     .exclude-btn {
       width: 100%; min-height: 52px; padding: 12px 15px;
       border: 1.5px solid #e4d8cd; border-radius: 16px;
       background: #fff; color: #394150; font-weight: 800; font-size: 14px;
       display: flex; align-items: center; justify-content: space-between; gap: 12px;
-      text-align: left; cursor: pointer;
+      text-align: left; cursor: pointer; pointer-events: auto; touch-action: manipulation; position: relative; z-index: 2;
     }
     .exclude-btn.is-excluded { border-color: #df6873; color: #b83d49; background: var(--rose-soft); }
     .exclude-status { flex: 0 0 auto; font-size: 12px; font-weight: 800; }
@@ -337,12 +353,41 @@
     .upload-label input { display: none; }
     .download-btn { background: #cfb26f; color: #352a22; }
     .matrix-close { background: #6c584d; color: #fff; }
-    #tableContainer { flex: 1; overflow: auto; padding: 12px; background: #fbf5ed; }
-    .matrix-table { border-collapse: collapse; width: 100%; min-width: 980px; white-space: nowrap; background: #fffdf9; font-size: 11px; }
-    .matrix-table th, .matrix-table td { padding: 10px; border-bottom: 1px solid #eee2d8; text-align: center; }
-    .matrix-table th { position: sticky; top: 0; z-index: 6; background: #f4e7dc; color: #4a382e; font-size: 10px; }
-    .matrix-table .sticky-1 { position: sticky; left: 0; z-index: 5; min-width: 145px; text-align: left; background: #fffdf9; }
-    .matrix-table .sticky-2 { position: sticky; left: 145px; z-index: 5; min-width: 150px; text-align: left; background: #fffdf9; }
+    #tableContainer {
+      --matrix-col-1: 108px;
+      --matrix-col-2: 112px;
+      --matrix-data-col: 64px;
+      flex: 1; overflow: auto; padding: 8px; background: #fbf5ed;
+      -webkit-overflow-scrolling: touch;
+    }
+    .matrix-table {
+      border-collapse: separate; border-spacing: 0;
+      width: max-content; min-width: 100%;
+      white-space: normal; background: #fffdf9; font-size: 10px;
+    }
+    .matrix-table th, .matrix-table td {
+      height: 44px; padding: 5px 4px; border-bottom: 1px solid #eee2d8; border-right: 1px solid #f2e8df;
+      text-align: center; vertical-align: middle; line-height: 1.15;
+    }
+    .matrix-table th {
+      position: sticky; top: 0; z-index: 6; background: #f4e7dc; color: #4a382e;
+      font-size: 9px; font-weight: 800; overflow-wrap: anywhere;
+    }
+    .matrix-table th:not(.sticky-1):not(.sticky-2),
+    .matrix-table td:not(.sticky-1):not(.sticky-2) {
+      width: var(--matrix-data-col); min-width: var(--matrix-data-col); max-width: var(--matrix-data-col);
+      overflow-wrap: anywhere;
+    }
+    .matrix-table .sticky-1 {
+      position: sticky; left: 0; z-index: 5;
+      width: var(--matrix-col-1); min-width: var(--matrix-col-1); max-width: var(--matrix-col-1);
+      text-align: left; background: #fffdf9; white-space: normal; overflow-wrap: anywhere;
+    }
+    .matrix-table .sticky-2 {
+      position: sticky; left: var(--matrix-col-1); z-index: 5;
+      width: var(--matrix-col-2); min-width: var(--matrix-col-2); max-width: var(--matrix-col-2);
+      text-align: left; background: #fffdf9; white-space: normal; overflow-wrap: anywhere;
+    }
     .matrix-table th.sticky-1, .matrix-table th.sticky-2 { z-index: 8; background: #efe0d4; }
     .matrix-cell-edit { background: #fff8f1; color: #6d4937; font-weight: 800; cursor: pointer; }
     .matrix-cell-edit:hover { background: #f2e0d0; }
@@ -366,10 +411,16 @@
       .menu-grid { grid-template-columns: 1fr; gap: 14px; }
       .menu-card { min-height: 116px; padding: 18px; }
 
-      /* On phones the art peeks out rather than sitting beneath controls. */
-      .decor-a { width: 135px; height: 182px; left: -105px; top: 270px; opacity: .66; background-size: 520px auto; }
-      .decor-b { width: 132px; height: 178px; left: -103px; top: 1130px; opacity: .50; background-size: 520px auto; }
-      .decor-c { width: 132px; height: 205px; right: -103px; top: 790px; opacity: .53; background-size: 520px auto; }
+      /* On phones the team is intentionally visible at the edges, but never intercepts taps. */
+      .decor-a { width: 150px; height: 198px; left: -34px; top: 500px; opacity: .90; background-size: 575px auto; }
+      .decor-b { width: 150px; height: 198px; left: -43px; top: 1260px; opacity: .80; background-size: 575px auto; }
+      .decor-c { width: 148px; height: 228px; right: -34px; top: 860px; opacity: .84; background-size: 575px auto; }
+
+      #tableContainer { --matrix-col-1: 86px; --matrix-col-2: 92px; --matrix-data-col: 54px; padding: 4px; }
+      .matrix-table { font-size: 9px; }
+      .matrix-table th, .matrix-table td { height: 40px; padding: 4px 3px; }
+      .matrix-table th { font-size: 8px; }
+      .matrix-table .sticky-1, .matrix-table .sticky-2 { font-size: 9px; }
 
       .modal { padding: 7px; align-items: flex-start; padding-top: max(7px, env(safe-area-inset-top)); }
       .modal-card { max-height: calc(100dvh - 14px - env(safe-area-inset-top)); border-radius: 24px; }
@@ -627,12 +678,12 @@
       el('calcMenuTitle').textContent = menuName;
 
       const single = Object.keys(originalMenu[menuName]).length === 1;
-      el('leftPanel').style.display = single ? 'none' : '';
+      el('leftPanel').style.display = single ? 'none' : 'block';
       el('rightPanel').style.width = single ? '100%' : '';
 
+      showModal('calculatorModal');
       renderExcludeOptions();
       renderNetResults();
-      showModal('calculatorModal');
     }
 
     function closeCalculator() {
@@ -669,33 +720,105 @@
     }
 
     function renderExcludeOptions() {
+      const container = el('excludeOptions');
       const ingredients = Object.keys(originalMenu[currentActiveMenu] || {});
-      el('excludeOptions').innerHTML = ingredients.map(item => {
+      container.replaceChildren();
+
+      if (!ingredients.length) {
+        const empty = document.createElement('div');
+        empty.className = 'picker-empty';
+        empty.textContent = 'ไม่พบรายการวัตถุดิบสำหรับเมนูนี้';
+        container.appendChild(empty);
+        return;
+      }
+
+      ingredients.forEach(item => {
         const excluded = excludedItemsMap[item] !== undefined;
-        let replacement = '';
+        const row = document.createElement('div');
+        row.className = 'exclude-item';
+
+        const excludeButton = document.createElement('button');
+        excludeButton.type = 'button';
+        excludeButton.className = `exclude-btn${excluded ? ' is-excluded' : ''}`;
+        const name = document.createElement('span');
+        name.textContent = item;
+        excludeButton.appendChild(name);
+        if (excluded) {
+          const status = document.createElement('span');
+          status.className = 'exclude-status';
+          status.textContent = '✓ ตัดออก';
+          excludeButton.appendChild(status);
+        }
+        excludeButton.addEventListener('click', () => toggleExclude(item));
+        row.appendChild(excludeButton);
+
         if (excluded) {
           const options = getSortedReplacementOptions(currentActiveMenu, item);
           const selected = excludedItemsMap[item] || '';
           const isOpen = openReplacementPicker === item;
-          const optionHtml = options.length ? options.map(opt => opt.selectable
-            ? `<button type="button" class="replacement-option selectable ${selected === opt.name ? 'selected' : ''}" data-replace-for="${escapeHtml(item)}" data-replacement="${escapeHtml(opt.name)}"><span>${escapeHtml(opt.name)}</span>${selected === opt.name ? '<span class="selected-mark">✓ เลือกอยู่</span>' : ''}</button>`
-            : `<button type="button" class="replacement-option disabled" disabled><span>${escapeHtml(opt.name)}</span><span class="option-note">แทนไม่ได้</span></button>`
-          ).join('') : '<div class="picker-empty">ไม่มีข้อมูลการแทนสำหรับรายการนี้</div>';
 
-          replacement = `<div class="replacement-wrap">
-            <button type="button" class="replacement-trigger ${isOpen ? 'is-open' : ''}" data-picker="${escapeHtml(item)}" aria-expanded="${isOpen}">
-              <span><span>${escapeHtml(selected || 'ไม่มีรายการที่แทนได้')}</span><small>เลือกวัตถุดิบทดแทน</small></span>
-              <span class="chevron">⌄</span>
-            </button>
-            ${isOpen ? `<div class="replacement-menu">${optionHtml}</div>` : ''}
-          </div>`;
+          const wrap = document.createElement('div');
+          wrap.className = 'replacement-wrap';
+
+          const trigger = document.createElement('button');
+          trigger.type = 'button';
+          trigger.className = `replacement-trigger${isOpen ? ' is-open' : ''}`;
+          trigger.setAttribute('aria-expanded', String(isOpen));
+          const label = document.createElement('span');
+          const mainLabel = document.createElement('span');
+          mainLabel.textContent = selected || 'ไม่มีรายการที่แทนได้';
+          const hint = document.createElement('small');
+          hint.textContent = 'เลือกวัตถุดิบทดแทน';
+          label.append(mainLabel, hint);
+          const chevron = document.createElement('span');
+          chevron.className = 'chevron';
+          chevron.textContent = '⌄';
+          trigger.append(label, chevron);
+          trigger.addEventListener('click', () => toggleReplacementPicker(item));
+          wrap.appendChild(trigger);
+
+          if (isOpen) {
+            const menu = document.createElement('div');
+            menu.className = 'replacement-menu';
+            if (!options.length) {
+              const empty = document.createElement('div');
+              empty.className = 'picker-empty';
+              empty.textContent = 'ไม่มีข้อมูลการแทนสำหรับรายการนี้';
+              menu.appendChild(empty);
+            } else {
+              options.forEach(opt => {
+                const option = document.createElement('button');
+                option.type = 'button';
+                option.className = `replacement-option ${opt.selectable ? 'selectable' : 'disabled'}${selected === opt.name ? ' selected' : ''}`;
+                const optionName = document.createElement('span');
+                optionName.textContent = opt.name;
+                option.appendChild(optionName);
+                if (opt.selectable) {
+                  if (selected === opt.name) {
+                    const mark = document.createElement('span');
+                    mark.className = 'selected-mark';
+                    mark.textContent = '✓ เลือกอยู่';
+                    option.appendChild(mark);
+                  }
+                  option.addEventListener('click', () => setReplacement(item, opt.name));
+                } else {
+                  option.disabled = true;
+                  option.setAttribute('aria-disabled', 'true');
+                  const note = document.createElement('span');
+                  note.className = 'option-note';
+                  note.textContent = 'แทนไม่ได้';
+                  option.appendChild(note);
+                }
+                menu.appendChild(option);
+              });
+            }
+            wrap.appendChild(menu);
+          }
+          row.appendChild(wrap);
         }
-        return `<div class="exclude-item">
-          <button type="button" class="exclude-btn ${excluded ? 'is-excluded' : ''}" data-exclude="${escapeHtml(item)}">
-            <span>${escapeHtml(item)}</span>${excluded ? '<span class="exclude-status">✓ ตัดออก</span>' : ''}
-          </button>${replacement}
-        </div>`;
-      }).join('');
+
+        container.appendChild(row);
+      });
     }
 
     function renderNetResults() {
@@ -876,15 +999,6 @@
       el('app-menus').addEventListener('click', e => {
         const card = e.target.closest('[data-menu]');
         if (card) openCalculator(card.dataset.menu);
-      });
-
-      el('excludeOptions').addEventListener('click', e => {
-        const replacement = e.target.closest('[data-replacement]');
-        if (replacement) return setReplacement(replacement.dataset.replaceFor, replacement.dataset.replacement);
-        const picker = e.target.closest('[data-picker]');
-        if (picker) return toggleReplacementPicker(picker.dataset.picker);
-        const exclude = e.target.closest('[data-exclude]');
-        if (exclude) toggleExclude(exclude.dataset.exclude);
       });
 
       el('tableContainer').addEventListener('click', e => {
