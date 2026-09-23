@@ -1,0 +1,244 @@
+name: Menu consistency hotfix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/menu-consistency-hotfix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  hotfix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fix names and replacement dropdown behavior
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          # Canonical ingredient names. Keep these identical across source data and UI logic.
+          NAME_REPLACEMENTS = {
+              'ปลากหมึก': 'ปลาหมึก',
+              'เนื้อเสื้อร้องให้สไลซ์': 'เนื้อเสือร้องไห้สไลซ์',
+          }
+
+          # Fix persisted JSON data (both active recipe_master.json and legacy data.json).
+          for filename in ('recipe_master.json', 'data.json'):
+              path = Path(filename)
+              text = path.read_text(encoding='utf-8')
+              for wrong, correct in NAME_REPLACEMENTS.items():
+                  text = text.replace(wrong, correct)
+              json.loads(text)  # fail fast if an edit ever breaks JSON
+              path.write_text(text, encoding='utf-8')
+
+          index_path = Path('index.html')
+          html = index_path.read_text(encoding='utf-8')
+
+          get_unit_anchor = '''    const getUnit = (item) => {
+              let cleanItem = String(item).trim();
+              return unitMap[cleanItem] || "กรัม";
+            };
+
+            const GITHUB_JSON_URL = "https://raw.githubusercontent.com/twentybkk-boop/NER-Menu-quantity/main/recipe_master.json";'''
+          get_unit_replacement = '''    const getUnit = (item) => {
+              let cleanItem = String(item).trim();
+              return unitMap[cleanItem] || "กรัม";
+            };
+
+            // Canonical names protect the app from old/typo names in imported Excel files.
+            const ingredientNameAliases = {
+              "ปลากหมึก": "ปลาหมึก",
+              "เนื้อเสื้อร้องให้สไลซ์": "เนื้อเสือร้องไห้สไลซ์"
+            };
+
+            const canonicalIngredientName = (item) => {
+              let cleanItem = String(item || "").trim();
+              return ingredientNameAliases[cleanItem] || cleanItem;
+            };
+
+            const GITHUB_JSON_URL = "https://raw.githubusercontent.com/twentybkk-boop/NER-Menu-quantity/main/recipe_master.json";'''
+          if get_unit_anchor not in html:
+              raise SystemExit('getUnit anchor not found')
+          html = html.replace(get_unit_anchor, get_unit_replacement, 1)
+
+          old_replacements = '''    function getSortedValidReplacements(menuName, excludedItem) {
+              const menuBaseIngredients = Object.keys(originalMenu[menuName] || {});
+              let rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(excludedItem).trim());
+              let valid = [];
+              if (rule && rule.replace) {
+                Object.entries(rule.replace).forEach(([repItem, repQty]) => {
+                  if (repItem === excludedItem) return;
+                  let hasInBaseMenu = menuBaseIngredients.includes(repItem);
+                  let isNotExcluded = excludedItemsMap[repItem] === undefined;
+                  if (hasInBaseMenu && isNotExcluded && repQty !== undefined && Number(repQty) > 0) {
+                    valid.push(repItem);
+                  }
+                });
+              }
+
+              // จัดลำดับ Smart Default: ถ้าสิ่งที่ถูกตัดออกไม่ใช่เนื้อสัตว์ ให้ดันวัตถุดิบในกลุ่มผัก/เครื่องเคียงขึ้นมาเลือกก่อน
+              let isExcludedVeggie = veggieGroups.includes(excludedItem);
+              if (isExcludedVeggie) {
+                valid.sort((a, b) => {
+                  let aIsVeg = veggieGroups.includes(a);
+                  let bIsVeg = veggieGroups.includes(b);
+                  if (aIsVeg && !bIsVeg) return -1;
+                  if (!aIsVeg && bIsVeg) return 1;
+                  return 0;
+                });
+              }
+
+              return valid;
+            }'''
+          new_replacements = '''    function getSortedReplacementOptions(menuName, excludedItem) {
+              const menuBaseIngredients = Object.keys(originalMenu[menuName] || {});
+              let rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(excludedItem).trim());
+              let options = [];
+              if (rule && rule.replace) {
+                Object.entries(rule.replace).forEach(([repItem, repQty]) => {
+                  if (repItem === excludedItem) return;
+                  let hasInBaseMenu = menuBaseIngredients.includes(repItem);
+                  let isNotExcluded = excludedItemsMap[repItem] === undefined;
+                  let qty = Number(repQty);
+                  if (hasInBaseMenu && isNotExcluded && repQty !== undefined && !Number.isNaN(qty)) {
+                    options.push({ name: repItem, qty: qty, selectable: qty > 0 });
+                  }
+                });
+              }
+
+              // จัดลำดับ Smart Default: ถ้าสิ่งที่ถูกตัดออกไม่ใช่เนื้อสัตว์ ให้ดันวัตถุดิบในกลุ่มผัก/เครื่องเคียงขึ้นมาเลือกก่อน
+              let isExcludedVeggie = veggieGroups.includes(excludedItem);
+              if (isExcludedVeggie) {
+                options.sort((a, b) => {
+                  let aIsVeg = veggieGroups.includes(a.name);
+                  let bIsVeg = veggieGroups.includes(b.name);
+                  if (aIsVeg && !bIsVeg) return -1;
+                  if (!aIsVeg && bIsVeg) return 1;
+                  return 0;
+                });
+              }
+
+              return options;
+            }
+
+            function getSortedValidReplacements(menuName, excludedItem) {
+              return getSortedReplacementOptions(menuName, excludedItem)
+                .filter(option => option.selectable)
+                .map(option => option.name);
+            }'''
+          if old_replacements not in html:
+              raise SystemExit('replacement-options block not found')
+          html = html.replace(old_replacements, new_replacements, 1)
+
+          # Normalize imported Excel names so future uploads cannot reintroduce the known typos.
+          html = html.replace('let ingName = String(headerRowOrig[i] || "").trim();', 'let ingName = canonicalIngredientName(headerRowOrig[i]);', 1)
+          html = html.replace('let h = String(headerRowRep[i]||"").trim();', 'let h = canonicalIngredientName(headerRowRep[i]);', 1)
+          html = html.replace('let excludeName = String(row[1] || "").trim();', 'let excludeName = canonicalIngredientName(row[1]);', 1)
+          html = html.replace('let ingName = String(headerRowRep[i] || "").trim();', 'let ingName = canonicalIngredientName(headerRowRep[i]);', 1)
+
+          old_set = '''    function setReplacement(excludedItem, replacementItem) {
+              excludedItemsMap[excludedItem] = replacementItem;
+              renderNetResults();
+            }'''
+          new_set = '''    function setReplacement(excludedItem, replacementItem) {
+              // Hard guard: zero-value or otherwise invalid options must never be selectable.
+              let validReps = getSortedValidReplacements(currentActiveMenu, excludedItem);
+              if (!validReps.includes(replacementItem)) {
+                renderExcludeOptions();
+                return;
+              }
+              excludedItemsMap[excludedItem] = replacementItem;
+              renderNetResults();
+            }'''
+          if old_set not in html:
+              raise SystemExit('setReplacement block not found')
+          html = html.replace(old_set, new_set, 1)
+
+          old_dropdown = '''        if (isExcluded) {
+                  let validReps = getSortedValidReplacements(currentActiveMenu, item);
+                  let optionsHtml = '';
+                  validReps.forEach(repItem => {
+                    let selected = excludedItemsMap[item] === repItem ? 'selected' : '';
+                    optionsHtml += `<option value="${repItem}" ${selected}>${repItem}</option>`;
+                  });
+
+                  html += `
+                    <div class="mt-2 ml-4 pl-3 border-l-2 border-indigo-200">
+                      <select onchange="setReplacement('${item}', this.value)" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white font-bold text-indigo-700">
+                        ${optionsHtml}
+                      </select>
+                    </div>
+                  `;
+                }'''
+          new_dropdown = '''        if (isExcluded) {
+                  let replacementOptions = getSortedReplacementOptions(currentActiveMenu, item);
+                  let selectableOptions = replacementOptions.filter(option => option.selectable);
+                  let optionsHtml = '';
+
+                  if (selectableOptions.length === 0) {
+                    optionsHtml += `<option value="" selected disabled>ไม่มีรายการที่แทนได้</option>`;
+                  }
+
+                  replacementOptions.forEach(option => {
+                    if (option.selectable) {
+                      let selected = excludedItemsMap[item] === option.name ? 'selected' : '';
+                      optionsHtml += `<option value="${option.name}" ${selected}>${option.name}</option>`;
+                    } else {
+                      optionsHtml += `<option value="" disabled>${option.name} - แทนไม่ได้</option>`;
+                    }
+                  });
+
+                  if (replacementOptions.length === 0) {
+                    optionsHtml = `<option value="" selected disabled>ไม่มีข้อมูลการแทนสำหรับรายการนี้</option>`;
+                  }
+
+                  html += `
+                    <div class="mt-2 ml-4 pl-3 border-l-2 border-indigo-200">
+                      <select onchange="setReplacement('${item}', this.value)" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white font-bold text-indigo-700">
+                        ${optionsHtml}
+                      </select>
+                    </div>
+                  `;
+                }'''
+          if old_dropdown not in html:
+              raise SystemExit('dropdown block not found')
+          html = html.replace(old_dropdown, new_dropdown, 1)
+
+          # Fail if the old typo names remain anywhere in the app code after the intentional alias keys.
+          index_path.write_text(html, encoding='utf-8')
+          PY
+
+      - name: Validate JSON and JavaScript syntax
+        shell: bash
+        run: |
+          python -m json.tool recipe_master.json >/dev/null
+          python -m json.tool data.json >/dev/null
+          node - <<'NODE'
+          const fs = require('fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+          if (!scripts.length) throw new Error('inline script not found');
+          new Function(scripts[scripts.length - 1][1]);
+          console.log('Inline JavaScript parses successfully');
+          NODE
+
+      - name: Commit hotfix
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html recipe_master.json data.json
+          if git diff --cached --quiet; then
+            echo "No changes required"
+            exit 0
+          fi
+          git commit -m "Fix ingredient names and disabled zero replacements"
+          git push
