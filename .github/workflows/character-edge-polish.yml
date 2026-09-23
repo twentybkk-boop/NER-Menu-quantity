@@ -72,6 +72,8 @@ jobs:
       - name: Capture visual review
         run: |
           mkdir -p /tmp/review
+          python -m http.server 8000 >/tmp/server-capture.log 2>&1 &
+          PID=$!; trap 'kill $PID || true' EXIT; sleep 2
           cat >/tmp/cap.cjs <<'JS'
           const fs=require('fs'),{chromium}=require(process.cwd()+'/node_modules/playwright');const recipe=fs.readFileSync('recipe_master.json','utf8');(async()=>{const b=await chromium.launch({headless:true});for(const [n,w,h] of [['iphone',390,844],['ipadp',820,1180],['ipadl',1180,820]]){const p=await b.newPage({viewport:{width:w,height:h}});await p.route('https://raw.githubusercontent.com/**',r=>r.fulfill({status:200,contentType:'application/json',body:recipe}));await p.goto('http://127.0.0.1:8000/');await p.locator('.menu-card').first().waitFor();await p.screenshot({path:`/tmp/review/${n}.png`});await p.close()}await b.close()})().catch(e=>{console.error(e);process.exit(1)});
           JS
@@ -81,7 +83,7 @@ jobs:
       - name: Commit polished assets
         run: |
           rm -rf node_modules package.json package-lock.json
-          rm -f .github/workflows/character-edge-polish.yml
+          rm -f .github/workflows/character-edge-polish.yml .github/workflows/final-ui-review-fix-3.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
