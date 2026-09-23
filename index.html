@@ -135,6 +135,17 @@
       return unitMap[cleanItem] || "กรัม";
     };
 
+    // Canonical names protect the app from old/typo names in imported Excel files.
+  const ingredientNameAliases = {
+    "ปลากหมึก": "ปลาหมึก",
+    "เนื้อเสื้อร้องให้สไลซ์": "เนื้อเสือร้องไห้สไลซ์"
+  };
+
+  const canonicalIngredientName = (item) => {
+    let cleanItem = String(item || "").trim();
+    return ingredientNameAliases[cleanItem] || cleanItem;
+  };
+
     const GITHUB_JSON_URL = "https://raw.githubusercontent.com/twentybkk-boop/NER-Menu-quantity/main/recipe_master.json";
 
     let menuCategories = {}; 
@@ -221,35 +232,42 @@
       return results;
     }
 
-    function getSortedValidReplacements(menuName, excludedItem) {
-      const menuBaseIngredients = Object.keys(originalMenu[menuName] || {});
-      let rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(excludedItem).trim());
-      let valid = [];
-      if (rule && rule.replace) {
-        Object.entries(rule.replace).forEach(([repItem, repQty]) => {
-          if (repItem === excludedItem) return;
-          let hasInBaseMenu = menuBaseIngredients.includes(repItem);
-          let isNotExcluded = excludedItemsMap[repItem] === undefined;
-          if (hasInBaseMenu && isNotExcluded && repQty !== undefined && Number(repQty) > 0) {
-            valid.push(repItem);
-          }
-        });
-      }
-
-      // จัดลำดับ Smart Default: ถ้าสิ่งที่ถูกตัดออกไม่ใช่เนื้อสัตว์ ให้ดันวัตถุดิบในกลุ่มผัก/เครื่องเคียงขึ้นมาเลือกก่อน
-      let isExcludedVeggie = veggieGroups.includes(excludedItem);
-      if (isExcludedVeggie) {
-        valid.sort((a, b) => {
-          let aIsVeg = veggieGroups.includes(a);
-          let bIsVeg = veggieGroups.includes(b);
-          if (aIsVeg && !bIsVeg) return -1;
-          if (!aIsVeg && bIsVeg) return 1;
-          return 0;
-        });
-      }
-
-      return valid;
+    function getSortedReplacementOptions(menuName, excludedItem) {
+    const menuBaseIngredients = Object.keys(originalMenu[menuName] || {});
+    let rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(excludedItem).trim());
+    let options = [];
+    if (rule && rule.replace) {
+      Object.entries(rule.replace).forEach(([repItem, repQty]) => {
+        if (repItem === excludedItem) return;
+        let hasInBaseMenu = menuBaseIngredients.includes(repItem);
+        let isNotExcluded = excludedItemsMap[repItem] === undefined;
+        let qty = Number(repQty);
+        if (hasInBaseMenu && isNotExcluded && repQty !== undefined && !Number.isNaN(qty)) {
+          options.push({ name: repItem, qty: qty, selectable: qty > 0 });
+        }
+      });
     }
+
+    // Smart Default still prefers vegetables/sides when the excluded item is in that group.
+    let isExcludedVeggie = veggieGroups.includes(excludedItem);
+    if (isExcludedVeggie) {
+      options.sort((a, b) => {
+        let aIsVeg = veggieGroups.includes(a.name);
+        let bIsVeg = veggieGroups.includes(b.name);
+        if (aIsVeg && !bIsVeg) return -1;
+        if (!aIsVeg && bIsVeg) return 1;
+        return 0;
+      });
+    }
+
+    return options;
+  }
+
+  function getSortedValidReplacements(menuName, excludedItem) {
+    return getSortedReplacementOptions(menuName, excludedItem)
+      .filter(option => option.selectable)
+      .map(option => option.name);
+  }
 
     function checkAndFixFallbacks() {
       for (let ex of Object.keys(excludedItemsMap)) {
@@ -296,7 +314,7 @@
             
             let recipe = {};
             for(let i=2; i<headerRowOrig.length; i++) {
-              let ingName = String(headerRowOrig[i] || "").trim();
+              let ingName = canonicalIngredientName(headerRowOrig[i]);
               if(ingName && ingName !== "-") {
                 let val = row[i];
                 if(val !== undefined && val !== "" && val !== "-") {
@@ -322,7 +340,7 @@
           
           let repIngredientsList = [];
           for(let i=2; i<headerRowRep.length; i++) {
-            let h = String(headerRowRep[i]||"").trim();
+            let h = canonicalIngredientName(headerRowRep[i]);
             if(h && h!=="-" && !repIngredientsList.includes(h)) repIngredientsList.push(h);
           }
           
@@ -336,12 +354,12 @@
               menuName = lastReplaceMenu;
             }
             
-            let excludeName = String(row[1] || "").trim();
+            let excludeName = canonicalIngredientName(row[1]);
             if(!menuName || !excludeName) continue;
             
             let reps = {};
             for(let i=2; i<headerRowRep.length; i++) {
-              let ingName = String(headerRowRep[i] || "").trim();
+              let ingName = canonicalIngredientName(headerRowRep[i]);
               if(ingName && ingName !== "-") {
                 let val = row[i];
                 if(val !== undefined && val !== "" && val !== "-") {
@@ -448,9 +466,14 @@
     }
 
     function setReplacement(excludedItem, replacementItem) {
-      excludedItemsMap[excludedItem] = replacementItem;
-      renderNetResults();
+    let validReps = getSortedValidReplacements(currentActiveMenu, excludedItem);
+    if (!validReps.includes(replacementItem)) {
+      renderExcludeOptions();
+      return;
     }
+    excludedItemsMap[excludedItem] = replacementItem;
+    renderNetResults();
+  }
 
     function renderExcludeOptions() {
       const container = document.getElementById('excludeOptions');
@@ -466,21 +489,35 @@
         `;
         
         if (isExcluded) {
-          let validReps = getSortedValidReplacements(currentActiveMenu, item);
-          let optionsHtml = '';
-          validReps.forEach(repItem => {
-            let selected = excludedItemsMap[item] === repItem ? 'selected' : '';
-            optionsHtml += `<option value="${repItem}" ${selected}>${repItem}</option>`;
-          });
+        let replacementOptions = getSortedReplacementOptions(currentActiveMenu, item);
+        let selectableOptions = replacementOptions.filter(option => option.selectable);
+        let optionsHtml = '';
 
-          html += `
-            <div class="mt-2 ml-4 pl-3 border-l-2 border-indigo-200">
-              <select onchange="setReplacement('${item}', this.value)" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white font-bold text-indigo-700">
-                ${optionsHtml}
-              </select>
-            </div>
-          `;
+        if (selectableOptions.length === 0) {
+          optionsHtml += `<option value="" selected disabled>ไม่มีรายการที่แทนได้</option>`;
         }
+
+        replacementOptions.forEach(option => {
+          if (option.selectable) {
+            let selected = excludedItemsMap[item] === option.name ? 'selected' : '';
+            optionsHtml += `<option value="${option.name}" ${selected}>${option.name}</option>`;
+          } else {
+            optionsHtml += `<option value="" disabled>${option.name} - แทนไม่ได้</option>`;
+          }
+        });
+
+        if (replacementOptions.length === 0) {
+          optionsHtml = `<option value="" selected disabled>ไม่มีข้อมูลการแทนสำหรับรายการนี้</option>`;
+        }
+
+        html += `
+          <div class="mt-2 ml-4 pl-3 border-l-2 border-indigo-200">
+            <select onchange="setReplacement('${item}', this.value)" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white font-bold text-indigo-700">
+              ${optionsHtml}
+            </select>
+          </div>
+        `;
+      }
         html += `</div>`;
       });
       container.innerHTML = html;
