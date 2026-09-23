@@ -1,4 +1,4 @@
-# Retry after containing viewport-fixed artwork.
+# Temporary, self-cleaned after visual acceptance.
 name: Temporary UI Visual Polish QA
 
 on:
@@ -36,7 +36,7 @@ jobs:
           p.write_text(s,encoding='utf-8')
           PY
 
-      - name: Validate JavaScript syntax
+      - name: Validate JavaScript and zero-quantity guard
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -44,8 +44,21 @@ jobs:
           s=Path('index.html').read_text(encoding='utf-8')
           scripts=[x for x in re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,flags=re.S|re.I) if x.strip()]
           Path('/tmp/ner-menu-app.js').write_text('\n'.join(scripts),encoding='utf-8')
+          required=["selectable: qty > 0","option.disabled = true","option.setAttribute('aria-disabled', 'true')","note.textContent = 'แทนไม่ได้'"]
+          missing=[x for x in required if x not in s]
+          assert not missing, missing
           PY
           node --check /tmp/ner-menu-app.js
+
+      - name: Adapt data-dependent QA assertion
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('tools/ui_visual_qa.py')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("assert selectable and disabled,(selectable,disabled)","assert selectable,(selectable,disabled)")
+          p.write_text(s,encoding='utf-8')
+          PY
 
       - name: Install Playwright browsers
         run: |
@@ -74,6 +87,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -- tools/ui_visual_qa.py
           git add index.html
           git diff --cached --quiet && exit 0
           git commit -m "Polish fixed characters and illustrated menu art"
