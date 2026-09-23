@@ -525,6 +525,45 @@ body{min-height:100vh;min-height:100dvh;color:var(--text);overflow-x:clip;backgr
   .decor-c{width:224px!important;height:427px!important;right:12px!important;top:338px!important}
 }
 
+
+/* REVIEWED FINAL COMPOSITION 2026-09-23 */
+body{isolation:isolate}
+#decor-layer{pointer-events:none!important}
+.decor-person{
+  pointer-events:none!important;
+  opacity:1!important;
+  background-repeat:no-repeat!important;
+  background-position:center!important;
+  background-size:contain!important;
+}
+.hero,.menu-card{background:#fffdf9!important}
+.panel-title{min-height:24px;margin-bottom:13px!important;font-size:15px!important;line-height:1.35!important;white-space:normal}
+.panel-title .dot{width:8px;height:8px}
+
+@media(max-width:767px){
+  #decor-layer{height:1100px!important}
+  #app-shell{width:100%!important;padding-left:0!important;padding-right:0!important;padding-top:max(8px,env(safe-area-inset-top))!important}
+  .brand-masthead{box-sizing:border-box!important;width:100%!important;min-height:188px!important;margin:0 auto 5px!important;padding:0 42px 0 88px!important}
+  .brand-mark{font-size:59px!important}.brand-thai{font-size:23px!important;margin-top:5px!important}.brand-english{font-size:8.5px!important;margin-top:7px!important}.brand-note{font-size:9.5px!important;line-height:1.3!important;margin-top:9px!important;white-space:nowrap!important}
+  .hero{box-sizing:border-box!important;width:min(330px,calc(100% - 48px))!important;padding:17px 16px!important;border-radius:24px!important}.hero-row{gap:12px!important}.brand-title{font-size:18px!important;line-height:1.2!important;white-space:nowrap!important}.brand-title .accent{display:inline!important;margin:0!important}.brand-subtitle{font-size:10.5px!important;line-height:1.4!important;margin-top:6px!important}.manager-btn{min-height:47px!important;padding:0 13px!important;border-radius:15px!important;font-size:12px!important}
+  #app-menus{box-sizing:border-box!important;width:min(306px,calc(100% - 76px))!important;margin:18px auto 0!important}.category-block{margin-bottom:22px!important}.category-title{margin-bottom:9px!important;padding:3px 0 7px!important;font-size:18px!important}.category-icon{width:27px!important;height:27px!important;font-size:14px!important}.menu-grid{grid-template-columns:1fr!important;gap:7px!important}.menu-card{box-sizing:border-box!important;min-height:60px!important;padding:6px 8px!important;gap:9px!important;border-radius:15px!important}.menu-card:before{width:47px!important;height:47px!important;flex:0 0 47px!important;border-radius:12px!important;font-size:23px!important}.menu-card-title{font-size:12.5px!important;line-height:1.2!important}.menu-card-subtitle{display:none!important}.menu-arrow{font-size:24px!important}
+  .decor-a{width:185px!important;height:194px!important;left:-18px!important;right:auto!important;top:34px!important;bottom:auto!important}.decor-b{width:184px!important;height:171px!important;left:-30px!important;right:auto!important;top:812px!important;bottom:auto!important}.decor-c{width:174px!important;height:332px!important;left:auto!important;right:-38px!important;top:696px!important;bottom:auto!important}
+  .calculator-body{display:flex!important;flex-direction:column!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important}.calc-panel{flex:0 0 auto!important;min-height:auto!important;height:auto!important;overflow:visible!important;position:relative!important;width:100%!important;padding-top:14px!important}#leftPanel{z-index:2!important;border-right:0!important;border-bottom:1px solid #eddfd3!important}#rightPanel{z-index:1!important;flex:0 0 auto!important}.replacement-wrap{position:relative!important;margin:7px 0 3px!important;padding-left:7px!important}.replacement-menu{position:static!important;max-height:none!important;overflow:visible!important;margin-top:6px!important}.replacement-option{min-height:43px!important}#netResultList{grid-template-columns:1fr!important;gap:7px!important}.panel-title{font-size:14px!important;margin-bottom:12px!important}
+  #tableContainer{--matrix-col-1:72px!important;--matrix-col-2:76px!important;--matrix-data-col:48px!important;padding:2px!important}.matrix-table{font-size:8.25px!important}.matrix-table th{font-size:7.25px!important}
+}
+
+@media(min-width:768px) and (max-width:1023px){
+  .decor-a{width:210px!important;height:220px!important;left:-12px!important;top:38px!important}.decor-b{width:218px!important;height:203px!important;left:-10px!important;top:850px!important}.decor-c{width:202px!important;height:385px!important;right:-8px!important;top:675px!important}
+  .calculator-body{display:flex!important;flex-direction:column!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important}.calc-panel{flex:0 0 auto!important;min-height:auto!important;height:auto!important;overflow:visible!important;position:relative!important;width:100%!important}#leftPanel{z-index:2!important;border-right:0!important;border-bottom:1px solid #eddfd3!important}#rightPanel{z-index:1!important;flex:0 0 auto!important}.replacement-menu{position:static!important;max-height:none!important;overflow:visible!important}
+}
+
+@media(min-width:1024px){
+  .decor-a{width:246px!important;height:258px!important;left:8px!important;top:34px!important}.decor-b{width:246px!important;height:229px!important;left:8px!important;top:535px!important}.decor-c{width:236px!important;height:450px!important;right:8px!important;top:330px!important}
+}
+@media(min-width:1024px) and (min-aspect-ratio:4/3){
+  .calculator-body{display:grid!important;grid-template-columns:minmax(0,44%) minmax(0,56%)!important;min-height:0!important;overflow:hidden!important}.calc-panel{min-height:0!important;height:auto!important;overflow-y:auto!important;overflow-x:hidden!important;position:relative!important;width:auto!important}#leftPanel{z-index:1!important;border-right:1px solid #eddfd3!important;border-bottom:0!important}#rightPanel{z-index:1!important}.replacement-menu{position:static!important;max-height:230px!important;overflow-y:auto!important}
+}
+
 </style>
 </head>
 <body>
@@ -567,11 +606,11 @@ body{min-height:100vh;min-height:100dvh;color:var(--text);overflow-x:clip;backgr
       </header>
       <div class="calculator-body">
         <section id="leftPanel" class="calc-panel">
-          <h3 class="panel-title reject"><span class="dot"></span>❌ สิ่งที่ลูกค้า “ไม่รับ” (เลือกได้หลายอัน)</h3>
+          <h3 class="panel-title reject"><span class="dot"></span>สิ่งที่ลูกค้าไม่รับ</h3>
           <div id="excludeOptions"></div>
         </section>
         <section id="rightPanel" class="calc-panel">
-          <h3 class="panel-title result"><span class="dot"></span>⚖️ ปริมาณสุทธิ (เตรียมจัดเสิร์ฟ)</h3>
+          <h3 class="panel-title result"><span class="dot"></span>ปริมาณสุทธิ</h3>
           <div id="netResultList"></div>
         </section>
       </div>
