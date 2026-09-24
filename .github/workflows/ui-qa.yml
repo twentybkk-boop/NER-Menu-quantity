@@ -1,5 +1,6 @@
 name: UI QA
 
+# Orientation/layering V1 keeps wide iPad landscape responsive while preserving character rails.
 on:
   push:
     branches: [main]
