@@ -40,12 +40,12 @@ jobs:
           sleep 2
       - name: Run Chromium + WebKit UI QA
         run: node qa/ui-qa-runner.mjs
-      - name: Verify real-device visual fidelity contract
-        run: node qa/real-device-visual-contract.mjs
+      - name: Verify P0-A complete character composition
+        run: node qa/character-composition-v2-contract.mjs
       - name: Verify calculator visual hierarchy contract
         run: node qa/calculator-visual-contract.mjs
-      - name: Verify deployed GitHub Pages acceptance
-        run: node qa/live-pages-acceptance.mjs
+      - name: Verify deployed GitHub Pages P0-A acceptance
+        run: node qa/live-pages-acceptance-v2.mjs
       - name: Render thumbnail contact sheet evidence
         run: |
           node --input-type=module <<'NODE'
@@ -74,6 +74,7 @@ jobs:
             assert.equal(await images.count(), 11, 'character asset contact sheet inventory changed unexpectedly');
             const natural = await images.evaluateAll(nodes => nodes.map(img => ({src:img.getAttribute('src'), w:img.naturalWidth, h:img.naturalHeight, complete:img.complete})));
             assert.ok(natural.every(item => item.complete && item.w > 0 && item.h > 0), `character asset failed to load: ${JSON.stringify(natural)}`);
+            console.log(`character asset natural sizes: ${JSON.stringify(natural)}`);
             await page.screenshot({ path: 'qa-artifacts/10-character-asset-contact-sheet.png', fullPage: true });
           } finally {
             await browser.close();
