@@ -7,6 +7,7 @@ const BASE = 'http://127.0.0.1:8000/index.html';
 const recipeBody = fs.readFileSync('recipe_master.json', 'utf8');
 const shotDir = path.resolve('qa-artifacts');
 fs.mkdirSync(shotDir, { recursive: true });
+const SIGNATURE_MENUS = ['ชุดจุ่มหมูทะเล','ชุดจุ่มเนื้อ','ชุดจุ่มหมู','ชุดจุ่มเดี่ยวหมู'];
 
 async function inspect(browserType, browserName) {
   const browser = await browserType.launch();
@@ -26,13 +27,14 @@ async function inspect(browserType, browserName) {
     await page.goto(BASE, { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => document.querySelectorAll('.menu-card').length === 45);
 
-    const contract = await page.evaluate(() => {
+    const contract = await page.evaluate(signatureMenus => {
       const menus = document.querySelector('#app-menus');
       const menuRect = menus.getBoundingClientRect();
       const cards = [...document.querySelectorAll('.menu-card')];
-      const first = cards[0];
-      const firstThumb = getComputedStyle(first, '::before');
-      const firstRect = first.getBoundingClientRect();
+      const normal = cards.find(card => !signatureMenus.includes(card.dataset.menu));
+      if (!normal) throw new Error('normal non-signature menu card not found');
+      const normalThumb = getComputedStyle(normal, '::before');
+      const normalRect = normal.getBoundingClientRect();
       const sig = document.querySelector('.menu-card[data-menu="ชุดจุ่มหมูทะเล"]');
       const sigThumb = getComputedStyle(sig, '::before');
 
@@ -62,8 +64,8 @@ async function inspect(browserType, browserName) {
       return {
         viewport: { width: innerWidth, height: innerHeight },
         menus: { left: menuRect.left, right: menuRect.right, width: menuRect.width },
-        firstCard: { left: firstRect.left, right: firstRect.right, width: firstRect.width },
-        thumb: thumbSize(firstThumb),
+        normalCard: { left: normalRect.left, right: normalRect.right, width: normalRect.width, menu: normal.dataset.menu },
+        thumb: thumbSize(normalThumb),
         signatureThumb: thumbSize(sigThumb),
         decor,
         manager: {
@@ -71,22 +73,22 @@ async function inspect(browserType, browserName) {
           color: getComputedStyle(document.querySelector('#managerButton')).color,
         },
       };
-    });
+    }, SIGNATURE_MENUS);
 
     assert.ok(contract.menus.width <= 327, `${browserName}: central menu lane too wide: ${contract.menus.width}`);
     assert.ok(contract.menus.left >= 27 && contract.viewport.width - contract.menus.right >= 27,
       `${browserName}: menu lane does not reserve both character rails`);
-    assert.ok(contract.firstCard.left >= contract.menus.left - 1 && contract.firstCard.right <= contract.menus.right + 1,
+    assert.ok(contract.normalCard.left >= contract.menus.left - 1 && contract.normalCard.right <= contract.menus.right + 1,
       `${browserName}: card escapes protected menu lane`);
 
     assert.ok(contract.thumb.width <= 67 && contract.thumb.height <= 45,
-      `${browserName}: normal atlas crop is rendered too large for its 120x80 source cell`);
+      `${browserName}: normal atlas crop (${contract.normalCard.menu}) renders ${contract.thumb.width}x${contract.thumb.height}, too large for its 120x80 source cell`);
     assert.ok(contract.signatureThumb.width <= 73 && contract.signatureThumb.height <= 49,
-      `${browserName}: signature atlas crop is rendered too large for its 120x80 source cell`);
+      `${browserName}: signature atlas crop renders ${contract.signatureThumb.width}x${contract.signatureThumb.height}, too large for its 120x80 source cell`);
     assert.ok(Math.abs(contract.thumb.width / contract.thumb.height - 1.5) < 0.04,
-      `${browserName}: normal thumbnail distorts source aspect ratio`);
+      `${browserName}: normal thumbnail distorts source aspect ratio (${contract.thumb.width}x${contract.thumb.height})`);
     assert.ok(Math.abs(contract.signatureThumb.width / contract.signatureThumb.height - 1.5) < 0.04,
-      `${browserName}: signature thumbnail distorts source aspect ratio`);
+      `${browserName}: signature thumbnail distorts source aspect ratio (${contract.signatureThumb.width}x${contract.signatureThumb.height})`);
     assert.match(contract.thumb.bg, /semantic-atlas-v1\.webp/, `${browserName}: semantic atlas not active`);
     assert.equal(contract.thumb.bgSize, '600% 500%', `${browserName}: semantic atlas crop geometry changed`);
 
