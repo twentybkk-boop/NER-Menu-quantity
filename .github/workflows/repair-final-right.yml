@@ -1,0 +1,68 @@
+name: Repair final right exact binary
+
+on:
+  push:
+    branches:
+      - repair/v3-2b2-exact-blobs-20260924
+    paths:
+      - repair-staging/right/RUN_FINAL_RIGHT
+
+permissions:
+  contents: write
+
+jobs:
+  assemble-final-right:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Assemble and verify exact final right binary
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cat \
+            repair-staging/right/right-00.b64 \
+            repair-staging/right/right-01.b64 \
+            repair-staging/right/right-02.b64 \
+            repair-staging/right/right-03.b64 \
+            repair-staging/right/right-04a.b64 \
+            repair-staging/right/right-04b.b64 \
+            repair-staging/right/right-04c.b64 \
+            repair-staging/right/right-04d.b64 \
+            > /tmp/right-final.b64
+
+          b64_bytes="$(wc -c < /tmp/right-final.b64 | tr -d ' ')"
+          test "$b64_bytes" = "68504"
+
+          base64 --decode /tmp/right-final.b64 > /tmp/right-final.webp
+
+          decoded_bytes="$(wc -c < /tmp/right-final.webp | tr -d ' ')"
+          test "$decoded_bytes" = "51376"
+
+          actual_sha256="$(sha256sum /tmp/right-final.webp | awk '{print $1}')"
+          expected_sha256="d94dffb06bf229f01cbed71f87133a18c8b80decabdcd32577bb7a1ff66958ed"
+          echo "decoded_bytes=$decoded_bytes sha256=$actual_sha256 expected_sha256=$expected_sha256"
+          test "$actual_sha256" = "$expected_sha256"
+
+          actual_blob="$(git hash-object /tmp/right-final.webp)"
+          expected_blob="a4d051c52a4b0f5191ad2770c3eee416fa01aba4"
+          echo "git_blob=$actual_blob expected_blob=$expected_blob"
+          test "$actual_blob" = "$expected_blob"
+
+          cp /tmp/right-final.webp repair-staging/right/right-final-exact.webp
+          test "$(wc -c < repair-staging/right/right-final-exact.webp | tr -d ' ')" = "51376"
+          test "$(sha256sum repair-staging/right/right-final-exact.webp | awk '{print $1}')" = "$expected_sha256"
+          test "$(git hash-object repair-staging/right/right-final-exact.webp)" = "$expected_blob"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add repair-staging/right/right-final-exact.webp
+          if git diff --cached --quiet; then
+            echo "final right binary already exact; no commit needed"
+            exit 0
+          fi
+          git commit -m "Assemble exact final right binary proof"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
