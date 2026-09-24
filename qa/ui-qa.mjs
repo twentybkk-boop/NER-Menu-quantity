@@ -33,9 +33,11 @@ async function assertBaseContract(page, deviceName) {
       display:s.display, visibility:s.visibility, opacity:Number(s.opacity), pointer:s.pointerEvents
     };
   }));
+  const viewport = page.viewportSize();
+  assert.ok(viewport, `${deviceName}: missing viewport size`);
   assert.equal(decor.length, 3, `${deviceName}: expected 3 foreground characters`);
   decor.forEach((d, i) => {
-    const intersectsViewport = d.right > 0 && d.left < innerWidth && d.bottom > 0 && d.top < innerHeight;
+    const intersectsViewport = d.right > 0 && d.left < viewport.width && d.bottom > 0 && d.top < viewport.height;
     assert.ok(d.w > 60 && d.h > 60 && d.display !== 'none' && d.visibility !== 'hidden' && d.opacity > .5, `${deviceName}: character ${i+1} not visibly present`);
     assert.ok(intersectsViewport, `${deviceName}: character ${i+1} is outside viewport`);
     assert.equal(d.pointer, 'none', `${deviceName}: character ${i+1} intercepts pointer events`);
