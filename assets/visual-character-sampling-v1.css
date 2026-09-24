@@ -10,14 +10,14 @@
 }
 
 /* The authoritative approved asset paths are preserved. Their raster contents
-   are upgraded in-place to Retina-capable derivatives from the approved reference,
-   so every existing composition contract keeps the same semantic source identity. */
+   are upgraded in-place to Retina-capable derivatives from the approved reference.
+   A version query forces real devices/CDNs off the former low-resolution payload. */
 .decor-a{
-  background-image:url("overlay-top-left.webp")!important;
+  background-image:url("overlay-top-left.webp?v=20260924-v3-hires")!important;
 }
 .decor-b{
-  background-image:url("overlay-bottom-left.webp")!important;
+  background-image:url("overlay-bottom-left.webp?v=20260924-v3-hires")!important;
 }
 .decor-c{
-  background-image:url("overlay-right.webp")!important;
+  background-image:url("overlay-right.webp?v=20260924-v3-hires")!important;
 }
