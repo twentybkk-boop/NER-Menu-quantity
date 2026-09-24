@@ -60,19 +60,28 @@ Clean production-only mapping commit on `main`:
 - `assets/overlay-right-hires.webp` → blob `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`, size `51376` — MATCH.
 - STATUS: ALL THREE VERIFIED EXACT OBJECTS ARE NOW MAPPED TO PRODUCTION PATHS.
 
+## REPAIR-ONLY CLEANUP — VERIFIED CLEAN ON MAIN
+- inspected current `main` checkpoint `033e8abefbf287bd1133ef3562c7fd7963cdd0e6`, tree `fad7e014cab0ce88c9115b44160ef0c3d44e9863`.
+- no `repair-staging/` paths exist on current `main`.
+- no `.github/workflows/repair-*` paths exist on current `main`.
+- existing `.github/workflows/ui-qa.yml` remains present and unchanged.
+- therefore no deletion commit was required; cleanup status is already clean.
+- production high-resolution overlay blobs remain mapped exactly as verified above.
+
 ## DO NOT REPEAT / REJECTED
 - Do not redo repo-wide/source/Library/V2/Session1/2A/2B.1/layout/orientation/calculator/P0 investigations or redraw/reconstruction.
-- Do not alter the eight verified staged right ranges.
+- Do not alter the eight verified staged right ranges on the repair branch.
 - Do not rewrite corrected `right-01.b64` or either fresh half.
 - Do not re-inspect/re-trigger runs `36033565588` or `36034559407`.
 - Do not rewrite `RUN_RIGHT_FINAL` again.
 - Do not rebuild or rewrite `repair-staging/right/right-q70-a60.webp`.
 - Do not remap the three production high-resolution assets unless a later verified QA failure proves the mapping itself wrong.
-- Do not change verified layout/business logic during cleanup or QA.
+- Do not change verified layout/business logic during QA.
+- Do not perform repair cleanup again on `main`; current `main` is already verified free of repair-only residue.
 
 ## OPEN BLOCKERS
-1. Cleanup repair-only staging/workflows/triggers from `main` only if they exist there; preserve production assets and verified runtime/UI files; checkpoint.
-2. Run existing UI/sharpness QA and manually inspect `31-*sharpness-v2` screenshots for final acceptance; checkpoint.
+1. Run existing UI/sharpness QA against current `main` and record exact run ID/status/conclusion; checkpoint before inspecting screenshots/artifacts if the run is asynchronous.
+2. Manually inspect `31-*sharpness-v2` screenshots for final acceptance of all three characters and verified composition; checkpoint final acceptance/result.
 
 ## EXACT NEXT RECOVERY ACTION
-After confirming this checkpoint is durable, inspect current `main` ONLY for repair-only staging/workflow/trigger residue introduced for V3 Session 2B.2. Remove ONLY repair-only residue that is actually present on `main`, without touching the three verified production high-resolution overlays or verified layout/business logic. Verify cleanup diff/path set and immediately persist a cleanup checkpoint before running any QA. Do not perform QA in the same uncheckpointed work unit.
+After confirming this cleanup checkpoint is durable, run the existing UI/sharpness QA on current `main` using the existing `.github/workflows/ui-qa.yml` / established QA path only. Do not modify layout/business logic or production assets. Record the exact QA run ID/status/conclusion and immediately persist that QA-run checkpoint before manually inspecting `31-*sharpness-v2` screenshots or other QA artifacts.
