@@ -44,10 +44,16 @@ jobs:
         run: node qa/character-composition-v2-contract.mjs
       - name: Verify P0-B protected center frame
         run: node qa/center-frame-v2-contract.mjs
+      - name: Verify P0-D top composition locally
+        run: node qa/top-composition-v1-contract.mjs
       - name: Verify calculator visual hierarchy contract
         run: node qa/calculator-visual-v2-runner.mjs
       - name: Verify deployed GitHub Pages P0-A/P0-B acceptance
         run: node qa/live-pages-acceptance-v2.mjs
+      - name: Verify deployed GitHub Pages P0-D top composition
+        env:
+          TOP_COMPOSITION_BASE: https://twentybkk-boop.github.io/NER-Menu-quantity/
+        run: node qa/top-composition-v1-contract.mjs
       - name: Render thumbnail contact sheet evidence
         run: |
           node --input-type=module <<'NODE'
