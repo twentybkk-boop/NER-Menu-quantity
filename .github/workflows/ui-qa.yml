@@ -29,47 +29,8 @@ jobs:
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          old = '''    function showModal(id) {
-      el(id).classList.remove('is-hidden');
-      document.body.style.overflow = 'hidden';
-    }
-    function hideModal(id) {
-      el(id).classList.add('is-hidden');
-      if (el('calculatorModal').classList.contains('is-hidden') && el('matrixModal').classList.contains('is-hidden') && el('pinModal').classList.contains('is-hidden')) {
-        document.body.style.overflow = '';
-      }
-    }
-'''
-          new = '''    function showModal(id) {
-      el(id).classList.remove('is-hidden');
-      if (!document.body.classList.contains('modal-scroll-locked')) {
-        const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
-        document.body.dataset.modalScrollY = String(scrollY);
-        document.body.classList.add('modal-scroll-locked');
-        document.body.style.position = 'fixed';
-        document.body.style.top = `-${scrollY}px`;
-        document.body.style.left = '0';
-        document.body.style.right = '0';
-        document.body.style.width = '100%';
-        document.body.style.overflow = 'hidden';
-      }
-    }
-    function hideModal(id) {
-      el(id).classList.add('is-hidden');
-      if (el('calculatorModal').classList.contains('is-hidden') && el('matrixModal').classList.contains('is-hidden') && el('pinModal').classList.contains('is-hidden')) {
-        const scrollY = Number(document.body.dataset.modalScrollY || 0);
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.left = '';
-        document.body.style.right = '';
-        document.body.style.width = '';
-        document.body.style.overflow = '';
-        document.body.classList.remove('modal-scroll-locked');
-        delete document.body.dataset.modalScrollY;
-        window.scrollTo(0, scrollY);
-      }
-    }
-'''
+          old = "    function showModal(id) {\n      el(id).classList.remove('is-hidden');\n      document.body.style.overflow = 'hidden';\n    }\n    function hideModal(id) {\n      el(id).classList.add('is-hidden');\n      if (el('calculatorModal').classList.contains('is-hidden') && el('matrixModal').classList.contains('is-hidden') && el('pinModal').classList.contains('is-hidden')) {\n        document.body.style.overflow = '';\n      }\n    }\n"
+          new = "    function showModal(id) {\n      el(id).classList.remove('is-hidden');\n      if (!document.body.classList.contains('modal-scroll-locked')) {\n        const scrollY = window.scrollY || document.documentElement.scrollTop || 0;\n        document.body.dataset.modalScrollY = String(scrollY);\n        document.body.classList.add('modal-scroll-locked');\n        document.body.style.position = 'fixed';\n        document.body.style.top = `-${scrollY}px`;\n        document.body.style.left = '0';\n        document.body.style.right = '0';\n        document.body.style.width = '100%';\n        document.body.style.overflow = 'hidden';\n      }\n    }\n    function hideModal(id) {\n      el(id).classList.add('is-hidden');\n      if (el('calculatorModal').classList.contains('is-hidden') && el('matrixModal').classList.contains('is-hidden') && el('pinModal').classList.contains('is-hidden')) {\n        const scrollY = Number(document.body.dataset.modalScrollY || 0);\n        document.body.style.position = '';\n        document.body.style.top = '';\n        document.body.style.left = '';\n        document.body.style.right = '';\n        document.body.style.width = '';\n        document.body.style.overflow = '';\n        document.body.classList.remove('modal-scroll-locked');\n        delete document.body.dataset.modalScrollY;\n        window.scrollTo(0, scrollY);\n      }\n    }\n"
           if new in s:
               print('scroll-lock patch already present')
           elif old in s:
