@@ -33,13 +33,19 @@ async function waitForDeployment(page) {
       const layer = await page.request.get(`${root}assets/visual-long-list-rhythm-v1.css?longv1=${Date.now()}`, {
         headers: { 'cache-control': 'no-cache' },
       });
-      if (polish.ok() && layer.ok()) {
+      const orientation = await page.request.get(`${root}assets/visual-layering-orientation-v1.css?longv1=${Date.now()}`, {
+        headers: { 'cache-control': 'no-cache' },
+      });
+      if (polish.ok() && layer.ok() && orientation.ok()) {
         const polishText = await polish.text();
         const layerText = await layer.text();
-        last = `${polishText.slice(-240)}\n${layerText.slice(0, 240)}`;
+        const orientationText = await orientation.text();
+        last = `${polishText.slice(-260)}\n${layerText.slice(0, 180)}\n${orientationText.slice(0, 180)}`;
         if (
           polishText.includes('visual-long-list-rhythm-v1.css') &&
-          layerText.includes('P0-D LONG-LIST RHYTHM V1')
+          polishText.includes('visual-layering-orientation-v1.css') &&
+          layerText.includes('P0-D LONG-LIST RHYTHM V1') &&
+          orientationText.includes('layering/orientation/background V1')
         ) return;
       }
     } catch (error) {
@@ -47,7 +53,7 @@ async function waitForDeployment(page) {
     }
     await sleep(8_000);
   }
-  throw new Error(`GitHub Pages did not expose P0-D long-list rhythm V1 before timeout. Last probe: ${last.slice(0, 420)}`);
+  throw new Error(`GitHub Pages did not expose P0-D long-list rhythm + backmost environment before timeout. Last probe: ${last.slice(0, 420)}`);
 }
 
 async function readContract(page) {
@@ -96,6 +102,7 @@ async function readContract(page) {
     return {
       viewport: { width: innerWidth, height: innerHeight },
       menuCount: document.querySelectorAll('.menu-card').length,
+      bodyBg: getComputedStyle(document.body, '::before').backgroundImage,
       menus: { left: menusRect.left, right: menusRect.right, width: menusRect.width },
       sectionCount: document.querySelectorAll('.category-block').length,
       first: {
@@ -117,7 +124,12 @@ function assertContract(c, browserName) {
   assert.equal(c.sectionCount, 7, `${scope}: category count changed`);
   assert.equal(c.sections.length, 6, `${scope}: expected six later category chapters`);
   assert.ok(c.menus.width >= 285 && c.menus.width <= 302, `${scope}: protected center frame drifted to ${c.menus.width}px`);
-  assert.match(c.first.bg, /radial-gradient/, `${scope}: verified first-screen category treatment regressed`);
+
+  /* Ambient round shapes are now explicitly backmost per new device feedback. */
+  assert.match(c.bodyBg, /background-master\.webp/, `${scope}: backmost illustrated environment missing`);
+  assert.match(c.bodyBg, /radial-gradient/, `${scope}: backmost ambient bubbles missing`);
+  assert.doesNotMatch(c.first.bg, /radial-gradient/, `${scope}: round ambient bubble leaked into verified first category layer`);
+  assert.match(c.first.bg, /linear-gradient/, `${scope}: verified first-screen category paper wash regressed`);
   assert.match(c.first.cardBg, /linear-gradient/, `${scope}: verified first-screen signature card treatment regressed`);
 
   const expectedFirstMenus = [
@@ -126,7 +138,7 @@ function assertContract(c, browserName) {
   assert.deepEqual(c.sections.map(s => s.firstMenu), expectedFirstMenus, `${scope}: category ordering/identity changed`);
 
   for (const section of c.sections) {
-    assert.match(section.bg, /radial-gradient/, `${scope}/${section.firstMenu}: environmental glow missing`);
+    assert.doesNotMatch(section.bg, /radial-gradient/, `${scope}/${section.firstMenu}: round ambient bubble leaked into section layer`);
     assert.match(section.bg, /linear-gradient/, `${scope}/${section.firstMenu}: editorial paper wash missing`);
     assert.match(section.beforeBg, /linear-gradient/, `${scope}/${section.firstMenu}: category rest separator missing`);
     assert.ok(section.radius >= 18, `${scope}/${section.firstMenu}: chapter radius collapsed`);
