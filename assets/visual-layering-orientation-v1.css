@@ -135,3 +135,9 @@ body::before{
   .decor-b{width:184px!important;height:136px!important;left:11px!important;right:auto!important;top:auto!important;bottom:max(7px,calc(env(safe-area-inset-bottom) + 4px))!important;}
   .decor-c{width:148px!important;height:230px!important;right:12px!important;left:auto!important;top:auto!important;bottom:max(5px,calc(env(safe-area-inset-bottom) + 3px))!important;}
 }
+
+/* Preserve the existing responsive acceptance: very wide iPad landscape
+   reflows to three columns while keeping the reserved side rails. */
+@media (min-width:1100px) and (max-width:1180px) and (min-height:541px){
+  .menu-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+}
