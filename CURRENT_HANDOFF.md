@@ -3,98 +3,87 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts.
 
-## CURRENT WORK HEAD — AUTOMATION VERIFIED; MANUAL EVIDENCE NEXT
+## CURRENT WORK HEAD — AUTOMATION + EVIDENCE EQUIVALENCE VERIFIED; MANUAL VISUAL NEXT
 - Feasible-geometry checkpoint: `1fb4512f942500e55b0b26aeffebe73cef2f6252`.
-- Presentation fix: `c0cf1314e3e50504d2fb07d17bad30cfae664ebc` — `Restore minimum modal story-detail geometry`.
-- Pre-Actions checkpoint: `a04301c9803a5f4bc07734c4743b3392ac078a6c`.
+- Presentation fix: `c0cf1314e3e50504d2fb07d17bad30cfae664ebc`.
+- Automation-success checkpoint: `a72c763019e6f5d2b4eec44428df8ca479b225f5`.
 
 ## FIX SCOPE — VERIFIED DURABLE
-`c0cf1314…` changes exactly one file, `assets/visual-uat-v4-chunk4.css`, and only these modal `.decor-a` dimensions:
-- phone portrait `56x61 -> 78x76`, left/top unchanged.
-- iPad portrait `70x77 -> 78x77`, left/top unchanged.
-- iPad landscape/wide `72x79 -> 78x79`, left/top unchanged.
-- phone landscape remains `80x87`.
-- no QA/test, `.decor-b/.decor-c`, density/chrome, recipe/business/quantity/exclusion/replacement/Matrix/PIN/import-export changes.
+`c0cf1314…` changes only `assets/visual-uat-v4-chunk4.css` and only these modal `.decor-a` dimensions:
+- phone portrait `56x61 -> 78x76`
+- iPad portrait `70x77 -> 78x77`
+- iPad landscape/wide `72x79 -> 78x79`
+All left/top values unchanged; phone-landscape remains `80x87`; no QA/business/recipe/interaction changes.
 
 ## POST-FIX AUTOMATION — VERIFIED SUCCESS
-Code head verified: `c0cf1314e3e50504d2fb07d17bad30cfae664ebc`.
-
 Pages:
-- run `36060607153`
-- `completed / success`
+- run `36060607153` — completed/success
 
 UI QA:
-- run `36060607688`
-- run number `138`
+- run `36060607688` — completed/success
 - job `107838353210`
-- `completed / success`
-
-Required successful gates include:
-- base Chromium + WebKit UI QA
-- P0-A complete character composition
-- P0-B protected center frame
-- P0-D top composition + long-list rhythm
-- V4 thumbnail semantics/density
-- V4 Chunk 4 character scale/detail density/safety LOCAL + DEPLOYED
-- orientation layering/backmost environment LOCAL + DEPLOYED
-- V3 high-res sharpness LOCAL + DEPLOYED
-- calculator visual hierarchy
-- V4 phone-landscape calculator interaction LOCAL + DEPLOYED
-- screenshot upload
+- all required LOCAL + DEPLOYED gates passed, including P0-A, P0-B, P0-D, Chunk 3, Chunk 4, layering, high-res sharpness, calculator hierarchy, and phone-landscape interaction.
 
 Artifact:
-- name `ui-qa-screenshots`
+- `ui-qa-screenshots`
 - ID `10834148831`
 - size `72,943,476` bytes
 - digest `sha256:c3e698110745b8f806640b9ae4452e22de1367b8ff1d4a6aba2af4cb2d138adb`
-- head SHA `c0cf1314e3e50504d2fb07d17bad30cfae664ebc`
+
+## FINAL CHUNK 4 EVIDENCE — LOCAL/LIVE BYTE EQUIVALENCE VERIFIED
+Artifact was downloaded once and only `34-chunk4-*` / `live-34-chunk4-*` files were extracted.
+
+All LOCAL screenshots are byte-identical to their DEPLOYED counterparts:
+- phone portrait page: `b654f52f4290c4263aa4be5b8506208189bda00e50457953be19c2065e55d866`
+- phone portrait modal: `e85e45d1878e73514df541027622e0c3d54a952b6af8299dc6c5b5a941dc1b8e`
+- phone landscape page: `8e8c604bce1924db5b26917127ed28f9b18c0577e6953ab5f075abfb67c93257`
+- phone landscape modal: `10679f1f01332aa413ec0730ee8fec18a57200fe48dcac972e06105094024aa8`
+- iPad portrait page: `689e0438fafd83f66353674a9a9e0bc822d88193360fec37e753555939ed95eb`
+- iPad portrait modal: `57b804b6a7e621013d3c1beb65674d01356cdf653bc2a05cd6b1b2a9bc39c7b5`
+- iPad landscape page: `0985c7b056e4cc69a6023244f11352a06ab51e8875a8c122c43529dc8d0612ab`
+- iPad landscape modal: `cbf32230274a0177045243d1433e3bae85c849b1187ca5ad56120e87e0aaf7a2`
+
+Therefore manual visual review only needs the eight LOCAL copies; no duplicate LIVE visual review is necessary.
 
 ## ROOT CAUSE / CONTRACT STATUS — VERIFIED
-- P0-A floor remains unchanged: every character box >= `78x76`, approved high-res source, `background-size:contain`, >=96% box visibility, pointer safety.
-- Chunk 4 safe-zone gate remains unchanged and directly requires top-left modal composition to avoid `.modal-title` and `.modal-subtitle` with 2px separation.
-- The fix uses the already-reserved modal top rails instead of weakening either contract.
-
-## PREVIOUS MANUAL DEFECT — MUST BE RECHECKED, NOT RE-DERIVED
-Old pre-fix artifact manual review found top-left modal character obstruction in:
-- phone portrait
-- iPad portrait
-- iPad landscape
-Phone landscape modal and all page states passed; UAT-009 density passed.
+- P0-A floor remains >= `78x76`, approved high-res source, contain sizing, >=96% box visibility, pointer safety.
+- Chunk 4 direct title/subtitle non-intersection safe-zone gate remains unchanged.
+- The final geometry uses reserved top rails and weakens no contract.
 
 ## VERIFIED BASELINE — DO NOT REOPEN
-- Chunk 1 `UAT-001/002/003` complete — checkpoint `3eb47a81fa1bd84d2ebf8942e694deeaea333ef5`.
-- Chunk 2 `UAT-004/005` + landscape UAT-010 complete — checkpoint `8eefd4142a4d2d27dca7dcf8e8ce175238b335e8`.
-- Chunk 3 `UAT-006/007` complete — checkpoint `92aef5661454ea21580328df96cd3428838a43d5`.
+- Chunk 1 `UAT-001/002/003` complete — `3eb47a81fa1bd84d2ebf8942e694deeaea333ef5`.
+- Chunk 2 `UAT-004/005` + landscape UAT-010 complete — `8eefd4142a4d2d27dca7dcf8e8ce175238b335e8`.
+- Chunk 3 `UAT-006/007` complete — `92aef5661454ea21580328df96cd3428838a43d5`.
 - approved production character binaries remain locked.
 
 ## LOCKED INVARIANTS
 - no recipe/business/quantity/exclusion/replacement/Matrix/PIN/import-export changes.
 - no character binary/source remapping.
-- preserve page-state geometry, phone-landscape modal geometry, modal `.decor-b/.decor-c`, UAT-009 density.
-- preserve all existing P0/layering/sharpness/tap-safety gates.
+- preserve page-state geometry, phone-landscape modal geometry, modal `.decor-b/.decor-c`, UAT-009 density, all P0/layering/sharpness/tap-safety gates.
 
 ## DO NOT REPEAT
-- do not re-read failed run `36058265001`.
-- do not redo feasible-geometry derivation.
-- do not rerun `36060607688`; it is verified success.
-- do not relax P0-A or safe-zone gates.
-- do not restore old oversized modal `.decor-a` values.
+- do not rerun `36060607688`.
+- do not re-download artifact `10834148831` unless local mount is lost.
+- do not visually review LIVE copies; hashes prove exact equality.
+- do not redo geometry derivation or old failure analysis.
 
 ## EXACT NEXT ACTION
-1. Fresh-confirm this checkpoint is durable on `main`.
-2. Download artifact `10834148831` once.
-3. Extract only Chunk 4 evidence files `34-chunk4-*` and `live-34-chunk4-*`.
-4. Verify local/live byte/hash equivalence for the three previously failing modal orientations (phone portrait, iPad portrait, iPad landscape; phone landscape may be included as regression confirmation).
-5. Manual-review only local copies when byte-identical:
-   - all three approved characters present;
-   - top-left story detail remains readable;
-   - no top-left overlap with modal title/subtitle;
-   - bottom-left/right remain intact;
-   - no new rail/control obstruction;
-   - density/action visibility remains acceptable.
-6. Persist manual visual verdict immediately.
-7. If PASS, mark UAT-008/UAT-009/final UAT-010 + V4 Chunk 4 VERIFIED COMPLETE, then perform one final live-readiness check and hand the deployed URL to the user for real web-app review.
-8. If FAIL, checkpoint exact screenshot/defect before any code edit.
+Manual-review only these LOCAL files from artifact `10834148831`:
+- `34-chunk4-phone-portrait-page.png`
+- `34-chunk4-phone-portrait-modal.png`
+- `34-chunk4-phone-landscape-page.png`
+- `34-chunk4-phone-landscape-modal.png`
+- `34-chunk4-ipad-portrait-page.png`
+- `34-chunk4-ipad-portrait-modal.png`
+- `34-chunk4-ipad-landscape-page.png`
+- `34-chunk4-ipad-landscape-modal.png`
 
-## FINAL COMPLETION CONDITION
-V4 Chunk 4 is complete only after manual evidence confirms the three previously failing modal orientations and the final readiness state is persisted. User hands-on review begins only after that durable checkpoint.
+Acceptance:
+- all 3 characters present and story details readable;
+- no top-left modal overlap with title/subtitle in phone portrait, iPad portrait, iPad landscape;
+- phone landscape remains accepted;
+- bottom-left/right intact;
+- no rail/control obstruction;
+- actionable content density remains acceptable.
+
+Persist manual verdict immediately. If PASS, mark UAT-008/UAT-009/final UAT-010 and V4 Chunk 4 VERIFIED COMPLETE, then perform one final live-readiness check and hand the deployed URL to the user for hands-on review.
