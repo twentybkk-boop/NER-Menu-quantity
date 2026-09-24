@@ -38,7 +38,7 @@ jobs:
           echo $! > /tmp/ner-ui-server.pid
           sleep 2
       - name: Run Chromium + WebKit UI QA
-        run: node qa/ui-qa.mjs
+        run: node qa/ui-qa-runner.mjs
       - name: Verify real-device visual fidelity contract
         run: node qa/real-device-visual-contract.mjs
       - name: Verify calculator visual hierarchy contract
