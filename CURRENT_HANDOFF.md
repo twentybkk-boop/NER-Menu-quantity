@@ -3,6 +3,21 @@
 > EMERGENCY CRASH-SAFE RECOVERY CHECKPOINT — SAVE FIRST, ANALYZE SECOND.
 > Source of truth: current GitHub `main` + actual code + `recipe_master.json`; current `main` wins if stale.
 
+## LATEST CHECKPOINT — RIGHT-03 RE-VERIFIED, STOP BEFORE FINAL CHUNKS
+- User required continuing from EXACT NEXT ACTION only, with an immediate checkpoint after `right-03.b64` verification and before any final chunks.
+- Re-confirmed repair-branch file `repair-staging/right/right-03.b64` from `repair/v3-2b2-exact-blobs-20260924`.
+- Re-confirmed assembler commit `9f3aaf5125094fe85afd909bd76ef23f6e39112a` (`Assemble exact right chunk 03`).
+- Commit inspection shows the changed file is ONLY `repair-staging/right/right-03.b64`.
+- The already-verified resulting Git blob SHA remains exactly `654a08614380f215c9b3c785bf6945add55b897f`, matching deterministic local target `base64(right)[30000:48000]`.
+- Therefore `right-03.b64` remains VERIFIED EXACT and MUST NOT be rewritten.
+- Exact right staging remains verified through chars `0–47,999` = 48,000 chars.
+- Remaining payload remains chars `48,000–68,503` = 20,504 chars.
+- No final chunks were created in this verification chunk.
+- No production asset path was changed.
+
+### EXACT NEXT ACTION AFTER THIS CHECKPOINT IS CONFIRMED DURABLE
+**RIGHT ONLY — one small chunk.** Regenerate exact local `base64(right)[48000:54000]` (6,000 chars), compute deterministic Git blob SHA, create NEW repair-only `repair-staging/right/right-04a.b64`, verify GitHub file SHA exactly matches local expected, and immediately persist a new checkpoint. Do not create the next chunk yet.
+
 ## SAVE-NOW DELTA — RIGHT-03 EXACTLY VERIFIED
 - User required immediate persistence before any further investigation.
 - Workflow run `36030835252` completed successfully on trigger commit `7b0a7e74decdcdbb38d92c0a3922fe66753a7dd5`.
