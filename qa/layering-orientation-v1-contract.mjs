@@ -90,7 +90,7 @@ async function inspect(browserType, browserName, c) {
     assert.match(r.bodyBg, /radial-gradient/, `${scope}: backmost ambient circles missing`);
     for (const d of r.decor) {
       assert.equal(d.pointer, 'none', `${scope}: character intercepts controls`);
-      assert.match(d.bg, /overlay-(top-left|bottom-left|right)\.webp/, `${scope}: approved character source changed`);
+      assert.match(d.bg, /overlay-(top-left|bottom-left|right)-hires\.webp/, `${scope}: approved character source changed`);
     }
     if (c.minMenu) assert.ok(r.menus.width >= c.minMenu, `${scope}: menu lane too narrow ${r.menus.width}`);
     if (c.maxMenu) assert.ok(r.menus.width <= c.maxMenu, `${scope}: menu lane too wide ${r.menus.width}`);
