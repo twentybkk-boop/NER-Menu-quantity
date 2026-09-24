@@ -33,13 +33,19 @@ async function waitForDeployment(page) {
       const layer = await page.request.get(`${root}assets/visual-top-composition-v1.css?topv1=${Date.now()}`, {
         headers: { 'cache-control': 'no-cache' },
       });
-      if (polish.ok() && layer.ok()) {
+      const orientation = await page.request.get(`${root}assets/visual-layering-orientation-v1.css?topv1=${Date.now()}`, {
+        headers: { 'cache-control': 'no-cache' },
+      });
+      if (polish.ok() && layer.ok() && orientation.ok()) {
         const polishText = await polish.text();
         const layerText = await layer.text();
-        last = `${polishText.slice(-220)}\n${layerText.slice(0, 220)}`;
+        const orientationText = await orientation.text();
+        last = `${polishText.slice(-260)}\n${layerText.slice(0, 180)}\n${orientationText.slice(0, 180)}`;
         if (
           polishText.includes('visual-top-composition-v1.css') &&
-          layerText.includes('P0-D TOP COMPOSITION V1')
+          polishText.includes('visual-layering-orientation-v1.css') &&
+          layerText.includes('P0-D TOP COMPOSITION V1') &&
+          orientationText.includes('layering/orientation/background V1')
         ) return;
       }
     } catch (error) {
@@ -47,7 +53,7 @@ async function waitForDeployment(page) {
     }
     await sleep(8_000);
   }
-  throw new Error(`GitHub Pages did not expose P0-D top composition V1 before timeout. Last probe: ${last.slice(0, 420)}`);
+  throw new Error(`GitHub Pages did not expose P0-D top composition + backmost environment before timeout. Last probe: ${last.slice(0, 420)}`);
 }
 
 async function readContract(page) {
@@ -79,6 +85,7 @@ async function readContract(page) {
     return {
       viewport: { width: innerWidth, height: innerHeight },
       menuCount: document.querySelectorAll('.menu-card').length,
+      bodyBg: getComputedStyle(document.body, '::before').backgroundImage,
       masthead: {
         left: masthead.left, right: masthead.right, top: masthead.top, bottom: masthead.bottom,
         width: masthead.width, height: masthead.height,
@@ -138,11 +145,16 @@ function assertContract(c, browserName) {
   assert.ok(c.hero.width >= 285 && c.hero.width <= 302, `${scope}: utility ribbon escaped center frame`);
   assert.ok(c.masthead.height >= 145 && c.masthead.height <= 165, `${scope}: brand moment height is ${c.masthead.height}px`);
   assert.equal(c.masthead.align, 'left', `${scope}: masthead lost editorial left alignment`);
-  assert.match(c.masthead.bg, /radial-gradient/, `${scope}: illustrated masthead environment missing`);
+
+  /* New real-device feedback moved round ambient bubbles out of the component
+     layers. The illustrated environment must now live on the backmost body layer. */
+  assert.match(c.bodyBg, /background-master\.webp/, `${scope}: backmost illustrated environment missing`);
+  assert.match(c.bodyBg, /radial-gradient/, `${scope}: backmost ambient bubbles missing`);
+  assert.doesNotMatch(c.masthead.bg, /radial-gradient/, `${scope}: round ambient bubble leaked back into masthead layer`);
   assert.match(c.masthead.bg, /linear-gradient/, `${scope}: masthead paper wash missing`);
   assert.ok(c.masthead.radius >= 20, `${scope}: masthead no longer reads as soft editorial panel`);
   assert.notEqual(c.masthead.shadow, 'none', `${scope}: masthead depth cue missing`);
-  assert.match(c.masthead.beforeBg, /radial-gradient/, `${scope}: masthead illustrated accent missing`);
+  assert.match(c.masthead.beforeBg, /radial-gradient/, `${scope}: masthead soft illustrated accent missing`);
   assert.match(c.masthead.afterBg, /linear-gradient/, `${scope}: masthead hand-drawn accent line missing`);
 
   assert.ok(c.brandMark.font >= 56, `${scope}: brand wordmark lost first-screen dominance`);
@@ -158,7 +170,7 @@ function assertContract(c, browserName) {
   assert.ok(c.manager.font <= 9.5, `${scope}: Matrix action typography is too loud`);
 
   assert.ok(c.firstBlock.top < 300, `${scope}: first category fell out of the first-screen composition`);
-  assert.match(c.firstBlock.bg, /radial-gradient/, `${scope}: first category environmental framing missing`);
+  assert.doesNotMatch(c.firstBlock.bg, /radial-gradient/, `${scope}: round ambient bubble leaked into first category layer`);
   assert.match(c.firstBlock.bg, /linear-gradient/, `${scope}: first category paper wash missing`);
   assert.ok(c.firstBlock.radius >= 20, `${scope}: first category editorial grouping collapsed`);
   assert.notEqual(c.firstTitle.bg, 'rgba(0, 0, 0, 0)', `${scope}: first category label lost its editorial plate`);
