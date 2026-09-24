@@ -19,7 +19,7 @@
   /* Manual artifact review proved the previous 92x101 modal figure covered the
      title/subtitle. Keep the full high-res composition visible at the top-left,
      but prioritize the modal header safe zone over page-state scale here. */
-  body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:56px!important;height:61px!important;left:2px!important;top:calc(env(safe-area-inset-top) + 2px)!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:78px!important;height:76px!important;left:2px!important;top:calc(env(safe-area-inset-top) + 2px)!important;}
   body:has(#calculatorModal:not(.is-hidden)) .decor-b{width:115px!important;height:85px!important;left:2px!important;bottom:calc(env(safe-area-inset-bottom) + 2px)!important;}
   body:has(#calculatorModal:not(.is-hidden)) .decor-c{width:86px!important;height:139px!important;right:2px!important;bottom:calc(env(safe-area-inset-bottom) + 2px)!important;}
 }
@@ -48,7 +48,7 @@
   .decor-b{width:162px!important;height:119px!important;left:1px!important;bottom:max(7px,calc(env(safe-area-inset-bottom) + 4px))!important;}
   .decor-c{width:126px!important;height:198px!important;right:8px!important;bottom:max(5px,calc(env(safe-area-inset-bottom) + 3px))!important;}
 
-  body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:70px!important;height:77px!important;left:8px!important;top:calc(env(safe-area-inset-top) + 4px)!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:78px!important;height:77px!important;left:8px!important;top:calc(env(safe-area-inset-top) + 4px)!important;}
   body:has(#calculatorModal:not(.is-hidden)) .decor-b{width:160px!important;height:115px!important;left:8px!important;bottom:calc(env(safe-area-inset-bottom) + 3px)!important;}
   body:has(#calculatorModal:not(.is-hidden)) .decor-c{width:116px!important;height:180px!important;right:8px!important;bottom:calc(env(safe-area-inset-bottom) + 2px)!important;}
 }
@@ -58,7 +58,7 @@
   .decor-b{width:198px!important;height:146px!important;left:10px!important;bottom:max(7px,calc(env(safe-area-inset-bottom) + 4px))!important;}
   .decor-c{width:160px!important;height:248px!important;right:10px!important;bottom:max(5px,calc(env(safe-area-inset-bottom) + 3px))!important;}
 
-  body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:72px!important;height:79px!important;left:10px!important;top:calc(env(safe-area-inset-top) + 3px)!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:78px!important;height:79px!important;left:10px!important;top:calc(env(safe-area-inset-top) + 3px)!important;}
   body:has(#calculatorModal:not(.is-hidden)) .decor-b{width:174px!important;height:124px!important;left:10px!important;bottom:calc(env(safe-area-inset-bottom) + 2px)!important;}
   body:has(#calculatorModal:not(.is-hidden)) .decor-c{width:124px!important;height:192px!important;right:10px!important;bottom:calc(env(safe-area-inset-bottom) + 1px)!important;}
 }
