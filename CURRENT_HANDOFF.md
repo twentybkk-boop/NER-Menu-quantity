@@ -48,14 +48,22 @@ Current Git tree metadata matches the canonical targets for all eight files:
 - `right-04d.b64`: blob `87d79ed174e11938becb04788693164198f5e632`, size `2504` — MATCH.
 - STATUS: COMPLETE STAGED SET VERIFIED EXACT 8/8. Do not rewrite any of these eight files.
 
-## FINAL-RIGHT RETRIGGER — DURABLE; RUN NOT YET INSPECTED
+## FINAL-RIGHT RETRIGGER — DURABLE; ACTIONS RUN VERIFIED SUCCESS
 - trigger path: `repair-staging/right/RUN_RIGHT_FINAL` on repair branch.
 - previous marker: `run-right-final-v1`.
 - new deterministic marker: `run-right-final-v2`.
 - trigger content blob: `3edc53449ee8d0d4f80925bd878178fb83996f5e`.
 - trigger commit: `b397634299d845f234442e982243b52a36ac1888` (`Trigger final right assembler after 8 of 8 verification`).
 - commit verification: changed ONLY `repair-staging/right/RUN_RIGHT_FINAL`; exact diff is `run-right-final-v1` → `run-right-final-v2`.
-- Actions run ID/status/conclusion for this new trigger have NOT yet been inspected at this checkpoint and must not be inferred.
+- matching Actions run:
+  - run ID `36034559407`
+  - workflow `Repair exact right binary`
+  - workflow path `.github/workflows/repair-right-final.yml`
+  - head SHA `b397634299d845f234442e982243b52a36ac1888`
+  - event `push`
+  - status `completed`
+  - conclusion `success`
+- Final proof/output file has NOT yet been inspected at this checkpoint.
 
 ## DO NOT REPEAT / REJECTED
 - Do not redo repo-wide/source/Library/V2/Session1/2A/2B.1/layout/orientation/calculator/P0 investigations or redraw/reconstruction.
@@ -63,13 +71,13 @@ Current Git tree metadata matches the canonical targets for all eight files:
 - Do not rewrite corrected `right-01.b64` or either fresh half.
 - Do not recreate/rewrite the right-01 repair workflow or trigger.
 - Do not re-inspect/re-trigger run `36033565588`.
+- Do not re-inspect/re-trigger final-right run `36034559407`; its status/conclusion is checkpointed as completed/success.
 - Do not rewrite `RUN_RIGHT_FINAL` again unless current GitHub source of truth explicitly requires it.
 - Do not touch production paths before final right binary target `a4d051c52a4b0f5191ad2770c3eee416fa01aba4` is VERIFIED durable.
 
 ## OPEN BLOCKERS
-1. Inspect ONLY the new final-right Actions run caused by trigger commit `b397634299d845f234442e982243b52a36ac1888`; persist run ID/status/conclusion before inspecting final proof/output.
-2. Verify final binary Git blob `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`; checkpoint.
-3. Only then: production mapping → cleanup → QA/manual acceptance.
+1. Independently verify final proof/output binary Git blob exactly `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`; checkpoint immediately.
+2. Only then: production mapping → cleanup → QA/manual acceptance.
 
 ## EXACT NEXT RECOVERY ACTION
-After confirming this checkpoint is durable, inspect ONLY GitHub Actions runs associated with final-right trigger commit `b397634299d845f234442e982243b52a36ac1888`. Record the matching final-right run ID/status/conclusion and immediately checkpoint that evidence before inspecting any final proof/output file or touching production. Do not make any other write in that work unit.
+After confirming this checkpoint is durable, inspect ONLY the final-right proof/output file produced on the repair branch by successful run `36034559407`. Independently verify that the binary Git blob is exactly `a4d051c52a4b0f5191ad2770c3eee416fa01aba4` and immediately persist that verification checkpoint before touching any production path, cleanup, or QA. Do not make any other write in that work unit.
