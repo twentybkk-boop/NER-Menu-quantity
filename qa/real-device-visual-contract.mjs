@@ -8,6 +8,7 @@ const recipeBody = fs.readFileSync('recipe_master.json', 'utf8');
 const shotDir = path.resolve('qa-artifacts');
 fs.mkdirSync(shotDir, { recursive: true });
 const SIGNATURE_MENUS = ['ชุดจุ่มหมูทะเล','ชุดจุ่มเนื้อ','ชุดจุ่มหมู','ชุดจุ่มเดี่ยวหมู'];
+const EXPECTED_CATEGORY_ICONS = ['🍲','🥩','🥬','🍜','🥚','🍟','🍨'];
 
 async function inspect(browserType, browserName) {
   const browser = await browserType.launch();
@@ -35,13 +36,28 @@ async function inspect(browserType, browserName) {
       if (!normal) throw new Error('normal non-signature menu card not found');
       const normalThumb = getComputedStyle(normal, '::before');
       const normalRect = normal.getBoundingClientRect();
+      const normalStyle = getComputedStyle(normal);
       const sig = document.querySelector('.menu-card[data-menu="ชุดจุ่มหมูทะเล"]');
       const sigThumb = getComputedStyle(sig, '::before');
+      const sigRect = sig.getBoundingClientRect();
       const hero = document.querySelector('.hero');
       const heroRect = hero.getBoundingClientRect();
       const brandTitle = document.querySelector('.brand-title');
       const managerButton = document.querySelector('#managerButton');
       const managerRect = managerButton.getBoundingClientRect();
+      const firstGrid = document.querySelector('.menu-grid');
+      const firstGridStyle = getComputedStyle(firstGrid);
+
+      const categories = [...document.querySelectorAll('.category-title')].map(title => {
+        const icon = title.querySelector('.category-icon');
+        const rect = title.getBoundingClientRect();
+        return {
+          height: rect.height,
+          fontSize: parseFloat(getComputedStyle(title).fontSize),
+          iconContent: getComputedStyle(icon, '::before').content,
+          iconBaseFontSize: parseFloat(getComputedStyle(icon).fontSize),
+        };
+      });
 
       const decor = ['.decor-a','.decor-b','.decor-c'].map(selector => {
         const el = document.querySelector(selector);
@@ -84,6 +100,15 @@ async function inspect(browserType, browserName) {
           width: managerRect.width,
           height: managerRect.height,
         },
+        categories,
+        cardRhythm: {
+          rowGap: parseFloat(firstGridStyle.rowGap),
+          normalHeight: normalRect.height,
+          signatureHeight: sigRect.height,
+          normalRadius: parseFloat(normalStyle.borderTopLeftRadius),
+          normalTitleFont: parseFloat(getComputedStyle(normal.querySelector('.menu-card-title')).fontSize),
+          signatureTitleFont: parseFloat(getComputedStyle(sig.querySelector('.menu-card-title')).fontSize),
+        },
       };
     }, SIGNATURE_MENUS);
 
@@ -124,6 +149,33 @@ async function inspect(browserType, browserName) {
     assert.ok(contract.manager.height <= 40, `${browserName}: Matrix action is still too visually dominant at ${contract.manager.height}px tall`);
     assert.ok(contract.manager.width < contract.hero.width - 24,
       `${browserName}: Matrix action still reads as a full-width primary CTA`);
+
+    assert.equal(contract.categories.length, 7, `${browserName}: expected seven visual category sections`);
+    const visibleCategoryIcons = contract.categories.map(item => item.iconContent);
+    assert.equal(new Set(visibleCategoryIcons).size, 7,
+      `${browserName}: category tokens are not semantically distinct: ${visibleCategoryIcons.join(', ')}`);
+    for (const expected of EXPECTED_CATEGORY_ICONS) {
+      assert.ok(visibleCategoryIcons.some(value => value.includes(expected)),
+        `${browserName}: missing semantic category token ${expected}`);
+    }
+    for (const category of contract.categories) {
+      assert.equal(category.iconBaseFontSize, 0, `${browserName}: legacy bowl emoji is still visually active`);
+      assert.ok(category.height <= 36, `${browserName}: category header is too tall at ${category.height}px`);
+      assert.ok(category.fontSize <= 16.6, `${browserName}: category heading is visually oversized at ${category.fontSize}px`);
+    }
+
+    assert.ok(contract.cardRhythm.rowGap >= 5 && contract.cardRhythm.rowGap <= 7,
+      `${browserName}: phone menu row gap is outside compact rhythm: ${contract.cardRhythm.rowGap}px`);
+    assert.ok(contract.cardRhythm.normalHeight >= 60 && contract.cardRhythm.normalHeight <= 66,
+      `${browserName}: normal card rhythm drifted to ${contract.cardRhythm.normalHeight}px`);
+    assert.ok(contract.cardRhythm.signatureHeight >= 72 && contract.cardRhythm.signatureHeight <= 78,
+      `${browserName}: signature card rhythm drifted to ${contract.cardRhythm.signatureHeight}px`);
+    assert.ok(contract.cardRhythm.signatureHeight - contract.cardRhythm.normalHeight >= 8,
+      `${browserName}: signature cards no longer have a deliberate visual beat`);
+    assert.ok(contract.cardRhythm.normalRadius >= 13 && contract.cardRhythm.normalRadius <= 15,
+      `${browserName}: phone card radius drifted to ${contract.cardRhythm.normalRadius}px`);
+    assert.ok(contract.cardRhythm.normalTitleFont <= 12.7 && contract.cardRhythm.signatureTitleFont >= 13,
+      `${browserName}: title scale no longer distinguishes signature and normal cards`);
 
     if (browserName === 'chromium') {
       await page.screenshot({ path: path.join(shotDir, '10-real-device-fidelity-iphone@3x.png'), fullPage: false });
