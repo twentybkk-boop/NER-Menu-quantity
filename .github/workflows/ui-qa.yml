@@ -41,6 +41,8 @@ jobs:
         run: node qa/ui-qa.mjs
       - name: Verify real-device visual fidelity contract
         run: node qa/real-device-visual-contract.mjs
+      - name: Verify calculator visual hierarchy contract
+        run: node qa/calculator-visual-contract.mjs
       - name: Render thumbnail contact sheet evidence
         run: |
           node --input-type=module <<'NODE'
