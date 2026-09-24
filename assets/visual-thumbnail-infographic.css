@@ -28,14 +28,6 @@
   box-shadow:inset 0 0 0 1px rgba(108,70,53,.08),0 3px 9px rgba(79,54,41,.045)!important;
 }
 
-/* Signature sets: distinct at a glance without photographic noise. */
-.menu-card[data-menu="ชุดจุ่มหมูทะเล"]{--menu-icon:"🦐";--menu-tone:#f5ddd1;--menu-tone-2:#fff6ed;--menu-ink:#9b5b45;}
-.menu-card[data-menu="ชุดจุ่มเนื้อ"]{--menu-icon:"🥩";--menu-tone:#f0d8d4;--menu-tone-2:#fff4f0;--menu-ink:#8c4f49;}
-.menu-card[data-menu="ชุดจุ่มหมู"]{--menu-icon:"🐷";--menu-tone:#f4dedb;--menu-tone-2:#fff7f2;--menu-ink:#965d58;}
-.menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]{--menu-icon:"1×";--menu-tone:#f4e0d4;--menu-tone-2:#fff8f0;--menu-ink:#805b49;}
-.menu-card[data-menu="อิ่มเดี่ยว ต้มพร้อมทาน"],
-.menu-card[data-menu="อิ่มเดี่ยว หมูจุกจุก"]{--menu-icon:"♨";--menu-tone:#efdfcf;--menu-tone-2:#fff8ef;--menu-ink:#8a5b42;}
-
 /* Pork / beef / offal / seafood. */
 .menu-card[data-menu="หมูล้วน (ไม่มีเครื่องใน)"],
 .menu-card[data-menu="หมูหมัก NER"],
@@ -97,6 +89,14 @@
 .menu-card[data-menu*="ลอยแก้ว"]{--menu-icon:"🍧";--menu-tone:#eadde8;--menu-tone-2:#fff8fe;}
 .menu-card[data-menu*="โมจิ"]{--menu-icon:"🍨";--menu-tone:#eadfea;--menu-tone-2:#fff8ff;}
 .menu-card[data-menu*="อิ่มเดี่ยว"],.menu-card[data-menu*="ต้มพร้อมทาน"]{--menu-icon:"♨";--menu-tone:#efdfcf;--menu-tone-2:#fff8ef;}
+
+/* Exact, approved menu meanings win over broad future-name fallbacks. */
+#app-menus .menu-card[data-menu="ชุดจุ่มหมูทะเล"]{--menu-icon:"🦐";--menu-tone:#f5ddd1;--menu-tone-2:#fff6ed;--menu-ink:#9b5b45;}
+#app-menus .menu-card[data-menu="ชุดจุ่มเนื้อ"]{--menu-icon:"🥩";--menu-tone:#f0d8d4;--menu-tone-2:#fff4f0;--menu-ink:#8c4f49;}
+#app-menus .menu-card[data-menu="ชุดจุ่มหมู"]{--menu-icon:"🐷";--menu-tone:#f4dedb;--menu-tone-2:#fff7f2;--menu-ink:#965d58;}
+#app-menus .menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]{--menu-icon:"1×";--menu-tone:#f4e0d4;--menu-tone-2:#fff8f0;--menu-ink:#805b49;}
+#app-menus .menu-card[data-menu="อิ่มเดี่ยว ต้มพร้อมทาน"],
+#app-menus .menu-card[data-menu="อิ่มเดี่ยว หมูจุกจุก"]{--menu-icon:"♨";--menu-tone:#efdfcf;--menu-tone-2:#fff8ef;--menu-ink:#8a5b42;}
 
 @media(max-width:767px){
   #app-menus .menu-card::before{
