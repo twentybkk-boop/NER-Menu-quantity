@@ -65,9 +65,9 @@ function assertListState(c, browserName, state) {
     `${browserName}/${state}: required z-order menu < shelf < characters is not active`);
 
   assert.equal(c.chars.length, 3, `${browserName}/${state}: expected all three story compositions`);
-  assert.match(c.chars[0].bg, /overlay-top-left\.webp/, `${browserName}/${state}: top-left approved asset missing`);
-  assert.match(c.chars[1].bg, /overlay-bottom-left\.webp/, `${browserName}/${state}: bottom-left approved asset missing`);
-  assert.match(c.chars[2].bg, /overlay-right\.webp/, `${browserName}/${state}: right approved asset missing`);
+  assert.match(c.chars[0].bg, /overlay-top-left-hires\.webp/, `${browserName}/${state}: top-left approved asset missing`);
+  assert.match(c.chars[1].bg, /overlay-bottom-left-hires\.webp/, `${browserName}/${state}: bottom-left approved asset missing`);
+  assert.match(c.chars[2].bg, /overlay-right-hires\.webp/, `${browserName}/${state}: right approved asset missing`);
   for (const item of c.chars) assert.equal(item.pointer, 'none', `${browserName}/${state}: ${item.selector} intercepts touch`);
 
   // Lower-left and right must be entirely inside the reserved shelf/viewport,
