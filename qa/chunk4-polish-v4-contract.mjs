@@ -199,7 +199,10 @@ async function interactionSafety(page, candidate, scope) {
         }
         ancestor = ancestor.parentElement;
       }
-      const centerVisible = center.x >= clip.left && center.x <= clip.right && center.y >= clip.top && center.y <= clip.bottom;
+      // DOMRect right/bottom are exclusive rendering boundaries. Treat the
+      // clipping region as half-open so a center exactly on the clipped edge is
+      // not misclassified as visible/tappable.
+      const centerVisible = center.x >= clip.left && center.x < clip.right && center.y >= clip.top && center.y < clip.bottom;
       if (!centerVisible) {
         return {
           eligible:false,
