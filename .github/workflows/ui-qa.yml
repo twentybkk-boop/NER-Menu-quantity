@@ -43,6 +43,8 @@ jobs:
         run: node qa/real-device-visual-contract.mjs
       - name: Verify calculator visual hierarchy contract
         run: node qa/calculator-visual-contract.mjs
+      - name: Verify deployed GitHub Pages acceptance
+        run: node qa/live-pages-acceptance.mjs
       - name: Render thumbnail contact sheet evidence
         run: |
           node --input-type=module <<'NODE'
