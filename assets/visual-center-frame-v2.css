@@ -4,9 +4,11 @@
    Presentation only: no recipe, replacement, Matrix, PIN or import/export behavior. */
 
 @media(max-width:767px){
-  /* Make the central reading frame visually deliberate instead of a near-full-width slab. */
+  /* Leave a real ~70px left/right illustration rail around the long menu list.
+     This is intentionally narrower than the hero: the list is the scroll-critical
+     surface that must never collide with the fixed upper-left character. */
   #app-menus{
-    width:min(300px,calc(100% - 76px))!important;
+    width:min(250px,calc(100% - 140px))!important;
     margin-left:auto!important;
     margin-right:auto!important;
   }
@@ -18,8 +20,39 @@
     box-shadow:0 0 28px rgba(255,249,240,.96),0 7px 24px rgba(87,56,40,.035)!important;
   }
 
+  /* Hero remains comfortably readable; it does not share vertical space with the
+     upper-left character after the initial masthead. */
   .hero{
     width:min(300px,calc(100% - 76px))!important;
+  }
+
+  /* Preserve scanability inside the narrower list without changing menu semantics. */
+  #app-menus .menu-card{
+    padding-left:6px!important;
+    padding-right:6px!important;
+    gap:6px!important;
+  }
+  #app-menus .menu-card::before{
+    width:54px!important;
+    height:36px!important;
+    flex-basis:54px!important;
+  }
+  #app-menus .menu-card[data-menu="ชุดจุ่มหมูทะเล"]::before,
+  #app-menus .menu-card[data-menu="ชุดจุ่มเนื้อ"]::before,
+  #app-menus .menu-card[data-menu="ชุดจุ่มหมู"]::before,
+  #app-menus .menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]::before{
+    width:60px!important;
+    height:40px!important;
+    flex-basis:60px!important;
+  }
+  #app-menus .menu-arrow{
+    width:25px!important;
+    height:25px!important;
+    flex-basis:25px!important;
+  }
+  #app-menus .menu-card-title{
+    min-width:0!important;
+    overflow-wrap:anywhere!important;
   }
 
   /* A non-interactive illustration shelf reserves the lower viewport for the two
@@ -46,17 +79,18 @@
 
   #decor-layer{z-index:39!important;}
 
-  /* Top-left remains a complete brand/story anchor. */
+  /* Upper-left now fits completely inside the reserved left rail even after the
+     list scrolls behind it. 68 CSS px still renders at 204 device px in @3x QA. */
   .decor-a{
-    width:108px!important;
-    height:118px!important;
-    left:2px!important;
+    width:68px!important;
+    height:74px!important;
+    left:1px!important;
     right:auto!important;
-    top:max(10px,calc(env(safe-area-inset-top) + 4px))!important;
+    top:max(8px,calc(env(safe-area-inset-top) + 3px))!important;
     bottom:auto!important;
   }
 
-  /* The lower characters now live completely on the reserved illustration shelf,
+  /* The lower characters live completely on the reserved illustration shelf,
      so no part of their approved composition needs to hide behind a menu card. */
   .decor-b{
     width:128px!important;
@@ -83,6 +117,7 @@
     display:none!important;
   }
   body:has(#calculatorModal:not(.is-hidden)) #decor-layer{z-index:105!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:86px!important;height:94px!important;left:3px!important;top:calc(env(safe-area-inset-top) + 2px)!important;}
   body:has(#calculatorModal:not(.is-hidden)) .decor-b{width:108px!important;height:80px!important;left:3px!important;}
   body:has(#calculatorModal:not(.is-hidden)) .decor-c{width:82px!important;height:132px!important;right:3px!important;}
 }
