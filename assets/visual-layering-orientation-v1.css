@@ -111,7 +111,7 @@ body::before{
   .brand-masthead,
   .hero,
   #app-menus{
-    width:min(560px,calc(100vw - 190px))!important;
+    width:min(520px,calc(100vw - 230px))!important;
     margin-left:auto!important;
     margin-right:auto!important;
   }
