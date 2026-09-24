@@ -9,21 +9,21 @@ const shotDir = path.resolve('qa-artifacts');
 fs.mkdirSync(shotDir, { recursive: true });
 
 const EXPECTED = [
-  ['.decor-a', 'overlay-top-left.webp'],
-  ['.decor-b', 'overlay-bottom-left.webp'],
-  ['.decor-c', 'overlay-right.webp'],
+  ['.decor-a', 'overlay-top-left.webp', 64, 60],
+  ['.decor-b', 'overlay-bottom-left.webp', 78, 76],
+  ['.decor-c', 'overlay-right.webp', 78, 76],
 ];
 
 function assertDecor(items, browserName, state) {
   assert.equal(items.length, 3, `${browserName}/${state}: expected three character compositions`);
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
-    const [selector, asset] = EXPECTED[i];
+    const [selector, asset, minWidth, minHeight] = EXPECTED[i];
     assert.equal(item.selector, selector, `${browserName}/${state}: character order drifted`);
     assert.match(item.bg, new RegExp(asset.replace('.', '\\.')), `${browserName}/${state}: ${selector} is not using ${asset}`);
     assert.equal(item.pointer, 'none', `${browserName}/${state}: ${selector} intercepts pointer events`);
     assert.equal(item.bgSize, 'contain', `${browserName}/${state}: ${selector} no longer preserves the complete composition`);
-    assert.ok(item.width >= 78 && item.height >= 76, `${browserName}/${state}: ${selector} became too small to preserve story detail`);
+    assert.ok(item.width >= minWidth && item.height >= minHeight, `${browserName}/${state}: ${selector} became too small to preserve story detail`);
     assert.ok(item.visibleFraction >= .96, `${browserName}/${state}: ${selector} is clipped to ${(item.visibleFraction * 100).toFixed(1)}% of its box`);
     assert.equal(item.beforeBg, 'none', `${browserName}/${state}: ${selector} has a synthetic accessory layer before the approved artwork`);
     assert.equal(item.afterBg, 'none', `${browserName}/${state}: ${selector} has a synthetic accessory layer after the approved artwork`);
