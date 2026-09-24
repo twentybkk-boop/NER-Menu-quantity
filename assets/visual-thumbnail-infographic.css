@@ -1,0 +1,111 @@
+/* Acceptance correction 2026-09-24: replace noisy food-photo atlas crops with simple semantic infographic tiles.
+   Presentation only. recipe data, menu grouping, calculations, replacement semantics and Matrix/PIN behavior are untouched. */
+
+.menu-card{
+  --menu-icon:"•";
+  --menu-tone:#f3e6da;
+  --menu-tone-2:#fffaf4;
+  --menu-ink:#755243;
+}
+
+/* The atlas mapping remains available as durable semantic provenance, but it is no longer painted in live cards. */
+#app-menus .menu-card::before{
+  content:var(--menu-icon)!important;
+  display:grid!important;
+  place-items:center!important;
+  background-image:
+    radial-gradient(circle at 72% 24%,rgba(255,255,255,.92) 0 12%,transparent 13%),
+    radial-gradient(circle at 28% 78%,rgba(255,255,255,.52) 0 16%,transparent 17%),
+    linear-gradient(145deg,var(--menu-tone-2),var(--menu-tone))!important;
+  background-size:auto!important;
+  background-position:center!important;
+  color:var(--menu-ink)!important;
+  font-size:22px!important;
+  line-height:1!important;
+  font-weight:800!important;
+  text-align:center!important;
+  letter-spacing:0!important;
+  box-shadow:inset 0 0 0 1px rgba(108,70,53,.08),0 3px 9px rgba(79,54,41,.045)!important;
+}
+
+/* Signature sets: distinct at a glance without photographic noise. */
+.menu-card[data-menu="ชุดจุ่มหมูทะเล"]{--menu-icon:"🦐";--menu-tone:#f5ddd1;--menu-tone-2:#fff6ed;--menu-ink:#9b5b45;}
+.menu-card[data-menu="ชุดจุ่มเนื้อ"]{--menu-icon:"🥩";--menu-tone:#f0d8d4;--menu-tone-2:#fff4f0;--menu-ink:#8c4f49;}
+.menu-card[data-menu="ชุดจุ่มหมู"]{--menu-icon:"🐷";--menu-tone:#f4dedb;--menu-tone-2:#fff7f2;--menu-ink:#965d58;}
+.menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]{--menu-icon:"1×";--menu-tone:#f4e0d4;--menu-tone-2:#fff8f0;--menu-ink:#805b49;}
+.menu-card[data-menu="อิ่มเดี่ยว ต้มพร้อมทาน"],
+.menu-card[data-menu="อิ่มเดี่ยว หมูจุกจุก"]{--menu-icon:"♨";--menu-tone:#efdfcf;--menu-tone-2:#fff8ef;--menu-ink:#8a5b42;}
+
+/* Pork / beef / offal / seafood. */
+.menu-card[data-menu="หมูล้วน (ไม่มีเครื่องใน)"],
+.menu-card[data-menu="หมูหมัก NER"],
+.menu-card[data-menu="สามชั้นหมูสไลซ์"],
+.menu-card[data-menu="สันคอ"],
+.menu-card[data-menu="สันนอก"]{--menu-icon:"🐷";--menu-tone:#f3dcd8;--menu-tone-2:#fff6f1;--menu-ink:#92594f;}
+.menu-card[data-menu="เนื้อใบพายสไลซ์"],
+.menu-card[data-menu="เนื้อริบอายสไลซ์"],
+.menu-card[data-menu="เนื้อเสือร้องไห้สไลซ์"],
+.menu-card[data-menu="เนื้อรวม"]{--menu-icon:"🥩";--menu-tone:#ecd6d2;--menu-tone-2:#fff3ef;--menu-ink:#844943;}
+.menu-card[data-menu="ตับหมู"],
+.menu-card[data-menu="เซ่งจี๊หมู"]{--menu-icon:"◆";--menu-tone:#ead8d4;--menu-tone-2:#fff5f1;--menu-ink:#86544f;}
+.menu-card[data-menu="กุ้ง"]{--menu-icon:"🦐";--menu-tone:#f2dfd0;--menu-tone-2:#fff8ed;--menu-ink:#9a6548;}
+.menu-card[data-menu="ปลาหมึก"]{--menu-icon:"🦑";--menu-tone:#e8e2ee;--menu-tone-2:#fbf8ff;--menu-ink:#6f637c;}
+.menu-card[data-menu="ปลาดอลลี่"]{--menu-icon:"🐟";--menu-tone:#dfe9ec;--menu-tone-2:#f8fdff;--menu-ink:#5f7480;}
+
+/* Vegetables. */
+.menu-card[data-menu="ชุดผักรวม"],
+.menu-card[data-menu="ผักบุ้ง"],
+.menu-card[data-menu="ผักชีฝรั่ง"],
+.menu-card[data-menu="โหระพา"],
+.menu-card[data-menu="ใบชะพลู"]{--menu-icon:"🥬";--menu-tone:#dde9d3;--menu-tone-2:#f8fcf4;--menu-ink:#627a52;}
+.menu-card[data-menu="กะหล่ำปลี"]{--menu-icon:"◉";--menu-tone:#e2edd8;--menu-tone-2:#fbfdf7;--menu-ink:#657d57;}
+
+/* Noodles / tofu / egg / rice. */
+.menu-card[data-menu="วุ้นเส้น"],
+.menu-card[data-menu="มาม่า"],
+.menu-card[data-menu="หมี่หยก(สด)"],
+.menu-card[data-menu="เส้นอุด้ง"]{--menu-icon:"🍜";--menu-tone:#efe2c8;--menu-tone-2:#fffaf0;--menu-ink:#8a6b3e;}
+.menu-card[data-menu="เต้าหู้ปลา"],
+.menu-card[data-menu="เต้าหู้ไข่"],
+.menu-card[data-menu="เต้าหู้ชีส"]{--menu-icon:"▦";--menu-tone:#f1e7cf;--menu-tone-2:#fffaf2;--menu-ink:#8c744d;}
+.menu-card[data-menu="ฟองเต้าหู้แท่ง"],
+.menu-card[data-menu="ฟองเต้าหู้ทอด"]{--menu-icon:"≋";--menu-tone:#ecd8b9;--menu-tone-2:#fff7e9;--menu-ink:#8f6739;}
+.menu-card[data-menu="ไข่ไก่สด"]{--menu-icon:"🥚";--menu-tone:#f3e8c9;--menu-tone-2:#fffdf4;--menu-ink:#8b7445;}
+.menu-card[data-menu="ข้าวเปล่า"]{--menu-icon:"🍚";--menu-tone:#eee8df;--menu-tone-2:#fffdfa;--menu-ink:#766c62;}
+
+/* Snacks / desserts. */
+.menu-card[data-menu="ไก่ป๊อป"],
+.menu-card[data-menu="แฮชบราวน์ เทเทอร์ ทอตส์"],
+.menu-card[data-menu="ข้าวเกรียบปลา"]{--menu-icon:"✦";--menu-tone:#f2dfbd;--menu-tone-2:#fff8e9;--menu-ink:#956c2e;}
+.menu-card[data-menu="คาลามารี"]{--menu-icon:"◎";--menu-tone:#eee0c9;--menu-tone-2:#fff9ef;--menu-ink:#8d6e45;}
+.menu-card[data-menu="ซาโมซ่ากล้วย"]{--menu-icon:"🍌";--menu-tone:#f3e4b9;--menu-tone-2:#fffced;--menu-ink:#8f742f;}
+.menu-card[data-menu="สละลอยแก้ว"],
+.menu-card[data-menu="ลูกตาลลอยแก้ว"]{--menu-icon:"🍧";--menu-tone:#eadde8;--menu-tone-2:#fff8fe;--menu-ink:#80617b;}
+.menu-card[data-menu="โมจิไอศครีม"]{--menu-icon:"🍨";--menu-tone:#eadfea;--menu-tone-2:#fff8ff;--menu-ink:#7a627e;}
+
+/* Semantic future-name fallbacks: simple pictogram, never a generic food photo. */
+.menu-card[data-menu*="หมู"]{--menu-icon:"🐷";--menu-tone:#f3dcd8;--menu-tone-2:#fff6f1;}
+.menu-card[data-menu*="เนื้อ"]{--menu-icon:"🥩";--menu-tone:#ecd6d2;--menu-tone-2:#fff3ef;}
+.menu-card[data-menu*="กุ้ง"]{--menu-icon:"🦐";--menu-tone:#f2dfd0;--menu-tone-2:#fff8ed;}
+.menu-card[data-menu*="ปลาหมึก"]{--menu-icon:"🦑";--menu-tone:#e8e2ee;--menu-tone-2:#fbf8ff;}
+.menu-card[data-menu*="ปลา"]{--menu-icon:"🐟";--menu-tone:#dfe9ec;--menu-tone-2:#f8fdff;}
+.menu-card[data-menu*="ผัก"],.menu-card[data-menu*="โหระพา"],.menu-card[data-menu*="ชะพลู"],.menu-card[data-menu*="กะหล่ำ"]{--menu-icon:"🥬";--menu-tone:#dde9d3;--menu-tone-2:#f8fcf4;}
+.menu-card[data-menu*="เส้น"],.menu-card[data-menu*="มาม่า"],.menu-card[data-menu*="หมี่"],.menu-card[data-menu*="อุด้ง"]{--menu-icon:"🍜";--menu-tone:#efe2c8;--menu-tone-2:#fffaf0;}
+.menu-card[data-menu*="เต้าหู้"]{--menu-icon:"▦";--menu-tone:#f1e7cf;--menu-tone-2:#fffaf2;}
+.menu-card[data-menu*="ไข่"]{--menu-icon:"🥚";--menu-tone:#f3e8c9;--menu-tone-2:#fffdf4;}
+.menu-card[data-menu*="ข้าว"]{--menu-icon:"🍚";--menu-tone:#eee8df;--menu-tone-2:#fffdfa;}
+.menu-card[data-menu*="ลอยแก้ว"]{--menu-icon:"🍧";--menu-tone:#eadde8;--menu-tone-2:#fff8fe;}
+.menu-card[data-menu*="โมจิ"]{--menu-icon:"🍨";--menu-tone:#eadfea;--menu-tone-2:#fff8ff;}
+.menu-card[data-menu*="อิ่มเดี่ยว"],.menu-card[data-menu*="ต้มพร้อมทาน"]{--menu-icon:"♨";--menu-tone:#efdfcf;--menu-tone-2:#fff8ef;}
+
+@media(max-width:767px){
+  #app-menus .menu-card::before{
+    font-size:19px!important;
+  }
+  #app-menus .menu-card[data-menu="ชุดจุ่มหมูทะเล"]::before,
+  #app-menus .menu-card[data-menu="ชุดจุ่มเนื้อ"]::before,
+  #app-menus .menu-card[data-menu="ชุดจุ่มหมู"]::before,
+  #app-menus .menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]::before{
+    font-size:21px!important;
+  }
+}
