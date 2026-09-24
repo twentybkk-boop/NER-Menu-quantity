@@ -39,7 +39,7 @@ Repair branch: `repair/v3-2b2-exact-blobs-20260924`.
 Desired corrected combined `right-01.b64`:
 - length `12000`
 - deterministic canonical text-blob target `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`.
-- Current production/staging `right-01.b64` has NOT yet been replaced at this checkpoint.
+- Corrected output has NOT yet been independently inspected at this checkpoint.
 
 ## RIGHT-01 REPAIR WORKFLOW — CREATED, VERIFIED
 Temporary repair-only workflow:
@@ -52,13 +52,19 @@ Temporary repair-only workflow:
 - requires `git hash-object` exactly `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`
 - only after those gates pass, replaces/commits ONLY `repair-staging/right/right-01.b64`
 
-## RIGHT-01 REPAIR TRIGGER — DURABLE, RUN NOT YET INSPECTED
+## RIGHT-01 REPAIR TRIGGER — DURABLE; ACTIONS RUN VERIFIED SUCCESS
 - trigger file `repair-staging/right/RUN_RIGHT01_FRESH`
 - deterministic marker `run-right01-fresh-v1`
 - trigger blob `ced56538cd6d9d7c712c49dbc8914c66d124af7c`
 - trigger commit `557181b4428905750c5bd13011bddc0ca6fb10a2`
 - commit changed ONLY `repair-staging/right/RUN_RIGHT01_FRESH`
-- Actions run ID/status/conclusion have NOT yet been inspected at this checkpoint and must not be inferred.
+- Actions run for workflow `Repair right-01 from fresh halves`:
+  - run ID `36033565588`
+  - head SHA `557181b4428905750c5bd13011bddc0ca6fb10a2`
+  - event `push`
+  - status `completed`
+  - conclusion `success`
+- Corrected `right-01.b64` output has NOT yet been independently inspected at this checkpoint.
 
 ## FRESH CANONICAL EIGHT-RANGE TARGETS
 - `right-00` `4cfbab61acc0c0e6489b51da0bb423c2da1d5e50`
@@ -76,15 +82,15 @@ Temporary repair-only workflow:
 - Do not rewrite either fresh `right-01a-fresh` or `right-01b-fresh`.
 - Do not recreate or rewrite `.github/workflows/repair-right-01-fresh.yml`.
 - Do not recreate or rewrite `RUN_RIGHT01_FRESH` unless current GitHub source of truth explicitly requires it.
-- Do not rerun final-right workflow before corrected `right-01.b64` itself is assembled/verified and checkpointed.
+- Do not re-inspect/re-trigger run `36033565588`; its status/conclusion is checkpointed as completed/success.
+- Do not rerun final-right workflow before corrected `right-01.b64` itself is independently verified and checkpointed.
 - Do not touch production paths before final right binary target is VERIFIED durable.
 
 ## OPEN BLOCKERS
-1. Inspect ONLY the Actions run caused by trigger commit `557181b4428905750c5bd13011bddc0ca6fb10a2`; persist run ID/status/conclusion before inspecting corrected file output.
-2. Verify corrected `right-01.b64` length 12,000 and blob `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`; checkpoint immediately.
-3. Revalidate all eight staged range blobs against fresh canonical targets; checkpoint.
-4. Trigger final-right assembler once with a new deterministic trigger change; verify final binary Git blob `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`; checkpoint.
-5. Only then: production mapping → cleanup → QA/manual acceptance.
+1. Independently verify corrected `right-01.b64` length 12,000 and blob `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`; checkpoint immediately.
+2. Revalidate all eight staged range blobs against fresh canonical targets; checkpoint.
+3. Trigger final-right assembler once with a new deterministic trigger change; verify final binary Git blob `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`; checkpoint.
+4. Only then: production mapping → cleanup → QA/manual acceptance.
 
 ## EXACT NEXT RECOVERY ACTION
-After confirming this checkpoint is durable, inspect ONLY GitHub Actions runs associated with repair trigger commit `557181b4428905750c5bd13011bddc0ca6fb10a2`. Record run ID/status/conclusion and immediately checkpoint that evidence before inspecting corrected `right-01.b64` output. Do not make any other write in that work unit.
+After confirming this checkpoint is durable, inspect ONLY `repair-staging/right/right-01.b64` on repair branch. Require length exactly `12000` and Git blob SHA exactly `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`. Immediately persist that verification checkpoint before revalidating any other staged range or rerunning any workflow. Do not make any other write in that work unit.
