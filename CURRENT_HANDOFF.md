@@ -12,10 +12,9 @@
 - Recovered approved source `image-gen-2(7).png`: VERIFIED as intended story-complete source.
 - `d32ff236c227d804c60e807749b2f41b3c05bb94` applied recovered high-res assets + cache bust.
 - UI QA run `36012464625`, job `107676382757`: layout/geometry/character presence/center frame/top composition/rhythm/orientation/layering passed; V3 high-res sharpness failed on browser image load/decode (`img.onerror`) for `overlay-top-left-hires.webp`.
-- Interrupted `tmp-binary-repair/*` staging was audited and removed; accidental staging/tmp files must not be restored.
-- Main-head verification checkpoint committed at `e42fd4de658a3658f817d5d6e4d26d027194122a`.
 - Temporary repair branch `repair/v3-2b2-exact-blobs-20260924` was successfully created from checkpoint `e42fd4de658a3658f817d5d6e4d26d027194122a`.
-- A prior branch lookup attempt using an encoded slash URL returned connector `400 INVALID_ARGUMENT`; do not retry that lookup pattern. No repository state was changed by that failed read.
+- Top-left exact local candidate `top-q70-a8.webp` was re-verified from local bytes: 31,174 bytes, RIFF/WEBP, deterministic Git blob SHA exactly `990c6b3523f79a483f41f17032f03f880f97f461`.
+- Git object lookup for exact top target `990c6b3523f79a483f41f17032f03f880f97f461` returned 404, confirming that exact object is not yet present in the repository object store. The failed read changed no repository state.
 
 ## DONE / VERIFIED
 1. Layout/geometry/business logic are not the known blocker.
@@ -32,13 +31,14 @@
    - top candidate target blob `990c6b3523f79a483f41f17032f03f880f97f461`
    - bottom candidate target blob `cf1f98efe9c9f67cb48e3bd80f512b0f9adece45`
    - right candidate target blob `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`
-6. Repair branch creation is VERIFIED: `repair/v3-2b2-exact-blobs-20260924` starts from `e42fd4de658a3658f817d5d6e4d26d027194122a`.
+6. Repair branch creation is VERIFIED: `repair/v3-2b2-exact-blobs-20260924`.
+7. Exact top local candidate bytes are VERIFIED to hash to target `990c6b3523f79a483f41f17032f03f880f97f461`; the remaining top task is transport only, not source/image investigation.
 
 ## WORK OBSERVED BUT NOT YET DURABLY VERIFIED
 - Git blob `812e704774c25a1c2387e03e48a3d1eb27b9e672` does NOT equal the verified top target; do NOT wire it into production.
 - Bottom q30/recompressed blob `65c0568c8b4895ead37932fa6c7f2814ec4c90a1` does NOT equal verified bottom target `cf1f98ef...`; it is NOT an accepted production candidate.
-- Local recovered candidate files visible in this conversation include `top-q70-a8.webp`, `bottom-q70-a60.webp`, and `right-q70-a60.webp`; re-verify only as needed for exact-byte transport.
-- Top-left exact-target blob `990c6b35...` has not yet been recreated/verified through the current repair flow.
+- Exact top target blob `990c6b35...` is not yet transported into Git; direct lookup returned 404.
+- Bottom/right exact target blobs have not yet been recovered through this exact-target flow.
 - No clean production commit changing exactly the three high-res WebP paths is yet durably VERIFIED.
 - Post-repair UI QA/sharpness PASS is not yet verified.
 - Manual local/live `31-*sharpness-v2` screenshot acceptance is not yet verified.
@@ -60,6 +60,7 @@
 - Wiring non-target blobs `812e7047...` or `65c0568c...` into production.
 - Retry the failed encoded branch-lookup URL pattern.
 - Recreate the temporary repair branch unless its ref is proven missing.
+- Re-investigate or recompress the top image; exact local top bytes are already verified.
 
 ## EXACT NEXT RECOVERY ACTION
-Small chunk only: transport ONLY the verified local top-left candidate bytes and create a Git blob. Verify the resulting SHA equals exact target `990c6b3523f79a483f41f17032f03f880f97f461`. Immediately persist the result in this handoff before attempting bottom-left or right. Do not modify production asset paths yet.
+Small chunk only: transport the already-verified 31,174-byte `top-q70-a8.webp` byte payload into Git using binary-safe `create_blob` with base64 encoding, then verify the returned SHA equals `990c6b3523f79a483f41f17032f03f880f97f461`. Immediately persist that result in this handoff. Do not attempt bottom/right and do not modify production asset paths before that checkpoint.
