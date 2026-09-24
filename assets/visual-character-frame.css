@@ -1,0 +1,76 @@
+/* P0-F4 bounded fidelity pass: phone character framing + background softness.
+   Presentation only. Preserve all three high-detail character identities and business behavior. */
+
+@media (max-width: 767px) {
+  /* The MASTER remains the background source, but on phone it should behave
+     as atmosphere rather than a second foreground layer. Strengthen the warm
+     veil across the reading area and soften the decorative edge texture. */
+  body::before {
+    background-image:
+      radial-gradient(ellipse 78% 25% at 50% 6%,
+        rgba(255,249,240,1) 0%,
+        rgba(255,249,240,.998) 52%,
+        rgba(255,249,240,.985) 72%,
+        rgba(255,249,240,.91) 100%),
+      linear-gradient(90deg,
+        rgba(255,249,240,.76) 0%,
+        rgba(255,249,240,.94) 12%,
+        rgba(255,249,240,.992) 25%,
+        rgba(255,249,240,.998) 40%,
+        rgba(255,249,240,.998) 60%,
+        rgba(255,249,240,.992) 75%,
+        rgba(255,249,240,.94) 88%,
+        rgba(255,249,240,.76) 100%),
+      url("background-master.webp") !important;
+    background-repeat: no-repeat, no-repeat, no-repeat !important;
+    background-position: center top, center top, center top !important;
+    background-size: 165% 225px, 100% 100%, auto 100dvh !important;
+  }
+
+  /* Keep the team visibly present, but convert them into edge framing.
+     We preserve the original high-detail masters and identity accessories;
+     only the viewport crop/scale/shadow is tuned. */
+  .decor-person {
+    opacity: .97 !important;
+    filter: drop-shadow(0 4px 9px rgba(73,45,31,.055)) saturate(1.01) contrast(1.01) !important;
+  }
+
+  .decor-a {
+    width: 118px !important;
+    height: 123px !important;
+    left: -52px !important;
+    top: max(20px, calc(env(safe-area-inset-top) + 9px)) !important;
+  }
+
+  .decor-b {
+    width: 136px !important;
+    height: 126px !important;
+    left: -58px !important;
+    bottom: max(7px, calc(env(safe-area-inset-bottom) + 4px)) !important;
+  }
+
+  .decor-c {
+    width: 104px !important;
+    height: 198px !important;
+    right: -46px !important;
+    bottom: max(5px, calc(env(safe-area-inset-bottom) + 2px)) !important;
+  }
+
+  /* Calculator has its own three-person rail contract. Keep those explicit
+     modal dimensions untouched so helmet/backpack evidence remains readable. */
+  body:has(#calculatorModal:not(.is-hidden)) .decor-a {
+    width: 80px !important;
+    height: 84px !important;
+    left: -10px !important;
+  }
+  body:has(#calculatorModal:not(.is-hidden)) .decor-b {
+    width: 98px !important;
+    height: 91px !important;
+    left: -14px !important;
+  }
+  body:has(#calculatorModal:not(.is-hidden)) .decor-c {
+    width: 76px !important;
+    height: 145px !important;
+    right: -10px !important;
+  }
+}
