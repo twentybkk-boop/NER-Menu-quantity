@@ -8,35 +8,144 @@
 
 - Repository: `twentybkk-boop/NER-Menu-quantity`
 - Branch: `main`
-- Last fully verified automated/screenshot implementation HEAD before new real-device feedback: `7fbe6a3395052959351fd9b435b9b4d0bf1f7558`
-- Previous final acceptance run: **35959886530** — SUCCESS
-- Previous screenshot artifact: **10792165909** (`ui-qa-screenshots`)
-- New real-device feedback commit: **`3125910ec11fffbacb357c718647ada983836ae0`** — `Record real-device UI feedback and visual fidelity acceptance`
-- Durable feedback document: `docs/UI_REAL_DEVICE_FEEDBACK_2026-09-24.md`
+- Real-device feedback source: `docs/UI_REAL_DEVICE_FEEDBACK_2026-09-24.md`
+- Feedback commit: `3125910ec11fffbacb357c718647ada983836ae0`
+- Latest verified implementation / QA HEAD before this handoff-only update: `2b180603ce63217040054b05c798ba797026ee87`
+- Latest verified UI QA run: **35963300224** — SUCCESS
+- Latest screenshot artifact: **10793570124** (`ui-qa-screenshots`)
+- Artifact digest: `sha256:6061011009820e156c39e577b2eba5ec8304d67fa4eda20273f7afc313bc3e98`
 
 ---
 
 # CURRENT STATUS
 
-## Phase 1 — DATA / MAPPING COMPLETE, VISUAL SHARPNESS REOPENED
+## Phase 1 data / mapping — COMPLETE
 
-Completed and still valid:
+Still valid and must not be redone:
 
-- `recipe_master.json` inventory: **45 menus**.
+- `recipe_master.json`: **45 menus**.
 - Thumbnail mapping: **45/45** in `assets/menu-thumbnail-map.css`.
 - Atlas contract: **6×5**, **27 illustrated semantic regions**, **3 unused**.
-- Four signature sets remain mapped to distinct regions.
-- Semantic guards/corrections remain in place.
+- Four signature sets remain distinct.
+- Semantic mapping guards remain in place.
 - Production atlas: `assets/menu-thumbnails/semantic-atlas-v1.webp`.
 - Atlas integrity gate still locks size **59,500 bytes** and SHA-256 `1976697397b1581091dc3936412ac9789256b6bd0210ef8afdeac6ac375cd9b4`.
 
-**Important:** real iPhone/Safari evidence shows the rendered food/menu images are visibly blurry. Therefore the earlier visual statement that the atlas was acceptable at rendered size is superseded. Do **not** redo menu inventory/mapping; investigate rendering/source resolution only.
+Do not redo inventory / semantic mapping / atlas architecture unless `recipe_master.json` changes.
 
-## Phase 2 — FUNCTIONAL QA PASSED, VISUAL ACCEPTANCE REOPENED
+---
 
-Previous automated QA remains useful for regression coverage, but real-device visual evidence now reveals P0 presentation defects that were not proven by Playwright screenshots.
+# REAL-DEVICE FEEDBACK IMPLEMENTATION STATUS
 
-### Locked business constraints
+The real iPhone/Safari feedback superseded the older screenshot-only visual acceptance. A new presentation-only correction layer was implemented and is now covered by a dedicated visual contract.
+
+## P0-F1 — central card containment / character-safe rails
+
+**IMPLEMENTED + QA VERIFIED**
+
+Implementation:
+
+- `assets/visual-real-device.css`
+- phone `#app-menus` is constrained to a deliberate central lane;
+- menu cards paint above the edge character rails;
+- all three character positions remain present.
+
+Evidence from artifact `10793570124`:
+
+- `10-real-device-fidelity-iphone@3x.png`
+- `11-real-device-fidelity-menu@3x.png`
+
+Observed: card stack remains inside the central reading lane and no longer uses the character rails as card background space.
+
+## P0-F2 — thumbnail sharpness
+
+**IMPLEMENTED + QA VERIFIED AT @3x SCREENSHOT SCALE; PHYSICAL SAFARI RECHECK STILL USEFUL**
+
+Implementation:
+
+- atlas semantic mapping is unchanged;
+- phone thumbnails now preserve the atlas cell **3:2** aspect ratio;
+- normal thumbnails render at **66×44 CSS px**;
+- signature thumbnails render at **72×48 CSS px**;
+- the previous near-cell-size upscaling is no longer used.
+
+The dedicated real-device visual contract now checks thumbnail dimensions, aspect ratio, atlas activation, and crop geometry in Chromium + WebKit.
+
+Latest @3x screenshots are visibly sharper than the real-device evidence that triggered the correction.
+
+## P0-F3 — character identity details
+
+**IMPLEMENTED + QA VERIFIED**
+
+Normal composition now uses the higher-detail repo masters:
+
+- `assets/ner-character-top-left.png`
+- `assets/ner-character-bottom-left.png`
+- `assets/ner-character-right.png`
+
+Identity details restored through existing repo assets:
+
+- `assets/accessory-gray-fullface-helmet.svg`
+- `assets/accessory-white-backpack.svg`
+
+Verified in `04-iphone-calculator.png` from artifact `10793570124`:
+
+- all 3 characters remain present;
+- bottom-left remains **no-glasses**;
+- helmet is visible;
+- white backpack is visible;
+- character layer remains non-interactive / does not block calculator controls.
+
+## P0-F4 — live UI fidelity to approved generated direction
+
+**STILL OPEN — THIS IS THE NEXT PRESENTATION TASK**
+
+Functional correctness is not enough. Continue comparing the live implementation against the approved generated visual direction by section:
+
+- masthead / hero proportions;
+- duplicate brand hierarchy;
+- Matrix action visual weight;
+- category header treatment;
+- card proportions / spacing;
+- character framing;
+- background softness;
+- calculator visual hierarchy.
+
+Do not solve visual fidelity by changing recipe/business behavior.
+
+---
+
+# DURABLE QA
+
+`.github/workflows/ui-qa.yml` now runs:
+
+- atlas integrity validator;
+- Chromium + WebKit UI QA;
+- dedicated `qa/real-device-visual-contract.mjs` check;
+- contact-sheet evidence;
+- screenshot artifact upload.
+
+Latest run **35963300224** passed every step, including:
+
+- `Validate thumbnail contract and atlas integrity` — PASS
+- `Run Chromium + WebKit UI QA` — PASS
+- `Verify real-device visual fidelity contract` — PASS
+- `Render thumbnail contact sheet evidence` — PASS
+- `Upload screenshots` — PASS
+
+Relevant commits in the real-device correction chain:
+
+- `aa58a02c9f051618649c327704b9652d81e49268` — `Apply real-device visual fidelity corrections`
+- `6e2d6093a1bf55f6a356162d5b2ff779083be507` — `Activate real-device visual correction layer`
+- `8221948d0c23122786426da5ea8ae6d44c83c36e` — `Add real-device visual fidelity contract`
+- `e4b8d58da91c5788ea611cf0d730423d4db660bf` — `Gate real-device visual fidelity in UI QA`
+- `2b180603ce63217040054b05c798ba797026ee87` — `Fix normal thumbnail selector in real-device visual contract`
+
+Business logic changed by this correction chain: **NO**.
+
+---
+
+# LOCKED BUSINESS / CHARACTER CONSTRAINTS
 
 Do **not** intentionally change:
 
@@ -47,63 +156,13 @@ Do **not** intentionally change:
 - PIN behavior;
 - unrelated import/export behavior.
 
-Presentation/assets/layout/responsive/typography/visual hierarchy may change.
+For foreground composition:
 
-### Locked character requirement
-
-For every relevant state/page using foreground character composition:
-
-- all **3 characters** must remain present together;
-- top-left, bottom-left, and right-side positions remain conceptually distinct;
-- bottom-left character must **not** wear glasses;
-- helmet / white-backpack identity details must remain visible where applicable;
-- foreground art remains `pointer-events:none` and must not block controls.
-
----
-
-# NEW REAL-DEVICE P0 FEEDBACK — MUST FIX
-
-Source: `docs/UI_REAL_DEVICE_FEEDBACK_2026-09-24.md`.
-
-1. **Central card containment**
-   - Menu cards must stay inside a deliberate central content frame.
-   - Characters must frame the UI from edge rails rather than visually sitting underneath/inside the card reading area.
-
-2. **Thumbnail sharpness**
-   - Food/menu imagery is visibly blurry on real iPhone Safari.
-   - Signature set images must be crisp at actual card size.
-   - Do not accept low-resolution atlas upscaling if source detail is insufficient.
-
-3. **Character detail fidelity**
-   - Important identity details are missing in deployed composition.
-   - Repo contains higher-detail character PNGs (`assets/ner-character-*.png`) plus accessory assets including `assets/accessory-gray-fullface-helmet.svg` and `assets/accessory-white-backpack.svg`.
-   - Current foreground CSS uses very small `overlay-*.webp` assets; investigate/replace presentation source without changing business logic.
-
-4. **Live UI fidelity to approved generated direction**
-   - Functional correctness alone is insufficient.
-   - Bring masthead/hero, content frame, category header, cards, character framing, background softness, and calculator presentation materially closer to the approved generated target.
-
-Secondary review feedback (only after/supporting P0): reduce duplicated header meaning, reduce Matrix visual dominance, reduce repeated `ปรับวัตถุดิบ` noise, improve category scan hierarchy, reduce character/background competition, improve calculator hierarchy.
-
----
-
-# DURABLE QA BASELINE
-
-`.github/workflows/ui-qa.yml` remains the regression workflow:
-
-- read-only permissions;
-- atlas integrity validator;
-- Chromium + WebKit UI QA;
-- contact-sheet evidence;
-- screenshot artifact upload.
-
-Previous acceptance evidence:
-
-- run **35959886530** — SUCCESS;
-- artifact **10792165909**;
-- 8 UI screenshots + `09-thumbnail-contact-sheet.png`.
-
-This evidence is still valid for functional/regression coverage but **does not override new real-device visual defects**.
+- all **3 characters** remain present together in relevant states;
+- top-left / bottom-left / right-side roles remain distinct;
+- bottom-left does **not** wear glasses;
+- helmet / white-backpack details remain visible where applicable;
+- foreground remains `pointer-events:none` and must not block controls.
 
 ---
 
@@ -115,24 +174,12 @@ Do not restart or redo:
 - 45-menu inventory;
 - semantic mapping architecture;
 - atlas contract design;
+- F1 central-lane fix;
+- F2 thumbnail sizing/aspect-ratio correction;
+- F3 character-master / helmet / backpack restoration;
 - prior Matrix/PIN behavior validation;
 - prior modal scroll-restoration investigation;
 - prior QA harness scope repair.
-
-Relevant prior commits:
-
-- `d03c84c70720f9b6b6171f8e3401a8a372329201` — production atlas promotion
-- `f79f3fa49344968a5d1e0b64482e4e1f6d349b43` — modal scroll restoration
-- `efd03fc0f387c66d7c03c6a6a9800ff1f5c80d46` — durable QA viewport-scope fix
-- `577feea897359ce256320baf54cc54bd64c2f521` — background content shielding
-- `7aa6bb6f33f1a0bb44f2c4c74981108a9f65f388` — three-character calculator composition
-- `0cb82b64be576891e374fc753cc322824cacf3a0` — atlas integrity gate
-- `6801a9ff494a6756c7de823ef4b44737ecd93f49` — read-only durable UI QA
-- `7fbe6a3395052959351fd9b435b9b4d0bf1f7558` — contact-sheet evidence
-- `89d11bcf5093bdf28596f669fe2ff3cd6e2fdd0f` — previous final checkpoint
-- `3125910ec11fffbacb357c718647ada983836ae0` — new real-device feedback record
-
-Business logic changed by the feedback-recording session: **NO**.
 
 ---
 
@@ -149,4 +196,4 @@ Continue in short crash-safe sessions. Each session should:
 
 # EXACT NEXT ACTION
 
-**Next short session:** fix **P0-F1 central card containment / character-safe rails** on phone first, using presentation CSS only. Keep all three characters present, keep bottom-left no-glasses, and do not touch recipe/business logic. After the bounded CSS change, run/inspect the relevant UI QA evidence before moving to thumbnail sharpness.
+**Next short session:** work only on **P0-F4 visual fidelity**, starting with the **top-of-page hierarchy on phone**: reduce duplicate masthead/hero meaning and reduce Matrix admin action visual dominance while preserving all behavior and existing character/card fixes. Compare the resulting phone screenshot against the approved generated visual direction, run the relevant UI QA, persist evidence, then stop and report the next bounded fidelity task.
