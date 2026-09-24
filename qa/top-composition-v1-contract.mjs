@@ -158,7 +158,7 @@ function assertContract(c, browserName) {
   assert.match(c.masthead.afterBg, /linear-gradient/, `${scope}: masthead hand-drawn accent line missing`);
 
   assert.ok(c.brandMark.font >= 56, `${scope}: brand wordmark lost first-screen dominance`);
-  assert.match(c.decor.bg, /overlay-top-left\.webp/, `${scope}: approved upper-left story source changed`);
+  assert.match(c.decor.bg, /overlay-top-left-hires\.webp/, `${scope}: approved upper-left story source changed`);
   assert.equal(c.decor.pointer, 'none', `${scope}: upper-left art intercepts controls`);
   assert.ok(c.decor.width >= 100 && c.decor.height >= 108, `${scope}: upper-left story detail became too small`);
   assert.ok(c.decor.visibleFraction >= .96, `${scope}: upper-left story composition is clipped`);
