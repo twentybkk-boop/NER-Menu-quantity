@@ -1,0 +1,129 @@
+/* V4 HANDS-ON UAT — Chunk 3: item-level semantic cues + compact infographic tiles.
+   Presentation only. Recipe data, card touch targets, grouping, calculator, Matrix/PIN,
+   Chunk 1 background/layering and Chunk 2 landscape interaction remain untouched. */
+
+.menu-card{
+  --menu-cue:var(--menu-icon);
+  --menu-cue-size:10.5px;
+}
+
+/* The cue is intentionally subordinate to the real menu title: it is a compact
+   recognition aid, not a replacement label. All explicit cue words below are
+   derived from the current recipe_master.json menu names. */
+#app-menus .menu-card::before{
+  content:var(--menu-cue,var(--menu-icon))!important;
+  width:68px!important;
+  height:48px!important;
+  flex:0 0 68px!important;
+  border-radius:11px!important;
+  white-space:pre-line!important;
+  overflow:hidden!important;
+  font-size:var(--menu-cue-size,10.5px)!important;
+  line-height:1.08!important;
+  font-weight:850!important;
+  letter-spacing:-.015em!important;
+  text-wrap:balance!important;
+}
+
+/* Signature / ready-to-eat sets. */
+.menu-card[data-menu="ชุดจุ่มหมูทะเล"]{--menu-cue:"🦐\A ทะเล";}
+.menu-card[data-menu="ชุดจุ่มเนื้อ"]{--menu-cue:"🥩\A เนื้อ";}
+.menu-card[data-menu="ชุดจุ่มหมู"]{--menu-cue:"🐷\A หมู";}
+.menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]{--menu-cue:"1×\A หมู";}
+.menu-card[data-menu="อิ่มเดี่ยว ต้มพร้อมทาน"]{--menu-cue:"♨\A พร้อมทาน";--menu-cue-size:9.8px;}
+.menu-card[data-menu="อิ่มเดี่ยว หมูจุกจุก"]{--menu-cue:"♨\A หมูจุก";--menu-cue-size:9.8px;}
+
+/* Pork / beef / offal / seafood — distinguish similar meat names instead of one coarse icon. */
+.menu-card[data-menu="หมูล้วน (ไม่มีเครื่องใน)"]{--menu-cue:"🐷\A หมูล้วน";}
+.menu-card[data-menu="หมูหมัก NER"]{--menu-cue:"🐷\A หมูหมัก";}
+.menu-card[data-menu="สามชั้นหมูสไลซ์"]{--menu-cue:"🐷\A สามชั้น";}
+.menu-card[data-menu="สันคอ"]{--menu-cue:"🐷\A สันคอ";}
+.menu-card[data-menu="สันนอก"]{--menu-cue:"🐷\A สันนอก";}
+.menu-card[data-menu="ตับหมู"]{--menu-cue:"◆\A ตับ";}
+.menu-card[data-menu="เซ่งจี๊หมู"]{--menu-cue:"◆\A เซ่งจี๊";}
+.menu-card[data-menu="เนื้อใบพายสไลซ์"]{--menu-cue:"🥩\A ใบพาย";}
+.menu-card[data-menu="เนื้อริบอายสไลซ์"]{--menu-cue:"🥩\A ริบอาย";}
+.menu-card[data-menu="เนื้อเสือร้องไห้สไลซ์"]{--menu-cue:"🥩\A เสือร้อง";}
+.menu-card[data-menu="เนื้อรวม"]{--menu-cue:"🥩\A เนื้อรวม";}
+.menu-card[data-menu="ปลาดอลลี่"]{--menu-cue:"🐟\A ดอลลี่";}
+.menu-card[data-menu="กุ้ง"]{--menu-cue:"🦐\A กุ้ง";}
+.menu-card[data-menu="ปลาหมึก"]{--menu-cue:"🦑\A หมึก";}
+
+/* Vegetables. */
+.menu-card[data-menu="ชุดผักรวม"]{--menu-cue:"🥬\A ผักรวม";}
+.menu-card[data-menu="กะหล่ำปลี"]{--menu-cue:"🥬\A กะหล่ำ";}
+.menu-card[data-menu="ผักบุ้ง"]{--menu-cue:"🥬\A ผักบุ้ง";}
+.menu-card[data-menu="ผักชีฝรั่ง"]{--menu-cue:"🌿\A ชีฝรั่ง";}
+.menu-card[data-menu="โหระพา"]{--menu-cue:"🌿\A โหระพา";}
+.menu-card[data-menu="ใบชะพลู"]{--menu-cue:"🍃\A ชะพลู";}
+
+/* Noodles / tofu / staples. */
+.menu-card[data-menu="วุ้นเส้น"]{--menu-cue:"〰\A วุ้นเส้น";}
+.menu-card[data-menu="มาม่า"]{--menu-cue:"🍜\A มาม่า";}
+.menu-card[data-menu="หมี่หยก(สด)"]{--menu-cue:"🍜\A หมี่หยก";}
+.menu-card[data-menu="เส้นอุด้ง"]{--menu-cue:"🍜\A อุด้ง";}
+.menu-card[data-menu="ไข่ไก่สด"]{--menu-cue:"🥚\A ไข่ไก่";}
+.menu-card[data-menu="เต้าหู้ปลา"]{--menu-cue:"เต้าหู้\A ปลา";--menu-cue-size:9.8px;}
+.menu-card[data-menu="เต้าหู้ไข่"]{--menu-cue:"เต้าหู้\A ไข่";--menu-cue-size:9.8px;}
+.menu-card[data-menu="เต้าหู้ชีส"]{--menu-cue:"เต้าหู้\A ชีส";--menu-cue-size:9.8px;}
+.menu-card[data-menu="ฟองเต้าหู้แท่ง"]{--menu-cue:"ฟองฯ\A แท่ง";--menu-cue-size:9.8px;}
+.menu-card[data-menu="ฟองเต้าหู้ทอด"]{--menu-cue:"ฟองฯ\A ทอด";--menu-cue-size:9.8px;}
+.menu-card[data-menu="ข้าวเปล่า"]{--menu-cue:"🍚\A ข้าว";}
+
+/* Snacks / desserts. */
+.menu-card[data-menu="ไก่ป๊อป"]{--menu-cue:"✦\A ไก่ป๊อป";}
+.menu-card[data-menu="แฮชบราวน์ เทเทอร์ ทอตส์"]{--menu-cue:"▦\A เทเทอร์";}
+.menu-card[data-menu="ข้าวเกรียบปลา"]{--menu-cue:"◇\A ข้าวเกรียบ";--menu-cue-size:9.6px;}
+.menu-card[data-menu="คาลามารี"]{--menu-cue:"◎\A คาลามารี";--menu-cue-size:9.6px;}
+.menu-card[data-menu="ซาโมซ่ากล้วย"]{--menu-cue:"🍌\A ซาโมซ่า";--menu-cue-size:9.6px;}
+.menu-card[data-menu="สละลอยแก้ว"]{--menu-cue:"🍧\A สละ";}
+.menu-card[data-menu="ลูกตาลลอยแก้ว"]{--menu-cue:"🍧\A ลูกตาล";}
+.menu-card[data-menu="โมจิไอศครีม"]{--menu-cue:"🍨\A โมจิ";}
+
+/* Signature tiles stay slightly larger than ordinary recognition cues, but no
+   longer dominate the menu title. Card min-heights and touch areas are preserved. */
+#app-menus .menu-card[data-menu="ชุดจุ่มหมูทะเล"]::before,
+#app-menus .menu-card[data-menu="ชุดจุ่มเนื้อ"]::before,
+#app-menus .menu-card[data-menu="ชุดจุ่มหมู"]::before,
+#app-menus .menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]::before{
+  width:76px!important;
+  height:50px!important;
+  flex-basis:76px!important;
+}
+
+@media(max-width:767px){
+  #app-menus .menu-card::before{
+    width:60px!important;
+    height:42px!important;
+    flex-basis:60px!important;
+    border-radius:10px!important;
+    font-size:var(--menu-cue-size,10.2px)!important;
+  }
+  #app-menus .menu-card[data-menu="ชุดจุ่มหมูทะเล"]::before,
+  #app-menus .menu-card[data-menu="ชุดจุ่มเนื้อ"]::before,
+  #app-menus .menu-card[data-menu="ชุดจุ่มหมู"]::before,
+  #app-menus .menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]::before{
+    width:68px!important;
+    height:44px!important;
+    flex-basis:68px!important;
+  }
+}
+
+/* Phone landscape falls into the historical 768–1023 width band; keep the cue
+   compact there too without touching the verified Chunk 2 calculator override. */
+@media(orientation:landscape) and (max-height:540px) and (max-width:950px){
+  #app-menus .menu-card::before{
+    width:62px!important;
+    height:42px!important;
+    flex-basis:62px!important;
+    font-size:var(--menu-cue-size,10px)!important;
+  }
+  #app-menus .menu-card[data-menu="ชุดจุ่มหมูทะเล"]::before,
+  #app-menus .menu-card[data-menu="ชุดจุ่มเนื้อ"]::before,
+  #app-menus .menu-card[data-menu="ชุดจุ่มหมู"]::before,
+  #app-menus .menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]::before{
+    width:70px!important;
+    height:44px!important;
+    flex-basis:70px!important;
+  }
+}
