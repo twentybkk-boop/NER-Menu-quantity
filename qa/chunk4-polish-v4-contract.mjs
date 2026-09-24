@@ -166,20 +166,72 @@ async function interactionSafety(page, candidate, scope) {
 
   const visibleControls = await page.evaluate(() => {
     const selectors = ['#closeCalculatorButton','#excludeOptions .exclude-btn','.replacement-trigger'];
-    const controls = selectors.flatMap(sel => [...document.querySelectorAll(sel)]).filter(el => {
-      const r = el.getBoundingClientRect();
-      return r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
-    });
+    const controls = selectors.flatMap(sel => [...document.querySelectorAll(sel)]);
     const decor = [...document.querySelectorAll('.decor-person')];
-    const centerCovered = controls.map(el => {
-      const r = el.getBoundingClientRect();
-      const x = Math.max(1, Math.min(innerWidth - 2, r.left + r.width/2));
-      const y = Math.max(1, Math.min(innerHeight - 2, r.top + r.height/2));
-      const top = document.elementFromPoint(x,y);
-      return {ok:top === el || el.contains(top), tag:top?.tagName, cls:top?.className};
+
+    const intersect = (a,b) => ({
+      left:Math.max(a.left,b.left),
+      right:Math.min(a.right,b.right),
+      top:Math.max(a.top,b.top),
+      bottom:Math.min(a.bottom,b.bottom),
     });
+    const viewport = {left:0,right:innerWidth,top:0,bottom:innerHeight};
+
+    const centerChecks = controls.map(el => {
+      const r = el.getBoundingClientRect();
+      const center = {x:r.left + r.width/2,y:r.top + r.height/2};
+      let clip = {...viewport};
+      let ancestor = el.parentElement;
+      const clippingAncestors = [];
+      while (ancestor) {
+        const s = getComputedStyle(ancestor);
+        const clipsX = ['hidden','clip','auto','scroll'].includes(s.overflowX);
+        const clipsY = ['hidden','clip','auto','scroll'].includes(s.overflowY);
+        if (clipsX || clipsY) {
+          const ar = ancestor.getBoundingClientRect();
+          clip = intersect(clip, {
+            left:clipsX ? ar.left : clip.left,
+            right:clipsX ? ar.right : clip.right,
+            top:clipsY ? ar.top : clip.top,
+            bottom:clipsY ? ar.bottom : clip.bottom,
+          });
+          clippingAncestors.push({tag:ancestor.tagName,cls:ancestor.className,overflowX:s.overflowX,overflowY:s.overflowY});
+        }
+        ancestor = ancestor.parentElement;
+      }
+      const centerVisible = center.x >= clip.left && center.x <= clip.right && center.y >= clip.top && center.y <= clip.bottom;
+      if (!centerVisible) {
+        return {
+          eligible:false,
+          ok:true,
+          tag:el.tagName,
+          cls:el.className,
+          rect:{left:r.left,right:r.right,top:r.top,bottom:r.bottom},
+          center,
+          clip,
+          clippingAncestors,
+        };
+      }
+      const x = Math.max(1,Math.min(innerWidth - 2,center.x));
+      const y = Math.max(1,Math.min(innerHeight - 2,center.y));
+      const top = document.elementFromPoint(x,y);
+      return {
+        eligible:true,
+        ok:top === el || el.contains(top),
+        tag:top?.tagName,
+        cls:top?.className,
+        controlTag:el.tagName,
+        controlCls:el.className,
+        rect:{left:r.left,right:r.right,top:r.top,bottom:r.bottom},
+        center:{x,y},
+        clip,
+        clippingAncestors,
+      };
+    });
+
     return {
-      centerCovered,
+      centerChecks,
+      eligibleCount:centerChecks.filter(x => x.eligible).length,
       decorPointers:decor.map(el => getComputedStyle(el).pointerEvents),
       decorCount:decor.length,
       backgroundPointer:getComputedStyle(document.body,'::before').pointerEvents,
@@ -188,7 +240,9 @@ async function interactionSafety(page, candidate, scope) {
   assert.equal(visibleControls.decorCount, 3, `${scope}: not all characters present during interaction`);
   assert.ok(visibleControls.decorPointers.every(v => v === 'none'), `${scope}: a character intercepts pointer events`);
   assert.equal(visibleControls.backgroundPointer, 'none', `${scope}: environmental background intercepts input`);
-  assert.ok(visibleControls.centerCovered.every(x => x.ok), `${scope}: visible control center is visually/tap covered ${JSON.stringify(visibleControls.centerCovered)}`);
+  assert.ok(visibleControls.eligibleCount >= 3, `${scope}: too few visible control centers were available for safety sweep (${visibleControls.eligibleCount})`);
+  const blocked = visibleControls.centerChecks.filter(x => x.eligible && !x.ok);
+  assert.equal(blocked.length, 0, `${scope}: unclipped visible control center is visually/tap covered ${JSON.stringify(blocked)}`);
 }
 
 async function runCase(browserType, browserName, cfg) {
