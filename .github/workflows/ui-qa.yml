@@ -56,6 +56,8 @@ jobs:
         run: node qa/character-sampling-v1-contract.mjs
       - name: Verify calculator visual hierarchy contract
         run: node qa/calculator-visual-v2-runner.mjs
+      - name: Verify V4 phone-landscape calculator interaction locally
+        run: node qa/landscape-calculator-v4-contract.mjs
       - name: Verify deployed GitHub Pages P0-A/P0-B acceptance
         run: node qa/live-pages-acceptance-v2.mjs
       - name: Verify deployed GitHub Pages P0-D top composition
@@ -70,6 +72,10 @@ jobs:
         env:
           LAYERING_BASE: https://twentybkk-boop.github.io/NER-Menu-quantity/
         run: node qa/layering-orientation-v1-contract.mjs
+      - name: Verify deployed V4 phone-landscape calculator interaction
+        env:
+          LANDSCAPE_BASE: https://twentybkk-boop.github.io/NER-Menu-quantity/
+        run: node qa/landscape-calculator-v4-contract.mjs
       - name: Verify deployed V3 character high-res sharpness
         env:
           SHARPNESS_BASE: https://twentybkk-boop.github.io/NER-Menu-quantity/
