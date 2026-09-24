@@ -10,11 +10,11 @@ fs.mkdirSync(shotDir, { recursive: true });
 
 /* Keep local and live character-detail gates aligned. The upper-left story
    composition must remain large enough to preserve glasses/drink/gesture cues.
-   The stable approved asset paths now contain Retina-capable raster content. */
+   High-resolution approved derivatives preserve the same story composition. */
 const EXPECTED = [
-  ['.decor-a', 'overlay-top-left.webp', 78, 76],
-  ['.decor-b', 'overlay-bottom-left.webp', 78, 76],
-  ['.decor-c', 'overlay-right.webp', 78, 76],
+  ['.decor-a', 'overlay-top-left-hires.webp', 78, 76],
+  ['.decor-b', 'overlay-bottom-left-hires.webp', 78, 76],
+  ['.decor-c', 'overlay-right-hires.webp', 78, 76],
 ];
 
 function assertDecor(items, browserName, state) {
