@@ -47,6 +47,7 @@ async function inspect(browserType, browserName) {
       const managerRect = managerButton.getBoundingClientRect();
       const firstGrid = document.querySelector('.menu-grid');
       const firstGridStyle = getComputedStyle(firstGrid);
+      const bodyBefore = getComputedStyle(document.body, '::before');
 
       const categories = [...document.querySelectorAll('.category-title')].map(title => {
         const icon = title.querySelector('.category-icon');
@@ -68,8 +69,11 @@ async function inspect(browserType, browserName) {
           bg: s.backgroundImage,
           pointer: s.pointerEvents,
           visible: r.right > 0 && r.left < innerWidth && r.bottom > 0 && r.top < innerHeight,
+          left: r.left,
+          right: r.right,
           width: r.width,
           height: r.height,
+          opacity: parseFloat(s.opacity),
           beforeBg: getComputedStyle(el, '::before').backgroundImage,
           afterBg: getComputedStyle(el, '::after').backgroundImage,
         };
@@ -89,6 +93,10 @@ async function inspect(browserType, browserName) {
         thumb: thumbSize(normalThumb),
         signatureThumb: thumbSize(sigThumb),
         decor,
+        background: {
+          image: bodyBefore.backgroundImage,
+          size: bodyBefore.backgroundSize,
+        },
         hero: {
           width: heroRect.width,
           height: heroRect.height,
@@ -133,6 +141,7 @@ async function inspect(browserType, browserName) {
     for (const item of contract.decor) {
       assert.equal(item.pointer, 'none', `${browserName}: ${item.selector} intercepts touch`);
       assert.ok(item.visible && item.width > 60 && item.height > 60, `${browserName}: ${item.selector} is not visibly present`);
+      assert.ok(item.opacity >= .95, `${browserName}: ${item.selector} was faded too far to preserve identity detail`);
     }
     assert.match(contract.decor[0].bg, /ner-character-top-left\.png/, `${browserName}: top-left high-detail master not active`);
     assert.match(contract.decor[1].bg, /ner-character-bottom-left\.png/, `${browserName}: bottom-left high-detail master not active`);
@@ -141,6 +150,18 @@ async function inspect(browserType, browserName) {
     assert.match(contract.decor[2].afterBg, /accessory-white-backpack\.svg/, `${browserName}: white backpack detail missing`);
     assert.doesNotMatch(contract.decor[1].beforeBg + contract.decor[1].afterBg, /accessory-glasses\.svg/,
       `${browserName}: bottom-left must remain no-glasses`);
+
+    const topLeftIntrusion = Math.max(0, contract.decor[0].right - contract.menus.left);
+    const bottomLeftIntrusion = Math.max(0, contract.decor[1].right - contract.menus.left);
+    const rightIntrusion = Math.max(0, contract.menus.right - contract.decor[2].left);
+    assert.ok(topLeftIntrusion <= 36, `${browserName}: top-left character competes with menu lane by ${topLeftIntrusion}px`);
+    assert.ok(bottomLeftIntrusion <= 48, `${browserName}: bottom-left character competes with menu lane by ${bottomLeftIntrusion}px`);
+    assert.ok(rightIntrusion <= 30, `${browserName}: right character competes with menu lane by ${rightIntrusion}px`);
+    assert.ok(contract.decor[0].width <= 120 && contract.decor[1].width <= 138 && contract.decor[2].width <= 106,
+      `${browserName}: phone character framing scale drifted larger than bounded rails`);
+    assert.match(contract.background.image, /background-master\.webp/, `${browserName}: background master is no longer active`);
+    assert.match(contract.background.image, /linear-gradient/, `${browserName}: mobile background softening veil missing`);
+    assert.match(contract.background.size, /165% 225px/, `${browserName}: mobile background softness geometry changed: ${contract.background.size}`);
 
     assert.equal(contract.hero.titleDisplay, 'none', `${browserName}: duplicate phone hero brand title is visible`);
     assert.ok(contract.hero.height <= 88, `${browserName}: phone hero remains too tall at ${contract.hero.height}px`);
