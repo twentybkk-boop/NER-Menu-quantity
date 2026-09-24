@@ -68,6 +68,15 @@ Clean production-only mapping commit on `main`:
 - therefore no deletion commit was required; cleanup status is already clean.
 - production high-resolution overlay blobs remain mapped exactly as verified above.
 
+## UI QA TRIGGER — DURABLE; RUN NOT YET INSPECTED
+- existing `.github/workflows/ui-qa.yml` supports `workflow_dispatch` and `push` on `qa/**`.
+- connector exposed no direct workflow-dispatch action, so QA was triggered through the workflow's existing `qa/**` push path without touching production/runtime/UI logic.
+- trigger marker: `qa/RUN_UI_QA_V3`.
+- marker content: `run-ui-qa-v3-production-overlays-v1`.
+- trigger commit: `f7748a65231282df621d2ba52ab10f355ee027ad` (`Trigger UI QA for verified production overlays`).
+- commit verification: changed ONLY `qa/RUN_UI_QA_V3`; no other file changed.
+- QA run ID/status/conclusion have NOT yet been inspected at this checkpoint and must not be inferred.
+
 ## DO NOT REPEAT / REJECTED
 - Do not redo repo-wide/source/Library/V2/Session1/2A/2B.1/layout/orientation/calculator/P0 investigations or redraw/reconstruction.
 - Do not alter the eight verified staged right ranges on the repair branch.
@@ -78,10 +87,11 @@ Clean production-only mapping commit on `main`:
 - Do not remap the three production high-resolution assets unless a later verified QA failure proves the mapping itself wrong.
 - Do not change verified layout/business logic during QA.
 - Do not perform repair cleanup again on `main`; current `main` is already verified free of repair-only residue.
+- Do not create another QA trigger while the run from `f7748a65231282df621d2ba52ab10f355ee027ad` is pending/being inspected.
 
 ## OPEN BLOCKERS
-1. Run existing UI/sharpness QA against current `main` and record exact run ID/status/conclusion; checkpoint before inspecting screenshots/artifacts if the run is asynchronous.
+1. Inspect ONLY the UI QA run caused by trigger commit `f7748a65231282df621d2ba52ab10f355ee027ad`; record exact run ID/status/conclusion; checkpoint before screenshots/artifacts.
 2. Manually inspect `31-*sharpness-v2` screenshots for final acceptance of all three characters and verified composition; checkpoint final acceptance/result.
 
 ## EXACT NEXT RECOVERY ACTION
-After confirming this cleanup checkpoint is durable, run the existing UI/sharpness QA on current `main` using the existing `.github/workflows/ui-qa.yml` / established QA path only. Do not modify layout/business logic or production assets. Record the exact QA run ID/status/conclusion and immediately persist that QA-run checkpoint before manually inspecting `31-*sharpness-v2` screenshots or other QA artifacts.
+After confirming this QA-trigger checkpoint is durable, inspect ONLY GitHub Actions runs associated with QA trigger commit `f7748a65231282df621d2ba52ab10f355ee027ad`. Record the matching `UI QA` run ID/status/conclusion and immediately persist that QA-run checkpoint before manually inspecting `31-*sharpness-v2` screenshots or any QA artifacts. Do not make any other change in that work unit.
