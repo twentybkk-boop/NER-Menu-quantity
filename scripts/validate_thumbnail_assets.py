@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Validate recipe -> semantic atlas coverage without changing recipe semantics."""
 from __future__ import annotations
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -10,6 +11,8 @@ recipe = json.loads((ROOT / "recipe_master.json").read_text(encoding="utf-8"))
 css = (ROOT / "assets" / "menu-thumbnail-map.css").read_text(encoding="utf-8")
 menus = set(recipe.get("categories", {}))
 atlas = ROOT / "assets" / "menu-thumbnails" / "semantic-atlas-v1.webp"
+EXPECTED_ATLAS_SIZE = 59_500
+EXPECTED_ATLAS_SHA256 = "1976697397b1581091dc3936412ac9789256b6bd0210ef8afdeac6ac375cd9b4"
 
 block_re = re.compile(
     r'((?:\.menu-card\[data-menu="[^"]+"\],?)+)\{'
@@ -32,6 +35,13 @@ if stale:
     errors.append("stale menu mappings: " + ", ".join(stale))
 if not atlas.is_file():
     errors.append("missing atlas: assets/menu-thumbnails/semantic-atlas-v1.webp")
+else:
+    atlas_bytes = atlas.read_bytes()
+    if len(atlas_bytes) != EXPECTED_ATLAS_SIZE:
+        errors.append(f"atlas size mismatch: {len(atlas_bytes)} != {EXPECTED_ATLAS_SIZE}")
+    atlas_sha256 = hashlib.sha256(atlas_bytes).hexdigest()
+    if atlas_sha256 != EXPECTED_ATLAS_SHA256:
+        errors.append(f"atlas sha256 mismatch: {atlas_sha256} != {EXPECTED_ATLAS_SHA256}")
 
 valid_x = {"0%", "20%", "40%", "60%", "80%", "100%"}
 valid_y = {"0%", "25%", "50%", "75%", "100%"}
@@ -73,6 +83,7 @@ if errors:
 
 print(f"thumbnail coverage: {len(mapped)}/{len(menus)} (100%)")
 print("atlas: assets/menu-thumbnails/semantic-atlas-v1.webp (6x5)")
+print(f"atlas integrity: {EXPECTED_ATLAS_SIZE} bytes / sha256 {EXPECTED_ATLAS_SHA256}")
 print("signature set regions: 4/4 unique")
 print("semantic correction gates: pass")
 print("semantic mismatch guards: pass")
