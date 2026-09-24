@@ -4,7 +4,7 @@
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + durable UAT evidence/checkpoints.
 
 ## CURRENT OBJECTIVE
-Hands-on testing reopened V4 UAT after the verified V3 acceptance. **V4 Chunk 1 — background + layering system is now VERIFIED COMPLETE.** Preserve the verified high-resolution character assets and business semantics while continuing only through the remaining reproduced UAT defects.
+Hands-on testing reopened V4 UAT after the verified V3 acceptance. **V4 Chunk 1 — background + layering system is VERIFIED COMPLETE. V4 Chunk 2 has now been independently reproduced with an interaction contract and root cause is verified; implementation is NEXT.** Preserve verified high-resolution character assets and business semantics while fixing only the reproduced landscape calculator geometry/interaction defect.
 
 ## VERIFIED BASELINE — DO NOT REDO
 - V2 P0-A/B/C/D VERIFIED; V3 Session 1 VERIFIED; Session 2A DONE; Session 2B.1 VERIFIED; V3 Session 2B.2 visual acceptance VERIFIED PASS.
@@ -43,51 +43,54 @@ Resolved defects:
 ### Implementation — bounded presentation-only changes
 1. `assets/visual-uat-v4-chunk1.css`
    - commit `ee5c895a719949eec585da74fa05109f9008eac9` (`Fix V4 background layering and orientation`).
-   - disables `#decor-layer::before/after` completely; foreground ambient circles no longer exist.
-   - ambient shapes + `background-master.webp` now live only on fixed `body::before`, `z-index:0`, `pointer-events:none`.
-   - portrait uses `background-master.webp` sized `auto 100dvh` so the environmental scene is visible instead of heavily cropped.
-   - landscape uses a fuller background treatment plus a protected, opaque-enough `.brand-masthead` editorial plate.
 2. `assets/visual-polish.css`
    - commit `b551180c6d6e4a154c8288c9b5d7f3d9126e39a3` (`Load V4 Chunk 1 background override last`).
-   - imports `visual-uat-v4-chunk1.css` last so historical `!important` rules cannot silently restore the defect.
 3. `qa/layering-orientation-v1-contract.mjs`
    - commit `20df83d84267a08590be8bcd266cba276667b2e0` (`Tighten layering contract for V4 UAT`).
-   - now asserts both `#decor-layer::before/after` are `display:none`, `background-image:none`, and non-interactive.
-   - still requires the true `body::before` background plane to contain `background-master.webp` + ambient gradients and remain below shell/character layers.
-   - landscape cases now require a protected masthead background plate.
-   - exact high-resolution character-source assertions remain active.
 
-### Automated + deployed verification
-Latest implementation/QA head before this checkpoint: `20df83d84267a08590be8bcd266cba276667b2e0`.
+### Verification
 - Pages run `36041042430` — `completed/success`.
 - UI QA run `36041043778` — `completed/success`.
-- Chromium + WebKit main UI QA — PASS.
-- P0-A character composition — PASS.
-- P0-B protected center frame — PASS.
-- P0-D top + long-list contracts — PASS.
-- tightened V4 orientation/layering contract LOCAL — PASS.
-- tightened V4 orientation/layering contract DEPLOYED — PASS.
-- V3 high-res character sharpness local + deployed — PASS.
-- calculator visual hierarchy — PASS.
-
-### Manual 4-orientation verification
-Artifact:
-- `ui-qa-screenshots`, artifact ID `10826890723`.
-- digest `sha256:1b2c36a36ad8c0cd19428eaa68df706b8f729289e277e0ba70b02e95d03a0696`.
-Manually inspected deployed orientation evidence:
-- phone portrait — ambient circles are behind surfaces; background atmosphere visible; no card/arrow overlay regression — PASS.
-- phone landscape — background master clearly visible; NER masthead protected from environmental artwork; character rails preserved — PASS.
-- iPad portrait — environmental master visible behind/around central UI; ambient circles remain on the background plane; cards and controls remain above it — PASS.
-- iPad landscape — environmental background visibly restored; NER masthead sits on protected pale plate; no background/header collision; character rails preserved — PASS.
+- tightened V4 orientation/layering LOCAL + DEPLOYED — PASS.
+- manual phone portrait/landscape + iPad portrait/landscape — PASS.
+- artifact `10826890723`, digest `sha256:1b2c36a36ad8c0cd19428eaa68df706b8f729289e277e0ba70b02e95d03a0696`.
 
 STATUS: **V4 CHUNK 1 VERIFIED COMPLETE. DO NOT REOPEN UAT-001/002/003 unless new hands-on evidence reproduces a regression.**
 
-## REMAINING V4 DEFECT SET / WORK HEAD
-
-### P0 — Chunk 2: landscape interaction + overlay geometry — NEXT
+## V4 CHUNK 2 — LANDSCAPE INTERACTION — REPRODUCED / ROOT CAUSE VERIFIED
+Target defects:
 - `UAT-004`: landscape blocks core interaction for “ไม่รับของ” / exclusion and quantity inspection.
 - `UAT-005`: landscape detail/overlay composition shows overflow/seam-like split/compression.
 - `UAT-010`: decorative/background layers must not intercept or crowd interactive regions.
+
+### Durable reproduction contract
+- added `qa/landscape-calculator-v4-contract.mjs` in commit `c93cc7d60b21efc6d94b06833bd7ffe79044f393` (`Add V4 landscape calculator interaction contract`).
+- wired local + deployed contract steps into `.github/workflows/ui-qa.yml` in commit `a05ebc4670cdbe4883e4a83a50c923e8f58cb7f2` (`Run V4 landscape interaction contract in UI QA`).
+- contract uses real 844×390 phone-landscape viewport and requires: open menu → real exclusion click → selectable replacement where available → net quantity response → panel scroll geometry → close/reopen → portrait→landscape rotation → tap still works.
+- contract also checks that all three character decorations remain non-interactive and stay in side rails rather than overlap calculator controls.
+
+### Pre-fix failure evidence — VERIFIED
+UI QA run `36042314898` on head `a05ebc4670cdbe4883e4a83a50c923e8f58cb7f2`:
+- all pre-existing UI QA / character / orientation / sharpness / calculator visual hierarchy steps passed.
+- new `Verify V4 phone-landscape calculator interaction locally` failed exactly as intended.
+- exact assertion: **`chromium/phone-landscape/local: calculator card compressed to 126px`**.
+- failure was at `qa/landscape-calculator-v4-contract.mjs` geometry gate before business interaction could proceed.
+- artifact from failure run: `10827390756`, digest `sha256:bd3fb3af36ee6e1fc13cf2d4f311e462a917e61e0353792e84c8fda077441f81`.
+
+### Root cause — VERIFIED
+- phone landscape viewport in reproduced flow is approximately 844×390.
+- historical responsive rules classify width `768–1023px` as an iPad/tablet layout without an orientation/height guard.
+- `assets/visual-responsive.css` in that width band forces calculator body to a vertical column and, while calculator is open, reserves **114px top + 150px bottom** for illustration rails.
+- it also constrains the calculator modal card to `max-height: calc(100dvh - 264px - safe areas)`.
+- at 390px viewport height this yields the measured **126px calculator card**, matching the CI failure exactly.
+- later real-device/historical tablet rules reinforce the same width-based column behavior, so an additive final phone-landscape override is required; changing business/exclusion/quantity code is NOT required.
+
+STATUS: **UAT-004/005/010 are reproducibly caused by responsive geometry, not recipe or exclusion semantics.**
+
+## REMAINING V4 DEFECT SET / WORK HEAD
+
+### P0 — Chunk 2: landscape interaction + overlay geometry — IMPLEMENTATION NEXT
+- `UAT-004` / `UAT-005` / `UAT-010` — reproduced and root-caused; fix not yet verified.
 
 ### P1 — Chunk 3: thumbnail semantic mapping + compact infographic
 - `UAT-006`: several thumbnails are too generic and do not communicate the menu name closely enough.
@@ -100,34 +103,29 @@ STATUS: **V4 CHUNK 1 VERIFIED COMPLETE. DO NOT REOPEN UAT-001/002/003 unless new
 
 ## LOCKED INVARIANTS DURING V4 FIXES
 - Do not change recipe/business meaning, quantity calculations, exclusion/replacement semantics, Matrix logic, PIN behavior, or unrelated import/export behavior unless a separate reproduced defect proves them wrong.
-- Do not replace/remap the verified exact high-resolution character assets as part of responsive/layering fixes.
-- Keep all three characters together where expected.
-- Bottom-left character remains NO GLASSES.
-- Top-left glasses + drink + peace gesture + speech bubble remain.
-- Right character backpack/straps + clipboard/pen + food/chalkboard + speech bubble remain.
+- Do not replace/remap verified exact high-resolution character assets.
+- Keep all three characters together where expected; bottom-left NO GLASSES; top-left glasses + drink + peace gesture + bubble; right backpack/straps + clipboard/pen + food/chalkboard + bubble.
 - Decorative/background layers must be non-interactive and stay outside protected tap/content zones.
-- **For UAT-004, verify real click/tap + scroll + exclusion + quantity behavior in landscape; screenshot-only QA is not sufficient.**
+- **For UAT-004, real click/tap + scroll + exclusion + quantity behavior is mandatory; screenshot-only QA is insufficient.**
 
 ## CHUNK ORDER — DO NOT SKIP
-1. **Chunk 1 — Background + layering system** — `UAT-001/002/003` — VERIFIED COMPLETE.
-2. **Chunk 2 — Landscape interaction + overlay geometry** — `UAT-004/005/010` → verify tap/scroll/exclusion/quantity in landscape → checkpoint.
-3. **Chunk 3 — Thumbnail semantic mapping + compact infographic** — `UAT-006/007` → verify representative menu categories + long-list rhythm → checkpoint.
-4. **Chunk 4 — Character scale + detail density polish** — `UAT-008/009` + final `010` recheck → responsive visual QA/manual review → checkpoint.
+1. Chunk 1 — `UAT-001/002/003` — VERIFIED COMPLETE.
+2. **Chunk 2 — `UAT-004/005/010` — REPRODUCED; IMPLEMENT + VERIFY NEXT.**
+3. Chunk 3 — `UAT-006/007` — wait until Chunk 2 checkpoint.
+4. Chunk 4 — `UAT-008/009` + final `010` recheck — wait.
 
 ## DO NOT REPEAT
 - Do not redo V3 repair/source reconstruction/high-res recovery.
-- Do not rerun old V3 acceptance just for bookkeeping.
-- Do not modify Chunk 1 again without new reproduced evidence.
-- Do not alter business semantics while fixing responsive/UI defects.
-- Do not treat screenshot-only orientation PASS as proof that landscape touch interaction is correct.
+- Do not modify Chunk 1 without new reproduced evidence.
+- Do not investigate business semantics for UAT-004; root cause is verified responsive geometry.
+- Do not remove/relax the new landscape interaction contract to make CI pass.
 - Do not jump to Chunk 3/4 before Chunk 2 verification is persisted.
 
 ## OPEN BLOCKERS
-1. `UAT-004` landscape exclusion/quantity interaction is a functional blocker.
-2. `UAT-005` landscape overlay overflow/seam/compression unresolved.
-3. `UAT-010` landscape decorative/interaction safety unresolved and must be verified with real controls.
-4. `UAT-006/007` thumbnail clarity/density polish unresolved.
-5. `UAT-008/009` character scale/detail-density polish unresolved.
+1. Implement the bounded phone-landscape calculator override and make the new local/deployed contract pass Chromium + WebKit.
+2. Verify no regression to Chunk 1 / exact character source / existing calculator hierarchy.
+3. Persist Chunk 2 verification checkpoint before Chunk 3.
+4. `UAT-006/007` and `UAT-008/009` remain untouched.
 
 ## EXACT NEXT RECOVERY ACTION
-Start **Chunk 2 only** from current GitHub `main`. Reproduce the user’s phone-landscape flow from the 2026-09-25 recording and inspect only the calculator modal / scroll-lock / panel overflow / stacking / tap geometry paths needed for `UAT-004`, `UAT-005`, and `UAT-010`. Prove which layer or layout rule blocks “ไม่รับของ” and quantity inspection, then make the smallest responsive/interaction fix without changing exclusion/replacement/quantity semantics. Verify real landscape interaction (open menu → tap exclusion → select replacement where available → inspect net quantity → scroll both relevant regions → close/reopen/rotate) in Chromium + WebKit and deployed Pages, then **persist a checkpoint immediately after verification before touching Chunk 3**.
+Implement **Chunk 2 fix only** from current `main`: add a final-loaded presentation-only phone-landscape override scoped to `(orientation: landscape) and (max-height: 540px) and (max-width: 950px)` that prevents the 768–1023 tablet/portrait rules from compressing the calculator. Restore a near-full-height modal card, compact header, true two-column exclusion/quantity grid with independent panel scrolling, and side illustration rails that remain visible/non-interactive but do not overlap the card. Do not change JS exclusion/replacement/quantity semantics. Then run the existing UI QA with the durable `qa/landscape-calculator-v4-contract.mjs`, require Chromium + WebKit LOCAL and DEPLOYED PASS including close/reopen/rotate, inspect the generated `32-*phone-landscape-calculator-v4.png` evidence, and **persist a checkpoint immediately after verification before touching Chunk 3**.
