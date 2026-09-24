@@ -82,11 +82,20 @@ jobs:
           git rm -f tmp/ui-atlas/part-*.b64
           if ! git diff --cached --quiet; then
             git commit -m "Install verified generated thumbnail atlas [skip ci]"
-            # A documentation/checkpoint commit can land while this long QA run is executing.
-            # Rebase the already-verified asset commit onto the latest main instead of force-pushing.
-            git fetch origin main
-            git rebase origin/main
-            git push origin HEAD:main
+            # Checkpoint/docs commits can land while this long QA run executes. Retry a
+            # normal rebase + fast-forward push instead of ever force-pushing main.
+            pushed=0
+            for attempt in 1 2 3 4 5; do
+              echo "persist attempt $attempt"
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then
+                pushed=1
+                break
+              fi
+              sleep 2
+            done
+            test "$pushed" = "1"
           fi
       - name: Upload screenshots
         if: always()
