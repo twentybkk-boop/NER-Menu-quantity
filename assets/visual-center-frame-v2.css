@@ -1,0 +1,88 @@
+/* P0-B bounded correction — protected center frame + complete character exposure.
+   This layer exists because P0-A restored the correct story assets, but the normal
+   list still visually buried the lower-left/right compositions behind the menu lane.
+   Presentation only: no recipe, replacement, Matrix, PIN or import/export behavior. */
+
+@media(max-width:767px){
+  /* Make the central reading frame visually deliberate instead of a near-full-width slab. */
+  #app-menus{
+    width:min(300px,calc(100% - 76px))!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+  #app-menus::before{
+    inset:-9px -10px -12px!important;
+    border:1px solid rgba(205,174,150,.22)!important;
+    border-radius:23px!important;
+    background:linear-gradient(180deg,rgba(255,251,246,.93),rgba(255,253,249,.985) 12%,rgba(255,253,249,.985) 88%,rgba(255,251,246,.93))!important;
+    box-shadow:0 0 28px rgba(255,249,240,.96),0 7px 24px rgba(87,56,40,.035)!important;
+  }
+
+  .hero{
+    width:min(300px,calc(100% - 76px))!important;
+  }
+
+  /* A non-interactive illustration shelf reserves the lower viewport for the two
+     complete story compositions. Cards may scroll beneath it, but are intentionally
+     masked there; extra page padding keeps the final card scrollable above the shelf. */
+  body{
+    padding-bottom:max(126px,calc(env(safe-area-inset-bottom) + 118px))!important;
+  }
+  body::after{
+    content:"";
+    position:fixed;
+    z-index:38;
+    left:0;
+    right:0;
+    bottom:0;
+    height:max(122px,calc(env(safe-area-inset-bottom) + 114px));
+    pointer-events:none;
+    background:linear-gradient(180deg,
+      rgba(255,249,240,0) 0%,
+      rgba(255,249,240,.86) 18%,
+      rgba(255,249,240,.975) 38%,
+      rgba(255,249,240,.995) 100%);
+  }
+
+  #decor-layer{z-index:39!important;}
+
+  /* Top-left remains a complete brand/story anchor. */
+  .decor-a{
+    width:108px!important;
+    height:118px!important;
+    left:2px!important;
+    right:auto!important;
+    top:max(10px,calc(env(safe-area-inset-top) + 4px))!important;
+    bottom:auto!important;
+  }
+
+  /* The lower characters now live completely on the reserved illustration shelf,
+     so no part of their approved composition needs to hide behind a menu card. */
+  .decor-b{
+    width:128px!important;
+    height:98px!important;
+    left:4px!important;
+    right:auto!important;
+    top:auto!important;
+    bottom:max(4px,calc(env(safe-area-inset-bottom) + 2px))!important;
+  }
+  .decor-c{
+    width:78px!important;
+    height:121px!important;
+    right:4px!important;
+    left:auto!important;
+    top:auto!important;
+    bottom:max(2px,env(safe-area-inset-bottom))!important;
+  }
+
+  /* Calculator already has a deliberate modal rail composition; do not paint the
+     normal-list shelf over it. The three P0-A assets remain above the modal backdrop. */
+  body:has(#calculatorModal:not(.is-hidden))::after,
+  body:has(#pinModal:not(.is-hidden))::after,
+  body:has(#matrixModal:not(.is-hidden))::after{
+    display:none!important;
+  }
+  body:has(#calculatorModal:not(.is-hidden)) #decor-layer{z-index:105!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-b{width:108px!important;height:80px!important;left:3px!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-c{width:82px!important;height:132px!important;right:3px!important;}
+}
