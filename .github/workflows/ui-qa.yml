@@ -52,7 +52,7 @@ jobs:
         run: node qa/long-list-rhythm-v1-contract.mjs
       - name: Verify orientation layering and backmost environment locally
         run: node qa/layering-orientation-v1-contract.mjs
-      - name: Verify V3 character sampling safety
+      - name: Verify V3 character high-res sharpness locally
         run: node qa/character-sampling-v1-contract.mjs
       - name: Verify calculator visual hierarchy contract
         run: node qa/calculator-visual-v2-runner.mjs
@@ -70,6 +70,10 @@ jobs:
         env:
           LAYERING_BASE: https://twentybkk-boop.github.io/NER-Menu-quantity/
         run: node qa/layering-orientation-v1-contract.mjs
+      - name: Verify deployed V3 character high-res sharpness
+        env:
+          SHARPNESS_BASE: https://twentybkk-boop.github.io/NER-Menu-quantity/
+        run: node qa/character-sampling-v1-contract.mjs
       - name: Render thumbnail contact sheet evidence
         run: |
           node --input-type=module <<'NODE'
