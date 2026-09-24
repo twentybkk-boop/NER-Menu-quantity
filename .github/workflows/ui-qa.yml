@@ -52,6 +52,8 @@ jobs:
         run: node qa/long-list-rhythm-v1-contract.mjs
       - name: Verify orientation layering and backmost environment locally
         run: node qa/layering-orientation-v1-contract.mjs
+      - name: Verify V3 character sampling safety
+        run: node qa/character-sampling-v1-contract.mjs
       - name: Verify calculator visual hierarchy contract
         run: node qa/calculator-visual-v2-runner.mjs
       - name: Verify deployed GitHub Pages P0-A/P0-B acceptance
