@@ -1,0 +1,103 @@
+name: One-off binary character repair
+
+on:
+  push:
+    branches: [binary-repair-20260924]
+    paths:
+      - 'tmp-binary-repair/READY'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repair staging
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Decode staged WebP payloads
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat tmp-binary-repair/top-*.b64 | base64 -d > /tmp/overlay-top-left-hires.webp
+          cat tmp-binary-repair/bottom-*.b64 | base64 -d > /tmp/overlay-bottom-left-hires.webp
+          cat tmp-binary-repair/right-*.b64 | base64 -d > /tmp/overlay-right-hires.webp
+
+      - name: Verify WebP signatures and exact dimensions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          expected = {
+              '/tmp/overlay-top-left-hires.webp': (518, 500),
+              '/tmp/overlay-bottom-left-hires.webp': (655, 524),
+              '/tmp/overlay-right-hires.webp': (556, 851),
+          }
+
+          def webp_size(path):
+              b = Path(path).read_bytes()
+              assert b[:4] == b'RIFF', f'{path}: missing RIFF'
+              assert b[8:12] == b'WEBP', f'{path}: missing WEBP'
+              i = 12
+              while i + 8 <= len(b):
+                  fourcc = b[i:i+4]
+                  n = int.from_bytes(b[i+4:i+8], 'little')
+                  payload = i + 8
+                  if fourcc == b'VP8X':
+                      w = 1 + int.from_bytes(b[payload+4:payload+7], 'little')
+                      h = 1 + int.from_bytes(b[payload+7:payload+10], 'little')
+                      return w, h
+                  if fourcc == b'VP8 ':
+                      p = b[payload:payload+n]
+                      sig = p.find(b'\x9d\x01\x2a')
+                      if sig >= 0 and sig + 7 <= len(p):
+                          w = int.from_bytes(p[sig+3:sig+5], 'little') & 0x3fff
+                          h = int.from_bytes(p[sig+5:sig+7], 'little') & 0x3fff
+                          return w, h
+                  if fourcc == b'VP8L':
+                      p = b[payload:payload+n]
+                      assert p and p[0] == 0x2f, f'{path}: invalid VP8L'
+                      bits = int.from_bytes(p[1:5], 'little')
+                      return (bits & 0x3fff) + 1, ((bits >> 14) & 0x3fff) + 1
+                  i = payload + n + (n & 1)
+              raise AssertionError(f'{path}: no supported WebP dimension chunk')
+
+          for path, dims in expected.items():
+              got = webp_size(path)
+              assert got == dims, f'{path}: got {got}, expected {dims}'
+              print(f'PASS {Path(path).name}: {got[0]}x{got[1]} ({Path(path).stat().st_size} bytes)')
+          PY
+
+      - name: Apply verified binary repair to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git switch -C repair-main origin/main
+          cp /tmp/overlay-top-left-hires.webp assets/overlay-top-left-hires.webp
+          cp /tmp/overlay-bottom-left-hires.webp assets/overlay-bottom-left-hires.webp
+          cp /tmp/overlay-right-hires.webp assets/overlay-right-hires.webp
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('assets/visual-character-sampling-v1.css')
+          s = p.read_text()
+          old = '20260924-v3-recovered1'
+          new = '20260924-v3-recovered2'
+          assert old in s, 'expected cache-bust token not found'
+          p.write_text(s.replace(old, new))
+          PY
+          rm -rf tmp-binary-repair
+          git diff --check
+          git status --short
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Repair recovered character WebP bytes'
+          git push origin HEAD:main
