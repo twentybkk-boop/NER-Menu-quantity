@@ -3,74 +3,69 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts.
 
-## CURRENT WORK HEAD — FEASIBLE GEOMETRY CHECKPOINT
-- Previous durable failure checkpoint: `f7db56cef450c3f2a539c0149058b2c072172266`.
-- Relevant product CSS fix under investigation: `5bb9cb4d99e5753f41e07324bc91f977a0caa23e`.
-- Relevant Chunk 4 safe-zone contract commit: `42a6bedf675eebcb5d2ca9a05ad0001604948a3b`.
-- No CSS/test code has been edited after the P0-A failure checkpoint yet.
+## CURRENT WORK HEAD — POST-FIX / PRE-ACTIONS CHECKPOINT
+- Feasible-geometry checkpoint: `1fb4512f942500e55b0b26aeffebe73cef2f6252`.
+- Presentation fix commit: `c0cf1314e3e50504d2fb07d17bad30cfae664ebc` — `Restore minimum modal story-detail geometry`.
+- This handoff checkpoint is intentionally being written **before any Actions polling** for the new fix.
 
 ## P0-A FAILURE — VERIFIED DURABLE
-UI QA run:
-- run ID: `36058265001`
-- job ID: `107830594992`
-- workflow head: `42a6bedf675eebcb5d2ca9a05ad0001604948a3b`
-- run/job: **completed / failure**
-
-First failing required step:
-- `Verify P0-A complete character composition`
+Previous verification run:
+- UI QA run `36058265001`
+- job `107830594992`
+- workflow head `42a6bedf675eebcb5d2ca9a05ad0001604948a3b`
+- completed / failure
+- first failing required step: `Verify P0-A complete character composition`
 - exact assertion: `chromium/calculator: .decor-a became too small to preserve story detail`
-- `qa/character-composition-v2-contract.mjs` requires every `.decor-a/.decor-b/.decor-c` box to be at least **78px wide and 76px high**, while preserving the approved high-res source, `background-size: contain`, >=96% viewport-visible box area, and pointer safety.
+
+`qa/character-composition-v2-contract.mjs` requires every character box, including calculator/modal state, to be at least **78px wide and 76px high**, while preserving approved high-res source, `background-size:contain`, >=96% viewport-visible box area, and pointer safety.
 
 Failure artifact:
-- artifact ID `10833665689`
+- `10833665689`
 - digest `sha256:7ff3d23b111d50546f28a04d9d8b0bcc628c8b18fb01f7ec706879efb08f3c20`
-- not a full post-fix acceptance artifact because the workflow stopped at P0-A.
+- not a full post-fix acceptance artifact because the run stopped at P0-A.
 
-## BOUNDED ROOT CAUSE — VERIFIED, CHECKPOINTED BEFORE CODE EDIT
-The previous safe-zone correction shrank modal `.decor-a` below the legacy P0-A story-detail floor even though the responsive layout already reserves a dedicated **top illustration rail above the modal card**.
+## ROOT CAUSE — VERIFIED DURABLE
+The first safe-zone correction over-shrank modal `.decor-a`, even though responsive CSS already reserves a dedicated top illustration rail above the calculator card:
+- phone portrait top rail: `76px + safe-area-top`
+- iPad portrait top rail: `114px + safe-area-top`
+- iPad landscape/wide top rail: `122px + safe-area-top`
 
-Relevant responsive rail contract from `assets/visual-responsive.css`:
-- phone portrait calculator modal top padding: `76px + safe-area-top`
-- iPad portrait calculator modal top padding: `114px + safe-area-top`
-- iPad landscape/wide calculator modal top padding: `122px + safe-area-top`
-- modal `#decor-layer` is raised above modal UI at `z-index:105` while the modal itself is `z-index:100`, so character geometry must remain inside the reserved rail and outside title/subtitle rectangles.
+Therefore P0-A and the title/subtitle safe-zone are simultaneously satisfiable without weakening either contract.
 
-Relevant current Chunk 4 modal `.decor-a` values:
-- phone portrait: `56x61`, `left:2`, `top:+2`
-- phone landscape: `80x87`, unchanged and already manually passing
-- iPad portrait: `70x77`, `left:8`, `top:+4`
-- iPad landscape/wide: `72x79`, `left:10`, `top:+3`
+## SMALLEST PRESENTATION FIX — VERIFIED DURABLE CODE
+Commit `c0cf1314e3e50504d2fb07d17bad30cfae664ebc` changes exactly one file:
+- `assets/visual-uat-v4-chunk4.css`
 
-### Concrete feasible geometry
-The direct safe-zone contract uses 2px separation from both `.modal-title` and `.modal-subtitle`. With the existing reserved top rail and current Chunk 4 header padding/typography, the following smallest geometry satisfies BOTH P0-A and the safe-zone without moving into the title/subtitle:
+Exact changes:
+1. phone portrait modal `.decor-a`
+   - `56x61 -> 78x76`
+   - `left:2` unchanged
+   - `top:calc(env(safe-area-inset-top) + 2px)` unchanged
+2. iPad portrait modal `.decor-a`
+   - `70x77 -> 78x77`
+   - `left:8` unchanged
+   - `top:calc(env(safe-area-inset-top) + 4px)` unchanged
+3. iPad landscape/wide modal `.decor-a`
+   - `72x79 -> 78x79`
+   - `left:10` unchanged
+   - `top:calc(env(safe-area-inset-top) + 3px)` unchanged
 
-1. **Phone portrait**
-   - candidate: `78x76`, `left:2`, `top:calc(env(safe-area-inset-top) + 2px)`
-   - P0-A: exactly meets `>=78x76`
-   - modal card starts at about `76px + safe-area-top`; title starts around `86px + safe-area-top`
-   - character bottom = about `78px + safe-area-top`
-   - title clearance is therefore about 8px, greater than the required 2px
-   - full box remains inside the viewport.
+Verified commit diff scope:
+- exactly 1 changed file
+- exactly the 3 dimension lines above
+- no QA/test files changed
+- no phone-landscape geometry changed
+- no `.decor-b` / `.decor-c` changes
+- no modal density/chrome changes
+- no recipe/business/quantity/exclusion/replacement/Matrix/PIN/import-export changes
 
-2. **iPad portrait**
-   - candidate: **width only** `70 -> 78`; keep `height:77`, `left:8`, `top:+4`
-   - P0-A: `78x77` passes
-   - modal card starts at about `114px + safe-area-top`; title starts around `125px + safe-area-top`
-   - character bottom = about `81px + safe-area-top`
-   - large vertical clearance remains; no title/subtitle intersection.
+## WHY THIS SHOULD SATISFY BOTH CONTRACTS
+- phone portrait `78x76` exactly meets P0-A and ends around the reserved rail boundary, leaving the modal title below it with >2px expected separation.
+- iPad portrait `78x77` meets P0-A with large vertical clearance inside the 114px top rail.
+- iPad landscape `78x79` meets P0-A with large vertical clearance inside the 122px top rail.
+- phone landscape remains `80x87`, already manually accepted and P0-A compliant.
 
-3. **iPad landscape/wide**
-   - candidate: **width only** `72 -> 78`; keep `height:79`, `left:10`, `top:+3`
-   - P0-A: `78x79` passes
-   - modal card starts at about `122px + safe-area-top`; title starts around `133px + safe-area-top`
-   - character bottom = about `82px + safe-area-top`
-   - large vertical clearance remains; no title/subtitle intersection.
-
-4. **Phone landscape**
-   - do not change: `80x87` already satisfies P0-A and was manually accepted.
-
-### Root-cause conclusion
-This is not a contract conflict requiring a weakened test. It is a presentation-geometry regression caused by over-shrinking the top-left box despite an existing reserved top rail. The correct fix is to restore only the minimum necessary `.decor-a` dimensions inside that rail. **Do not relax P0-A and do not relax the direct safe-zone assertion.**
+IMPORTANT: this is a geometry fix, not a test relaxation. P0-A and the direct title/subtitle non-intersection gate both remain unchanged.
 
 ## PREVIOUS RECOVERY / MANUAL EVIDENCE — DO NOT REDO
 Durable recovery chain:
@@ -82,50 +77,49 @@ Durable recovery chain:
 - `46d53d9c870fa978b7e7237cd293127c84dfab81` — scoped safe-zone fix checkpoint before Actions.
 - `35d9fc39552f9819c86ba26e5eccde0154b2b9d0` — one-shot running-Actions status checkpoint.
 - `f7db56cef450c3f2a539c0149058b2c072172266` — exact P0-A failure checkpoint.
+- `1fb4512f942500e55b0b26aeffebe73cef2f6252` — feasible geometry checkpoint.
 
-Pre-fix product head `3802e2d2bfcb425b2533acf9a6b960cbf2b992a4` had full automation PASS, but manual artifact review found the top-left modal character obscuring title/subtitle in phone portrait, iPad portrait, and iPad landscape. Phone landscape modal passed. Page states in all four orientations passed. UAT-009 density passed.
+Pre-fix product head `3802e2d2bfcb425b2533acf9a6b960cbf2b992a4` had full automation PASS, but manual artifact review found modal top-left character obstruction in phone portrait, iPad portrait, and iPad landscape. Phone landscape modal, all page states, and UAT-009 density passed.
 
 ## VERIFIED BASELINE — DO NOT REOPEN
 - V4 Chunk 1 `UAT-001/002/003` — VERIFIED COMPLETE; checkpoint `3eb47a81fa1bd84d2ebf8942e694deeaea333ef5`.
 - V4 Chunk 2 `UAT-004/005` + landscape UAT-010 — VERIFIED COMPLETE; checkpoint `8eefd4142a4d2d27dca7dcf8e8ce175238b335e8`.
 - V4 Chunk 3 `UAT-006/007` — VERIFIED COMPLETE; checkpoint `92aef5661454ea21580328df96cd3428838a43d5`.
-- Approved production character binaries remain locked; do not remap/reconstruct them.
+- approved production character binaries remain locked.
 
 ## LOCKED INVARIANTS
 - no recipe/business/quantity/exclusion/replacement/Matrix/PIN/import-export changes.
-- no high-resolution character binary/source remapping.
+- no character binary/source remapping.
 - preserve all page-state geometry that passed manual review.
-- preserve phone-landscape modal state.
-- preserve modal bottom-left/right characters and UAT-009 density.
+- preserve phone-landscape modal geometry.
+- preserve modal `.decor-b` / `.decor-c` and UAT-009 density.
 - preserve P0-A story-detail floor and Chunk 4 title/subtitle safe-zone gate.
 - preserve Chunk 1/2/3 and existing P0/layering/sharpness/tap-safety gates.
 
 ## DO NOT REPEAT
-- do not poll/re-read completed UI QA `36058265001` again.
-- do not redo full failure-log analysis.
-- do not restart repo-wide/Chunk 4 investigation.
-- do not redo old artifact/manual review.
-- do not revert to old oversized modal `.decor-a` values (`92x101`, `128x141`, `142x156`); those reproduced the manually verified header obstruction.
-- do not shrink below P0-A `78x76`.
+- do not re-read/re-analyze failed run `36058265001`.
+- do not redo feasible-geometry derivation.
+- do not reapply commit `c0cf1314…`.
 - do not relax P0-A or the safe-zone gate.
-- do not alter phone-landscape modal geometry.
+- do not restore old oversized modal `.decor-a` values (`92x101`, `128x141`, `142x156`).
+- do not enter a long polling loop.
 
-## EXACT NEXT ACTION — SMALLEST PRESENTATION FIX
+## ACTIONS STATUS
+- **NOT CHECKED YET for `c0cf1314…` in this work chunk by design.**
+- This checkpoint is the required durable boundary before external verification.
+
+## EXACT NEXT ACTION
 On the next continuation:
-1. Fresh-read current `main` and this handoff; GitHub current wins.
-2. Edit **only** `assets/visual-uat-v4-chunk4.css` modal `.decor-a` dimensions in the three affected orientations:
-   - phone portrait `56x61 -> 78x76`
-   - iPad portrait `70x77 -> 78x77`
-   - iPad landscape/wide `72x79 -> 78x79`
-   - keep all existing left/top values unchanged.
-3. Do **not** change `qa/character-composition-v2-contract.mjs` or `qa/chunk4-polish-v4-contract.mjs`.
-4. Verify the commit/diff changes exactly that one CSS file and only those three dimension pairs.
-5. Immediately persist a post-fix/pre-Actions checkpoint and STOP before Actions polling.
+1. Fresh-read current `main` and this handoff; current GitHub wins.
+2. Perform **one bounded Actions status read** for verification triggered by code commit `c0cf1314e3e50504d2fb07d17bad30cfae664ebc` (or the latest relevant code head if GitHub advanced concurrently).
+3. If UI QA / Pages are still running, persist run IDs/status and STOP — no polling loop.
+4. If UI QA failed, read only the first failed required step/log, persist exact evidence, then STOP before code edits.
+5. If UI QA + Pages completed/success, persist final automation result/artifact metadata immediately. In a separate small chunk, inspect only the new Chunk 4 modal evidence for phone portrait, iPad portrait, and iPad landscape; verify local/live equivalence first so live copies need not be visually re-reviewed when byte-identical.
 
 ## FINAL COMPLETION CONDITION
 Chunk 4 is NOT complete. It becomes VERIFIED COMPLETE only after:
-- P0-A and all existing regression gates pass after the final geometry fix;
+- P0-A and all existing regression gates pass after `c0cf1314…`;
 - Chunk 4 title/subtitle safe-zone gate passes local + deployed;
 - local/deployed evidence consistency is verified;
-- manual review of the three previously failing modal orientations confirms no title/subtitle obstruction;
-- UAT-008 / UAT-009 / final UAT-010 status is persisted.
+- manual review confirms no title/subtitle obstruction in phone portrait, iPad portrait, and iPad landscape modal states;
+- UAT-008 / UAT-009 / final UAT-010 statuses are persisted.
