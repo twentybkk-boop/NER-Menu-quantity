@@ -28,7 +28,7 @@ jobs:
           cat tmp/ui-atlas/part-*.b64 | base64 -d > assets/menu-thumbnails/semantic-atlas-v1.webp
           actual=$(sha256sum assets/menu-thumbnails/semantic-atlas-v1.webp | cut -d' ' -f1)
           echo "atlas sha256: $actual"
-          test "$actual" = "f54f62191d6da7e9f49130db644506e3dd32e9abf78731010a2fb866c7886cd9"
+          test "$actual" = "1976697397b1581091dc3936412ac9789256b6bd0210ef8afdeac6ac375cd9b4"
           test "$(stat -c%s assets/menu-thumbnails/semantic-atlas-v1.webp)" = "59500"
       - name: Patch modal scroll preservation regression
         run: |
