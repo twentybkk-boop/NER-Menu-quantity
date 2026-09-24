@@ -3,6 +3,17 @@
 > EMERGENCY CRASH-SAFE RECOVERY CHECKPOINT — SAVE FIRST, ANALYZE SECOND.
 > Source of truth: current GitHub `main` + actual code + `recipe_master.json`; current `main` wins if stale.
 
+## SAVE-NOW DELTA — RIGHT-03 REPLACEMENT
+- User required immediate persistence before any more investigation.
+- `right-03` replacement execution is now durably completed through the repair-only assembler workflow.
+- Workflow run ID `36030835252` completed with conclusion `success` on trigger commit `7b0a7e74decdcdbb38d92c0a3922fe66753a7dd5`.
+- **Verification state:** workflow execution success is VERIFIED; the produced repair-branch `repair-staging/right/right-03.b64` blob is NOT YET independently verified against exact target text blob `654a08614380f215c9b3c785bf6945add55b897f`.
+- No production asset path was changed.
+- No right payload chars `48,000+` were staged in this delta.
+
+### EXACT NEXT ACTION AFTER THIS CHECKPOINT IS CONFIRMED DURABLE
+**RIGHT ONLY — one verification chunk.** Inspect only the repair-branch head/assembler commit produced after workflow run `36030835252`; verify the changed file is `repair-staging/right/right-03.b64` and its Git blob SHA is exactly `654a08614380f215c9b3c785bf6945add55b897f`. Immediately persist that result before any further right staging or production change.
+
 ## CURRENT OBJECTIVE
 Finish V3 Session 2B.2: restore the three exact browser-decodable approved high-resolution character overlays without changing verified layout/business logic; then run existing sharpness/UI QA and inspect `31-*sharpness-v2` screenshots.
 
@@ -44,17 +55,14 @@ Repair branch: `repair/v3-2b2-exact-blobs-20260924`.
 - Assembler commit/tree output has NOT yet been independently inspected at this checkpoint; success is durable run evidence, not yet promotion of `right-03.b64` blob to VERIFIED.
 - Production paths remain untouched.
 
-## DO NOT REPEAT / REJECTED
-- No repo-wide/source/Library audits or prior completed V2/Session1/2A/2B.1/layout/orientation/calculator/P0 work.
-- Do not rewrite verified right chunks/subchunks or create another trigger/re-run the successful workflow.
-- Do not reuse rejected right blobs `86f52cd5...`, `a41faed8...`, or failed final blob `06e26ae2...`.
-- Do not stage chars `48,000+`, assemble full right payload, or touch production paths before assembled `right-03.b64` tree blob is independently verified and checkpointed.
-
-## OPEN BLOCKERS
+## UNRESOLVED
 1. Inspect repair-branch head/assembler commit produced after run `36030835252`.
 2. Require `repair-staging/right/right-03.b64` blob exactly `654a08614380f215c9b3c785bf6945add55b897f`; checkpoint immediately.
 3. Then stage right chars `48,000–68,503`, assemble/decode full payload, verify final right target `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`.
 4. Only after all three exact asset targets exist: production mapping → repair-artifact cleanup → QA/manual acceptance.
 
-## EXACT NEXT RECOVERY ACTION
-Confirm this checkpoint is durable. Then inspect ONLY the repair branch head/commit created after workflow run `36030835252`; verify the changed file is only `repair-staging/right/right-03.b64` and its Git blob SHA exactly `654a08614380f215c9b3c785bf6945add55b897f`. Immediately persist that verification before any further staging.
+## DO NOT REPEAT / REJECTED
+- No repo-wide/source/Library audits or prior completed V2/Session1/2A/2B.1/layout/orientation/calculator/P0 work.
+- Do not rewrite verified right chunks/subchunks or create another trigger/re-run the successful workflow.
+- Do not reuse rejected right blobs `86f52cd5...`, `a41faed8...`, or failed final blob `06e26ae2...`.
+- Do not stage chars `48,000+`, assemble full right payload, or touch production paths before assembled `right-03.b64` tree blob is independently verified and checkpointed.
