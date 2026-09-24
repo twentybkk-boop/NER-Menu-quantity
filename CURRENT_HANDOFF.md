@@ -10,21 +10,26 @@
 - Branch: `main`
 - Authoritative feedback: `docs/UI_REAL_DEVICE_FEEDBACK_2026-09-24_V2.md`
 - Character source finding: `docs/UI_CHARACTER_SOURCE_FINDING_2026-09-24.md`
+- Latest verified implementation/QA HEAD before this handoff-only commit: `c08112dde5bfd9e178fedf3be626c98871d30ada`
+- Latest Pages deployment run: **35977648545 — SUCCESS**
+- Latest UI QA run: **35977648662 — SUCCESS**
+- Latest screenshot artifact: **10799435098** (`ui-qa-screenshots`)
+- Artifact digest: `sha256:8c5d12c3b417e45dd1c48ad1c876e7805468a4b927bbc4e64e4b214d993e5005`
 
 ---
 
 # ACCEPTANCE STATUS — OPEN
 
-The earlier `READY FOR USER ACCEPTANCE` conclusion is superseded by the user's later iPhone recording + reference images.
+The earlier `READY FOR USER ACCEPTANCE` conclusion remains superseded by the user's later iPhone recording + reference images.
 
 Current P0 status:
 
-- **P0-A — correct approved 3-character source/composition: ROOT CAUSE VERIFIED, IMPLEMENTATION NEXT**
-- **P0-B — protected center-frame fidelity: OPEN**
-- **P0-C — simple infographic thumbnails: IMPLEMENTED + QA VERIFIED**
+- **P0-A — correct approved 3-character source/composition: IMPLEMENTED + LOCAL/LIVE QA VERIFIED**
+- **P0-B — protected center-frame fidelity: IMPLEMENTED + LOCAL/LIVE QA VERIFIED**
+- **P0-C — simple infographic thumbnails: IMPLEMENTED + LOCAL/LIVE QA VERIFIED**
 - **P0-D — match approved illustrated/branded UI direction: OPEN**
 
-Do not claim the visual workstream is complete until P0-A/B/D are implemented and re-accepted.
+Do not claim the full visual workstream is complete until P0-D is implemented and visually re-accepted.
 
 ---
 
@@ -40,7 +45,7 @@ Do not claim the visual workstream is complete until P0-A/B/D are implemented an
 
 # P0-C — INFOGRAPHIC THUMBNAILS
 
-**DONE + VERIFIED**
+**DONE + VERIFIED — DO NOT REDO**
 
 - `assets/visual-thumbnail-infographic.css`
 - live menu cards use simple semantic pictogram/infographic tiles;
@@ -48,66 +53,103 @@ Do not claim the visual workstream is complete until P0-A/B/D are implemented an
 - signature sets remain distinct;
 - recipe/business behavior unchanged.
 
-Latest verified infographic QA before the character-inventory-only checkpoint:
+---
 
-- UI QA run `35970824863` — SUCCESS
-- artifact `10795248940`
+# P0-A — APPROVED CHARACTER COMPOSITION
 
-Do not redo P0-C.
+**DONE + VERIFIED ON LOCAL + DEPLOYED GITHUB PAGES**
+
+Authoritative source family:
+
+- `assets/overlay-top-left.webp`
+- `assets/overlay-bottom-left.webp`
+- `assets/overlay-right.webp`
+- `assets/ner-team-bg.webp` remains durable source/reference context.
+
+Implementation:
+
+- `assets/visual-character-composition-v2.css`
+- synthetic `ner-character-*.png + accessory SVG` reconstruction is no longer the accepted normal-page painting strategy;
+- pseudo accessory reconstruction is suppressed for the approved composition;
+- lower-left remains **no-glasses**;
+- all artwork remains `pointer-events:none`.
+
+Durable QA:
+
+- `qa/character-composition-v2-contract.mjs`
+- `qa/live-pages-acceptance-v2.mjs`
+
+The local character contract and live Pages gate now use the same minimum identity-detail threshold for all three compositions (>=78×76 CSS px), preventing local QA from accepting a top-left composition too small to preserve the drink/glasses/gesture cues.
+
+Latest relevant commits:
+
+- `609dd0b19dcef75af6ac3cd19dd1d3892ab773aa` — `Preserve top-left character identity detail in center frame`
+- `c08112dde5bfd9e178fedf3be626c98871d30ada` — `Align local character detail gate with live acceptance`
+
+Manual inspection of final artifact `10799435098` confirms the approved story-complete source family is visible on the deployed page:
+
+- upper-left: glasses / drink / gesture / bubble composition;
+- lower-left: helmet / cat-table / bubble, no glasses;
+- right: backpack / clipboard / food-chalkboard / bubble composition.
 
 ---
 
-# P0-A — CHARACTER SOURCE ROOT CAUSE
+# P0-B — PROTECTED CENTER FRAME
 
-## Durable evidence
+**DONE + VERIFIED ON LOCAL + DEPLOYED GITHUB PAGES**
 
-Character asset inventory was rendered by UI QA:
+Implementation:
 
-- run `35973449831` — SUCCESS
-- artifact `10797496052`
-- evidence image: `10-character-asset-contact-sheet.png`
+- `assets/visual-center-frame-v2.css`
+- phone `#app-menus` uses viewport-relative `width:min(300px,calc(100vw - 80px))`;
+- at 390px viewport this resolves to a deliberate ~300px reading frame with ~45px illustration rails;
+- hero is aligned to the same center-frame width;
+- a non-interactive fixed lower illustration shelf separates the lower character scenes from the scrolling menu stack;
+- calculator/PIN/Matrix states suppress the normal-list shelf where appropriate.
 
-The inventory compares the actual repository assets and proves the current production source choice is the problem.
+Important corrected root cause:
 
-## Current live source — NOT ACCEPTED
+- the first V2 rule used `calc(100% - 140px)` inside the already-inset `#app-shell`, producing a **232px** lane instead of the intended broad center frame;
+- commit `22cf24509db87917cbdea0ee36049a744200b2c0` changed the geometry to viewport-relative width and local P0-B then passed Chromium + WebKit.
 
-The normal-page composition currently paints:
+A first live-gate attempt for that commit failed while its Pages deployment was still in progress and observed the previous 68×74 top-left character size. The deployment later completed successfully. After the explicit P0-A size correction and threshold alignment, final Pages + UI QA both pass.
 
-- `assets/ner-character-top-left.png`
-- `assets/ner-character-bottom-left.png`
-- `assets/ner-character-right.png`
+Final evidence:
 
-and then synthesizes missing identity details using:
+- Pages deployment run **35977648545** — SUCCESS
+- UI QA run **35977648662** — SUCCESS
+- `Verify P0-A complete character composition` — PASS
+- `Verify P0-B protected center frame` — PASS
+- `Verify deployed GitHub Pages P0-A/P0-B acceptance` — PASS
+- Chromium + WebKit functional QA — PASS
+- calculator hierarchy — PASS
+- screenshot artifact **10799435098**
 
-- `assets/accessory-gray-fullface-helmet.svg`
-- `assets/accessory-white-backpack.svg`
+Manually inspected:
 
-This technically creates three character nodes but does **not** preserve the complete approved story composition.
+- `18-live-pages-character-v2@3x.png`
+- `20-center-frame-v2-top@3x.png`
+- `21-center-frame-v2-scroll@3x.png`
+- `22-live-pages-center-frame-v2-scroll@3x.png`
 
-## Approved-composition source already in repo
+Observed: center frame is materially broader than the rejected 232px state, infographic rows remain readable, and lower character compositions are visually separated onto the illustration shelf.
 
-The repo already contains the closer authoritative family:
+---
 
-- `assets/ner-team-bg.webp` — complete 3-person illustrated scene family;
-- `assets/overlay-top-left.webp` — upper-left with drink + gesture + speech bubble;
-- `assets/overlay-bottom-left.webp` — lower-left with helmet + cat/table + speech bubble + **no glasses**;
-- `assets/overlay-right.webp` — right with backpack + clipboard + food/chalkboard + speech bubble.
+# P0-D — APPROVED ILLUSTRATED / BRANDED UI DIRECTION
 
-This matches the user's reference intent materially better than the current `ner-character-*.png` + synthetic accessory approach.
+**OPEN — THIS IS THE ONLY REMAINING P0 VISUAL WORKSTREAM ITEM**
 
-Root-cause checkpoint commit:
+The user reference image #3 remains the target. P0-A/B/C correct the source/composition, frame, and thumbnail strategy, but the page still needs a bounded art-direction fidelity pass so the whole screen reads closer to the approved illustrated NER interface rather than a utility list.
 
-- `58325237144a99188e483eadb2fa5d8d2bbcd1db` — `Record verified P0-A character source root cause`
+Key target traits from the authoritative feedback:
 
-## Acceptance for P0-A
-
-Do not accept merely because three DOM nodes exist. Screenshot evidence must visibly preserve:
-
-- upper-left: glasses + drink + gesture + speech bubble;
-- lower-left: no-glasses + helmet + cat/table + speech bubble;
-- right: white backpack + clipboard/pen + food/chalkboard + speech bubble.
-
-All foreground art remains `pointer-events:none` and must not obstruct controls.
+- stronger branded / illustrated environment;
+- composition and visual hierarchy closer to reference #3;
+- soft editorial card treatment;
+- character storytelling feels intentional, not merely attached to viewport edges;
+- preserve the now-verified center frame and infographic scanability;
+- no business behavior changes.
 
 ---
 
@@ -120,9 +162,16 @@ Do **not** intentionally change:
 - exclusion / replacement semantics;
 - Matrix data logic;
 - PIN behavior;
-- unrelated import/export behavior.
+- unrelated import / export behavior.
 
-Keep the newly accepted infographic thumbnails unchanged while doing P0-A.
+Do not regress:
+
+- approved three-character overlay sources;
+- lower-left no-glasses;
+- 300px-class protected phone center frame;
+- infographic thumbnails;
+- calculator behavior;
+- `pointer-events:none` foreground art.
 
 ---
 
@@ -135,6 +184,8 @@ Do not redo:
 - atlas architecture / semantic mapping;
 - infographic-thumbnail conversion;
 - character asset inventory investigation;
+- P0-A source/composition implementation;
+- P0-B center-frame geometry investigation/fix;
 - Matrix/PIN functional investigation;
 - modal scroll restoration investigation.
 
@@ -153,12 +204,17 @@ Every continuation session must:
 
 # EXACT NEXT ACTION
 
-**Next short session: implement P0-A only.**
+**Next short session: P0-D only — first bounded art-direction fidelity pass against reference image #3.**
 
-1. Add a bounded presentation override that replaces the normal-page `ner-character-*.png` + synthetic accessory composition with the approved-composition `overlay-*.webp` family, or a higher-resolution derivative of the user's approved reference if needed for sharpness.
-2. Preserve all three roles together and the story details listed above.
-3. Keep P0-C infographic thumbnails and all business behavior unchanged.
-4. Add/adjust a character-composition acceptance contract so QA checks the approved source family/story details rather than only three visible nodes.
-5. Run Chromium + WebKit + live GitHub Pages QA, manually inspect screenshots, persist checkpoint, then stop.
+Start with the **top/first-screen composition only** (masthead + hero + first category, including how the approved upper-left character participates in that composition). Do not redesign the long list yet.
 
-Expected following NEXT ACTION after P0-A: **P0-B protected center-frame fidelity** unless new evidence changes priority.
+Goals for that one pass:
+
+1. make the top screen read materially closer to the approved illustrated/branded reference #3;
+2. preserve the verified ~300px phone center frame;
+3. preserve approved story-complete character sources and P0-C infographic tiles;
+4. keep Matrix behavior unchanged and visually secondary;
+5. add a bounded top-composition fidelity contract/screenshot evidence;
+6. run Chromium + WebKit + deployed Pages QA, inspect screenshots, checkpoint, then stop.
+
+Expected following NEXT ACTION after the top composition pass: continue P0-D with the long-list/environmental rhythm only if the top pass is accepted by evidence.
