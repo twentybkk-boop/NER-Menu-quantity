@@ -1,10 +1,6 @@
-/* V3 Session 2B.1 — character sampling/compositing safety.
-   This pass removes a verified secondary source of blur without changing
-   Session 1 stacking/rail geometry or approved character identity.
-
-   IMPORTANT: the approved overlay-*.webp sources are still low resolution.
-   This layer prevents additional CSS upscaling/compositing damage; it does
-   not claim the high-resolution source replacement is complete. */
+/* V3 Session 2B.2 — high-resolution approved character sources.
+   Preserve the verified Session 1 geometry/z-index and V2 story composition;
+   only replace undersampled raster sources and keep filter compositing disabled. */
 
 .decor-person{
   filter:none!important;
@@ -13,25 +9,15 @@
   backface-visibility:visible!important;
 }
 
-/* Phone portrait/landscape boxes from the locked V2/V3 geometry already fit
-   within the current source pixels, so only the filter/compositing correction
-   applies there. Do not alter their rail positions in this sampling pass. */
-
-/* Tablet states previously enlarged the tiny approved overlays beyond their
-   natural raster dimensions before Retina DPR sampling. Until the high-res
-   derivatives are wired in, never ask Safari/WebKit to upscale those sources
-   in CSS as well. Positions/z-index remain owned by Session 1. */
-@media (min-width:768px) and (min-height:541px){
-  body:not(:has(#calculatorModal:not(.is-hidden))) .decor-a{
-    width:130px!important;
-    height:121px!important;
-  }
-  body:not(:has(#calculatorModal:not(.is-hidden))) .decor-b{
-    width:150px!important;
-    height:114px!important;
-  }
-  body:not(:has(#calculatorModal:not(.is-hidden))) .decor-c{
-    width:110px!important;
-    height:171px!important;
-  }
+/* Same approved story roles, now derived from the user's approved reference
+   at Retina-capable resolution. Width/height/position remain owned by the
+   previously verified responsive/layering layers. */
+.decor-a{
+  background-image:url("overlay-top-left-hires.webp")!important;
+}
+.decor-b{
+  background-image:url("overlay-bottom-left-hires.webp")!important;
+}
+.decor-c{
+  background-image:url("overlay-right-hires.webp")!important;
 }
