@@ -10,10 +10,10 @@
 - Branch: `main`
 - Real-device feedback source: `docs/UI_REAL_DEVICE_FEEDBACK_2026-09-24.md`
 - Feedback commit: `3125910ec11fffbacb357c718647ada983836ae0`
-- Latest verified implementation / QA HEAD before this handoff-only update: `2b180603ce63217040054b05c798ba797026ee87`
-- Latest verified UI QA run: **35963300224** — SUCCESS
-- Latest screenshot artifact: **10793570124** (`ui-qa-screenshots`)
-- Artifact digest: `sha256:6061011009820e156c39e577b2eba5ec8304d67fa4eda20273f7afc313bc3e98`
+- Latest verified implementation / QA HEAD before this handoff-only update: `b36aee192eea2ffdb0f9d4f5cab1205a40c6cf70`
+- Latest verified UI QA run: **35965006176** — SUCCESS
+- Latest screenshot artifact: **10793955895** (`ui-qa-screenshots`)
+- Artifact digest: `sha256:83f588350d053bcadee51a83e0f4dd7d7f7a8e368069c1fa67f734cdc71b7e1a`
 
 ---
 
@@ -37,47 +37,31 @@ Do not redo inventory / semantic mapping / atlas architecture unless `recipe_mas
 
 # REAL-DEVICE FEEDBACK IMPLEMENTATION STATUS
 
-The real iPhone/Safari feedback superseded the older screenshot-only visual acceptance. A new presentation-only correction layer was implemented and is now covered by a dedicated visual contract.
+The real iPhone/Safari feedback superseded the older screenshot-only visual acceptance. Presentation corrections are implemented in `assets/visual-real-device.css` and guarded by `qa/real-device-visual-contract.mjs`.
 
 ## P0-F1 — central card containment / character-safe rails
 
 **IMPLEMENTED + QA VERIFIED**
 
-Implementation:
-
-- `assets/visual-real-device.css`
 - phone `#app-menus` is constrained to a deliberate central lane;
 - menu cards paint above the edge character rails;
 - all three character positions remain present.
-
-Evidence from artifact `10793570124`:
-
-- `10-real-device-fidelity-iphone@3x.png`
-- `11-real-device-fidelity-menu@3x.png`
-
-Observed: card stack remains inside the central reading lane and no longer uses the character rails as card background space.
 
 ## P0-F2 — thumbnail sharpness
 
 **IMPLEMENTED + QA VERIFIED AT @3x SCREENSHOT SCALE; PHYSICAL SAFARI RECHECK STILL USEFUL**
 
-Implementation:
-
 - atlas semantic mapping is unchanged;
-- phone thumbnails now preserve the atlas cell **3:2** aspect ratio;
+- phone thumbnails preserve the atlas cell **3:2** aspect ratio;
 - normal thumbnails render at **66×44 CSS px**;
 - signature thumbnails render at **72×48 CSS px**;
 - the previous near-cell-size upscaling is no longer used.
-
-The dedicated real-device visual contract now checks thumbnail dimensions, aspect ratio, atlas activation, and crop geometry in Chromium + WebKit.
-
-Latest @3x screenshots are visibly sharper than the real-device evidence that triggered the correction.
 
 ## P0-F3 — character identity details
 
 **IMPLEMENTED + QA VERIFIED**
 
-Normal composition now uses the higher-detail repo masters:
+Normal composition uses the higher-detail repo masters:
 
 - `assets/ner-character-top-left.png`
 - `assets/ner-character-bottom-left.png`
@@ -88,27 +72,53 @@ Identity details restored through existing repo assets:
 - `assets/accessory-gray-fullface-helmet.svg`
 - `assets/accessory-white-backpack.svg`
 
-Verified in `04-iphone-calculator.png` from artifact `10793570124`:
+Verified requirements remain:
 
-- all 3 characters remain present;
-- bottom-left remains **no-glasses**;
-- helmet is visible;
-- white backpack is visible;
-- character layer remains non-interactive / does not block calculator controls.
+- all 3 characters present;
+- bottom-left **no-glasses**;
+- helmet visible;
+- white backpack visible;
+- foreground remains non-interactive.
 
 ## P0-F4 — live UI fidelity to approved generated direction
 
-**STILL OPEN — THIS IS THE NEXT PRESENTATION TASK**
+**IN PROGRESS — TOP-OF-PAGE PHONE PASS COMPLETE**
 
-Functional correctness is not enough. Continue comparing the live implementation against the approved generated visual direction by section:
+Bounded fidelity pass completed in:
 
-- masthead / hero proportions;
-- duplicate brand hierarchy;
-- Matrix action visual weight;
-- category header treatment;
-- card proportions / spacing;
-- character framing;
-- background softness;
+- `00b2c26cc9e2fb5d87f7e0fbcc14ec2eb53c7608` — `Tighten mobile top-page visual hierarchy`
+- `b36aee192eea2ffdb0f9d4f5cab1205a40c6cf70` — `Gate compact mobile hero hierarchy`
+
+Phone changes:
+
+- masthead is now the single visible brand anchor;
+- duplicate `.brand-title` inside the phone hero is hidden presentation-only;
+- hero is a compact utility strip aligned to the protected menu lane;
+- Matrix remains behaviorally unchanged but is rendered as a smaller secondary pill rather than a full-width primary CTA;
+- menu content begins sooner without disturbing F1–F3 fixes.
+
+Durable visual contract now verifies on both Chromium + WebKit:
+
+- duplicate phone hero title is not displayed;
+- compact hero height stays within the bounded acceptance limit;
+- hero aligns with the protected menu lane;
+- Matrix action stays below the bounded height and does not fill the hero width;
+- existing lane / thumbnail / three-character / helmet / backpack / no-glasses contracts remain intact.
+
+Latest screenshot evidence from artifact **10793955895** was manually inspected:
+
+- `01-iphone-top.png`
+- `10-real-device-fidelity-iphone@3x.png`
+
+Observed: duplicate brand hierarchy is removed, Matrix visual dominance is materially reduced, and the phone top-to-menu transition is more compact while preserving the approved warm visual direction.
+
+### P0-F4 remaining fidelity sections
+
+Still open for bounded passes:
+
+- category header treatment / semantic scan hierarchy;
+- card proportions / spacing refinement;
+- character framing / background softness where needed;
 - calculator visual hierarchy.
 
 Do not solve visual fidelity by changing recipe/business behavior.
@@ -117,7 +127,7 @@ Do not solve visual fidelity by changing recipe/business behavior.
 
 # DURABLE QA
 
-`.github/workflows/ui-qa.yml` now runs:
+`.github/workflows/ui-qa.yml` runs:
 
 - atlas integrity validator;
 - Chromium + WebKit UI QA;
@@ -125,7 +135,7 @@ Do not solve visual fidelity by changing recipe/business behavior.
 - contact-sheet evidence;
 - screenshot artifact upload.
 
-Latest run **35963300224** passed every step, including:
+Latest run **35965006176** passed every step:
 
 - `Validate thumbnail contract and atlas integrity` — PASS
 - `Run Chromium + WebKit UI QA` — PASS
@@ -133,15 +143,17 @@ Latest run **35963300224** passed every step, including:
 - `Render thumbnail contact sheet evidence` — PASS
 - `Upload screenshots` — PASS
 
-Relevant commits in the real-device correction chain:
+Relevant real-device correction commits:
 
-- `aa58a02c9f051618649c327704b9652d81e49268` — `Apply real-device visual fidelity corrections`
-- `6e2d6093a1bf55f6a356162d5b2ff779083be507` — `Activate real-device visual correction layer`
-- `8221948d0c23122786426da5ea8ae6d44c83c36e` — `Add real-device visual fidelity contract`
-- `e4b8d58da91c5788ea611cf0d730423d4db660bf` — `Gate real-device visual fidelity in UI QA`
-- `2b180603ce63217040054b05c798ba797026ee87` — `Fix normal thumbnail selector in real-device visual contract`
+- `aa58a02c9f051618649c327704b9652d81e49268` — Apply real-device visual fidelity corrections
+- `6e2d6093a1bf55f6a356162d5b2ff779083be507` — Activate real-device visual correction layer
+- `8221948d0c23122786426da5ea8ae6d44c83c36e` — Add real-device visual fidelity contract
+- `e4b8d58da91c5788ea611cf0d730423d4db660bf` — Gate real-device visual fidelity in UI QA
+- `2b180603ce63217040054b05c798ba797026ee87` — Fix normal thumbnail selector in real-device visual contract
+- `00b2c26cc9e2fb5d87f7e0fbcc14ec2eb53c7608` — Tighten mobile top-page visual hierarchy
+- `b36aee192eea2ffdb0f9d4f5cab1205a40c6cf70` — Gate compact mobile hero hierarchy
 
-Business logic changed by this correction chain: **NO**.
+Business logic changed by these correction/fidelity passes: **NO**.
 
 ---
 
@@ -177,6 +189,7 @@ Do not restart or redo:
 - F1 central-lane fix;
 - F2 thumbnail sizing/aspect-ratio correction;
 - F3 character-master / helmet / backpack restoration;
+- F4 phone masthead/hero/Matrix hierarchy pass;
 - prior Matrix/PIN behavior validation;
 - prior modal scroll-restoration investigation;
 - prior QA harness scope repair.
@@ -196,4 +209,4 @@ Continue in short crash-safe sessions. Each session should:
 
 # EXACT NEXT ACTION
 
-**Next short session:** work only on **P0-F4 visual fidelity**, starting with the **top-of-page hierarchy on phone**: reduce duplicate masthead/hero meaning and reduce Matrix admin action visual dominance while preserving all behavior and existing character/card fixes. Compare the resulting phone screenshot against the approved generated visual direction, run the relevant UI QA, persist evidence, then stop and report the next bounded fidelity task.
+**Next short session:** continue only **P0-F4** with the **phone category-header + menu-card visual rhythm**. Inspect how category headers/icons and card spacing compare to the approved generated direction; improve semantic scan hierarchy and spacing/proportions using presentation-only changes, while preserving the central lane, thumbnail dimensions/sharpness, all three character requirements, and all business behavior. Add/adjust a bounded visual contract if useful, run UI QA, inspect the resulting phone screenshot, persist the checkpoint, then stop and report the next action.
