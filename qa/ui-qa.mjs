@@ -23,15 +23,21 @@ async function assertBaseContract(page, deviceName) {
 
   const background = await page.evaluate(() => getComputedStyle(document.body, '::before').backgroundImage);
   assert.match(background, /background-master\.webp/, `${deviceName}: background master not active`);
+  assert.match(background, /radial-gradient/, `${deviceName}: central readability veil not active`);
 
   const decor = await page.locator('.decor-person').evaluateAll(els => els.map(el => {
     const r = el.getBoundingClientRect();
     const s = getComputedStyle(el);
-    return { w:r.width, h:r.height, display:s.display, visibility:s.visibility, opacity:Number(s.opacity), pointer:s.pointerEvents };
+    return {
+      w:r.width, h:r.height, top:r.top, right:r.right, bottom:r.bottom, left:r.left,
+      display:s.display, visibility:s.visibility, opacity:Number(s.opacity), pointer:s.pointerEvents
+    };
   }));
   assert.equal(decor.length, 3, `${deviceName}: expected 3 foreground characters`);
   decor.forEach((d, i) => {
+    const intersectsViewport = d.right > 0 && d.left < innerWidth && d.bottom > 0 && d.top < innerHeight;
     assert.ok(d.w > 60 && d.h > 60 && d.display !== 'none' && d.visibility !== 'hidden' && d.opacity > .5, `${deviceName}: character ${i+1} not visibly present`);
+    assert.ok(intersectsViewport, `${deviceName}: character ${i+1} is outside viewport`);
     assert.equal(d.pointer, 'none', `${deviceName}: character ${i+1} intercepts pointer events`);
   });
 
@@ -53,7 +59,8 @@ async function assertBaseContract(page, deviceName) {
 async function assertCalculator(page, deviceName) {
   await page.evaluate(() => scrollTo(0, Math.min(650, document.documentElement.scrollHeight / 3)));
   const visibleMenu = await page.evaluate(() => {
-    const cards = [...document.querySelectorAll('.menu-card')];
+    const cards = [...document.querySelectorAll('.menu-card')]
+      .filter(el => Object.keys(originalMenu[el.dataset.menu] || {}).length > 1);
     let card = cards.find(el => {
       const r = el.getBoundingClientRect();
       return r.top >= 80 && r.bottom <= innerHeight - 20;
@@ -62,7 +69,7 @@ async function assertCalculator(page, deviceName) {
       const r = el.getBoundingClientRect();
       return r.bottom > 100 && r.top < innerHeight - 60;
     });
-    if (!card) throw new Error('no visible menu card at test scroll position');
+    if (!card) throw new Error('no visible multi-ingredient menu card at test scroll position');
     card.scrollIntoView({ block:'center', inline:'nearest' });
     return card.dataset.menu;
   });
@@ -135,7 +142,8 @@ async function screenshots(page, name) {
     await page.evaluate(() => scrollTo(0,1500));
     await page.screenshot({ path:path.join(shotDir,'03-iphone-lower.png'), fullPage:false });
     const visibleMenu = await page.evaluate(() => {
-      const cards = [...document.querySelectorAll('.menu-card')];
+      const cards = [...document.querySelectorAll('.menu-card')]
+        .filter(el => Object.keys(originalMenu[el.dataset.menu] || {}).length > 1);
       const card = cards.find(el => {
         const r = el.getBoundingClientRect();
         return r.bottom > 80 && r.top < innerHeight - 80;
