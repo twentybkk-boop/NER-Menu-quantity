@@ -13,7 +13,8 @@
 - `d32ff236c227d804c60e807749b2f41b3c05bb94` applied recovered high-res assets + cache bust.
 - UI QA run `36012464625`, job `107676382757`: layout/geometry/character presence/center frame/top composition/rhythm/orientation/layering passed; V3 high-res sharpness failed on browser image load/decode (`img.onerror`) for `overlay-top-left-hires.webp`.
 - Interrupted `tmp-binary-repair/*` staging was audited and removed; accidental staging/tmp files must not be restored.
-- Prior durable checkpoints include `d21e0f04...` and `4cade999...`.
+- Current `main` head was explicitly re-verified during this recovery chunk as `e51eef046497158b9a1b31e81b2c162ad0f75ac3` (tree `5c946d7047910780185e214f8620a5de54360931`).
+- A branch lookup attempt using an encoded slash URL returned connector `400 INVALID_ARGUMENT`; do not retry that lookup pattern. No repository state was changed by this failed read.
 
 ## DONE / VERIFIED
 1. Layout/geometry/business logic are not the known blocker.
@@ -26,15 +27,17 @@
    - upper-left: glasses + drink + gesture + speech bubble
    - lower-left: NO GLASSES + helmet + cat/table + speech bubble
    - right: white backpack + clipboard/pen + food/chalkboard + speech bubble
-5. Current visible handoff records verified local candidates and deterministic Git SHA targets:
+5. Verified deterministic Git SHA targets:
    - top candidate target blob `990c6b3523f79a483f41f17032f03f880f97f461`
    - bottom candidate target blob `cf1f98efe9c9f67cb48e3bd80f512b0f9adece45`
    - right candidate target blob `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`
+6. Exact current `main` head for the next repair-branch operation is VERIFIED as `e51eef046497158b9a1b31e81b2c162ad0f75ac3`.
 
 ## WORK OBSERVED BUT NOT YET DURABLY VERIFIED
-- A Git blob `812e704774c25a1c2387e03e48a3d1eb27b9e672` was created during an interrupted attempt, but it does NOT equal the verified top candidate deterministic Git SHA; do NOT wire it into production.
-- A bottom q30/recompressed Git blob `65c0568c8b4895ead37932fa6c7f2814ec4c90a1` was created during emergency recovery and its returned SHA matched that q30 byte payload, but it does NOT equal the verified bottom candidate target SHA `cf1f98efe9c9f67cb48e3bd80f512b0f9adece45`; therefore it is NOT an accepted production candidate and must not be wired into production.
-- Local recovered candidate files visible in this conversation include `top-q70-a8.webp`, `bottom-q70-a60.webp`, and `right-q70-a60.webp`; they must be re-verified only as needed before production wiring.
+- Git blob `812e704774c25a1c2387e03e48a3d1eb27b9e672` does NOT equal the verified top target; do NOT wire it into production.
+- Bottom q30/recompressed blob `65c0568c8b4895ead37932fa6c7f2814ec4c90a1` does NOT equal verified bottom target `cf1f98ef...`; it is NOT an accepted production candidate.
+- Local recovered candidate files visible in this conversation include `top-q70-a8.webp`, `bottom-q70-a60.webp`, and `right-q70-a60.webp`; re-verify only as needed for exact-byte transport.
+- No temporary repair branch for this exact-target recovery chunk has yet been durably confirmed.
 - No clean production commit changing exactly the three high-res WebP paths is yet durably VERIFIED.
 - Post-repair UI QA/sharpness PASS is not yet verified.
 - Manual local/live `31-*sharpness-v2` screenshot acceptance is not yet verified.
@@ -53,7 +56,8 @@
 - Invalid orphan blobs `35c12cd9...`, `42c06cd2...`, `9af0dd1f...`.
 - Previously rejected blank/transparent high-res replacements.
 - Re-audit of already-cleaned staging/tmp incidents.
-- Wiring unverified/non-target blobs such as `812e7047...` or `65c0568c...` into production.
+- Wiring non-target blobs `812e7047...` or `65c0568c...` into production.
+- Retry the failed encoded branch-lookup URL pattern.
 
 ## EXACT NEXT RECOVERY ACTION
-Recover in one small chunk only: verify the exact current `main` head and create/use a temporary repair branch from that head; then transport only ONE candidate asset first (top-left) and verify its resulting Git blob SHA exactly equals `990c6b3523f79a483f41f17032f03f880f97f461`. Immediately persist that result in `CURRENT_HANDOFF.md` before attempting bottom-left or right. Do not modify production `main` asset paths until all three exact blob SHAs are durably verified.
+Small chunk only: create the temporary repair branch directly from verified `main` SHA `e51eef046497158b9a1b31e81b2c162ad0f75ac3` (no encoded-URL lookup retry). Immediately persist the branch name/ref result before transporting any asset. After that checkpoint, transport ONLY the top-left exact candidate and verify its resulting Git blob SHA equals `990c6b3523f79a483f41f17032f03f880f97f461`, then checkpoint again before bottom/right.
