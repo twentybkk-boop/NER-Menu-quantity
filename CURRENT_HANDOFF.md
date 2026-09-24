@@ -41,7 +41,7 @@ Desired corrected combined `right-01.b64`:
 - deterministic canonical text-blob target `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`.
 - Current production/staging `right-01.b64` has NOT yet been replaced at this checkpoint.
 
-## RIGHT-01 REPAIR WORKFLOW — CREATED, VERIFIED, NOT TRIGGERED
+## RIGHT-01 REPAIR WORKFLOW — CREATED, VERIFIED
 Temporary repair-only workflow:
 - path `.github/workflows/repair-right-01-fresh.yml`
 - creation commit `16441f9888ff36b10021b3dd082efa5aed15ee0e`
@@ -51,7 +51,14 @@ Temporary repair-only workflow:
 - requires assembled length exactly `12000`
 - requires `git hash-object` exactly `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`
 - only after those gates pass, replaces/commits ONLY `repair-staging/right/right-01.b64`
-- workflow has NOT been triggered at this checkpoint.
+
+## RIGHT-01 REPAIR TRIGGER — DURABLE, RUN NOT YET INSPECTED
+- trigger file `repair-staging/right/RUN_RIGHT01_FRESH`
+- deterministic marker `run-right01-fresh-v1`
+- trigger blob `ced56538cd6d9d7c712c49dbc8914c66d124af7c`
+- trigger commit `557181b4428905750c5bd13011bddc0ca6fb10a2`
+- commit changed ONLY `repair-staging/right/RUN_RIGHT01_FRESH`
+- Actions run ID/status/conclusion have NOT yet been inspected at this checkpoint and must not be inferred.
 
 ## FRESH CANONICAL EIGHT-RANGE TARGETS
 - `right-00` `4cfbab61acc0c0e6489b51da0bb423c2da1d5e50`
@@ -67,16 +74,17 @@ Temporary repair-only workflow:
 - Do not redo repo-wide/source/Library/V2/Session1/2A/2B.1/layout/orientation/calculator/P0 investigations or redraw/reconstruction.
 - Do not alter the seven already matching staged ranges.
 - Do not rewrite either fresh `right-01a-fresh` or `right-01b-fresh`.
-- Do not recreate or rewrite `.github/workflows/repair-right-01-fresh.yml` unless current GitHub source of truth requires it.
+- Do not recreate or rewrite `.github/workflows/repair-right-01-fresh.yml`.
+- Do not recreate or rewrite `RUN_RIGHT01_FRESH` unless current GitHub source of truth explicitly requires it.
 - Do not rerun final-right workflow before corrected `right-01.b64` itself is assembled/verified and checkpointed.
 - Do not touch production paths before final right binary target is VERIFIED durable.
 
 ## OPEN BLOCKERS
-1. Trigger the already-created right-01 repair workflow exactly once; persist trigger state before inspecting run.
+1. Inspect ONLY the Actions run caused by trigger commit `557181b4428905750c5bd13011bddc0ca6fb10a2`; persist run ID/status/conclusion before inspecting corrected file output.
 2. Verify corrected `right-01.b64` length 12,000 and blob `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`; checkpoint immediately.
 3. Revalidate all eight staged range blobs against fresh canonical targets; checkpoint.
 4. Trigger final-right assembler once with a new deterministic trigger change; verify final binary Git blob `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`; checkpoint.
 5. Only then: production mapping → cleanup → QA/manual acceptance.
 
 ## EXACT NEXT RECOVERY ACTION
-After confirming this checkpoint is durable, create ONLY `repair-staging/right/RUN_RIGHT01_FRESH` on repair branch with a tiny deterministic marker to trigger `.github/workflows/repair-right-01-fresh.yml`. Verify the trigger commit is durable and immediately checkpoint trigger state before inspecting any Actions run. Do not make any other write in that work unit.
+After confirming this checkpoint is durable, inspect ONLY GitHub Actions runs associated with repair trigger commit `557181b4428905750c5bd13011bddc0ca6fb10a2`. Record run ID/status/conclusion and immediately checkpoint that evidence before inspecting corrected `right-01.b64` output. Do not make any other write in that work unit.
