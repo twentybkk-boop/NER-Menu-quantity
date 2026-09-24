@@ -1,1 +1,0 @@
-temporary binary repair staging; remove after recovered high-res WebP blobs are rebuilt
