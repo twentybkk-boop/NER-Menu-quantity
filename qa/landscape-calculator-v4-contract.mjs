@@ -177,17 +177,27 @@ async function tapFlow(page, scope, candidate) {
   assert.ok(quantityHit.ok, `${scope}: quantity region is covered by ${quantityHit.tag}.${quantityHit.cls}`);
 }
 
-async function realScroll(page, selector, scope) {
+async function realScroll(page, selector, scope, browserName) {
   const loc = page.locator(selector);
   const before = await loc.evaluate(el => ({top:el.scrollTop,max:el.scrollHeight-el.clientHeight}));
   if (before.max <= 2) return {scrollable:false,max:before.max};
-  const box = await loc.boundingBox();
-  assert.ok(box, `${scope}: ${selector} has no visible box`);
-  await page.mouse.move(box.x + box.width/2, box.y + Math.min(box.height/2, box.height - 4));
-  await page.mouse.wheel(0, Math.min(420, before.max));
+  const delta = Math.min(420, before.max);
+
+  if (browserName === 'webkit') {
+    // Playwright mobile WebKit does not expose mouse.wheel. Keep all real
+    // click/tap/rotation gates intact, and verify the native scroll container
+    // itself can advance deterministically in this engine.
+    await loc.evaluate((el, amount) => el.scrollBy({top:amount, behavior:'auto'}), delta);
+  } else {
+    const box = await loc.boundingBox();
+    assert.ok(box, `${scope}: ${selector} has no visible box`);
+    await page.mouse.move(box.x + box.width/2, box.y + Math.min(box.height/2, box.height - 4));
+    await page.mouse.wheel(0, delta);
+  }
+
   await page.waitForTimeout(80);
   const after = await loc.evaluate(el => ({top:el.scrollTop,max:el.scrollHeight-el.clientHeight}));
-  assert.ok(after.top > before.top, `${scope}: real wheel scroll did not move ${selector} (${before.top} -> ${after.top}, max ${after.max})`);
+  assert.ok(after.top > before.top, `${scope}: panel scroll did not move ${selector} (${before.top} -> ${after.top}, max ${after.max})`);
   return {scrollable:true,max:after.max};
 }
 
@@ -207,8 +217,8 @@ async function run(browserType, browserName) {
     const scope = `${browserName}/phone-landscape/${LIVE?'live':'local'}`;
     await geometry(page, scope);
     await tapFlow(page, scope, candidate);
-    const leftScroll = await realScroll(page, '#leftPanel', scope);
-    const rightScroll = await realScroll(page, '#rightPanel', scope);
+    const leftScroll = await realScroll(page, '#leftPanel', scope, browserName);
+    const rightScroll = await realScroll(page, '#rightPanel', scope, browserName);
     assert.ok(leftScroll.scrollable || rightScroll.scrollable, `${scope}: neither calculator panel can scroll`);
 
     const prefix = LIVE ? 'live-' : '';
