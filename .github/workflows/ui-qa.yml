@@ -23,6 +23,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Hydrate generated thumbnail atlas
+        run: |
+          cat tmp/ui-atlas/part-*.b64 | base64 -d > assets/menu-thumbnails/semantic-atlas-v1.webp
+          actual=$(sha256sum assets/menu-thumbnails/semantic-atlas-v1.webp | cut -d' ' -f1)
+          echo "atlas sha256: $actual"
+          test "$actual" = "f54f62191d6da7e9f49130db644506e3dd32e9abf78731010a2fb866c7886cd9"
+          test "$(stat -c%s assets/menu-thumbnails/semantic-atlas-v1.webp)" = "59500"
       - name: Patch modal scroll preservation regression
         run: |
           python3 - <<'PY'
@@ -63,14 +70,15 @@ jobs:
           p.write_text(s)
           PY
           node qa/ui-qa.mjs
-      - name: Persist verified scroll-lock fix
+      - name: Persist verified generated atlas and fixes
         if: success()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
+          git add index.html assets/menu-thumbnails/semantic-atlas-v1.webp
+          git rm -f tmp/ui-atlas/part-*.b64
           if ! git diff --cached --quiet; then
-            git commit -m "Preserve page scroll across modal lifecycle [skip ci]"
+            git commit -m "Install verified generated thumbnail atlas [skip ci]"
             git push origin HEAD:main
           fi
       - name: Upload screenshots
