@@ -37,6 +37,11 @@ async function inspect(browserType, browserName) {
       const normalRect = normal.getBoundingClientRect();
       const sig = document.querySelector('.menu-card[data-menu="ชุดจุ่มหมูทะเล"]');
       const sigThumb = getComputedStyle(sig, '::before');
+      const hero = document.querySelector('.hero');
+      const heroRect = hero.getBoundingClientRect();
+      const brandTitle = document.querySelector('.brand-title');
+      const managerButton = document.querySelector('#managerButton');
+      const managerRect = managerButton.getBoundingClientRect();
 
       const decor = ['.decor-a','.decor-b','.decor-c'].map(selector => {
         const el = document.querySelector(selector);
@@ -68,9 +73,16 @@ async function inspect(browserType, browserName) {
         thumb: thumbSize(normalThumb),
         signatureThumb: thumbSize(sigThumb),
         decor,
+        hero: {
+          width: heroRect.width,
+          height: heroRect.height,
+          titleDisplay: getComputedStyle(brandTitle).display,
+        },
         manager: {
-          bg: getComputedStyle(document.querySelector('#managerButton')).backgroundColor,
-          color: getComputedStyle(document.querySelector('#managerButton')).color,
+          bg: getComputedStyle(managerButton).backgroundColor,
+          color: getComputedStyle(managerButton).color,
+          width: managerRect.width,
+          height: managerRect.height,
         },
       };
     }, SIGNATURE_MENUS);
@@ -104,6 +116,14 @@ async function inspect(browserType, browserName) {
     assert.match(contract.decor[2].afterBg, /accessory-white-backpack\.svg/, `${browserName}: white backpack detail missing`);
     assert.doesNotMatch(contract.decor[1].beforeBg + contract.decor[1].afterBg, /accessory-glasses\.svg/,
       `${browserName}: bottom-left must remain no-glasses`);
+
+    assert.equal(contract.hero.titleDisplay, 'none', `${browserName}: duplicate phone hero brand title is visible`);
+    assert.ok(contract.hero.height <= 88, `${browserName}: phone hero remains too tall at ${contract.hero.height}px`);
+    assert.ok(Math.abs(contract.hero.width - contract.menus.width) <= 2,
+      `${browserName}: phone hero and protected menu lane no longer align`);
+    assert.ok(contract.manager.height <= 40, `${browserName}: Matrix action is still too visually dominant at ${contract.manager.height}px tall`);
+    assert.ok(contract.manager.width < contract.hero.width - 24,
+      `${browserName}: Matrix action still reads as a full-width primary CTA`);
 
     if (browserName === 'chromium') {
       await page.screenshot({ path: path.join(shotDir, '10-real-device-fidelity-iphone@3x.png'), fullPage: false });
