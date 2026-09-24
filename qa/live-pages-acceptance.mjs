@@ -22,7 +22,8 @@ async function waitForCurrentDeployment(page) {
         if (
           last.includes('visual-character-frame.css') &&
           last.includes('visual-calculator-hierarchy.css') &&
-          last.includes('visual-menu-rhythm.css')
+          last.includes('visual-menu-rhythm.css') &&
+          last.includes('visual-thumbnail-infographic.css')
         ) return;
       }
     } catch (error) {
@@ -30,7 +31,7 @@ async function waitForCurrentDeployment(page) {
     }
     await sleep(8_000);
   }
-  throw new Error(`GitHub Pages did not expose the verified fidelity layers before timeout. Last probe: ${last.slice(0, 240)}`);
+  throw new Error(`GitHub Pages did not expose the current acceptance layers before timeout. Last probe: ${last.slice(0, 240)}`);
 }
 
 async function inspect(browserType, browserName) {
@@ -75,11 +76,14 @@ async function inspect(browserType, browserName) {
           width: parseFloat(normalThumb.width),
           height: parseFloat(normalThumb.height),
           bg: normalThumb.backgroundImage,
-          bgSize: normalThumb.backgroundSize,
+          content: normalThumb.content,
+          display: normalThumb.display,
         },
         signatureThumb: {
           width: parseFloat(signatureThumb.width),
           height: parseFloat(signatureThumb.height),
+          bg: signatureThumb.backgroundImage,
+          content: signatureThumb.content,
         },
         decor,
         heroTitleDisplay: getComputedStyle(document.querySelector('.brand-title')).display,
@@ -92,31 +96,35 @@ async function inspect(browserType, browserName) {
     assert.ok(live.menus.left >= 27 && live.viewport.width - live.menus.right >= 27,
       `${browserName}: live center lane lost one or both character rails`);
 
-    // Feedback 2 — atlas crops stay within verified Retina-safe CSS bounds and preserve 3:2 geometry.
+    // Updated thumbnail acceptance — simple infographic tiles, never the rejected food-photo atlas in live cards.
     assert.ok(live.normalThumb.width <= 67 && live.normalThumb.height <= 45,
-      `${browserName}: live normal thumbnail enlarged to ${live.normalThumb.width}x${live.normalThumb.height}`);
+      `${browserName}: live normal infographic tile enlarged to ${live.normalThumb.width}x${live.normalThumb.height}`);
     assert.ok(live.signatureThumb.width <= 73 && live.signatureThumb.height <= 49,
-      `${browserName}: live signature thumbnail enlarged to ${live.signatureThumb.width}x${live.signatureThumb.height}`);
+      `${browserName}: live signature infographic tile enlarged to ${live.signatureThumb.width}x${live.signatureThumb.height}`);
     assert.ok(Math.abs(live.normalThumb.width / live.normalThumb.height - 1.5) < 0.04,
-      `${browserName}: live thumbnail aspect ratio drifted`);
-    assert.match(live.normalThumb.bg, /semantic-atlas-v1\.webp/, `${browserName}: live semantic atlas missing`);
-    assert.equal(live.normalThumb.bgSize, '600% 500%', `${browserName}: live atlas crop geometry drifted`);
+      `${browserName}: live infographic tile aspect ratio drifted`);
+    assert.doesNotMatch(live.normalThumb.bg, /semantic-atlas-v1\.webp/, `${browserName}: rejected photo atlas is still visible on live normal cards`);
+    assert.doesNotMatch(live.signatureThumb.bg, /semantic-atlas-v1\.webp/, `${browserName}: rejected photo atlas is still visible on live signature cards`);
+    assert.match(live.normalThumb.bg, /gradient/, `${browserName}: live normal infographic treatment missing`);
+    assert.match(live.signatureThumb.bg, /gradient/, `${browserName}: live signature infographic treatment missing`);
+    assert.notEqual(live.normalThumb.content, '""', `${browserName}: live normal infographic pictogram missing`);
+    assert.notEqual(live.signatureThumb.content, '""', `${browserName}: live signature infographic pictogram missing`);
+    assert.equal(live.normalThumb.display, 'grid', `${browserName}: live infographic pictogram alignment changed`);
 
-    // Feedback 3 — high-detail three-person composition and identity details remain active.
+    // Character composition contract is preserved for now; character source fidelity is a separate reopened P0 task.
     assert.equal(live.decor.length, 3, `${browserName}: live page does not expose all three character roles`);
     for (const item of live.decor) {
       assert.equal(item.pointer, 'none', `${browserName}: ${item.selector} intercepts touch on live page`);
       assert.ok(item.visible, `${browserName}: ${item.selector} is not visible on live page`);
     }
-    assert.match(live.decor[0].bg, /ner-character-top-left\.png/, `${browserName}: live top-left high-detail master missing`);
-    assert.match(live.decor[1].bg, /ner-character-bottom-left\.png/, `${browserName}: live bottom-left high-detail master missing`);
-    assert.match(live.decor[2].bg, /ner-character-right\.png/, `${browserName}: live right high-detail master missing`);
+    assert.match(live.decor[0].bg, /ner-character-top-left\.png/, `${browserName}: live top-left character master missing`);
+    assert.match(live.decor[1].bg, /ner-character-bottom-left\.png/, `${browserName}: live bottom-left character master missing`);
+    assert.match(live.decor[2].bg, /ner-character-right\.png/, `${browserName}: live right character master missing`);
     assert.match(live.decor[1].afterBg, /accessory-gray-fullface-helmet\.svg/, `${browserName}: live helmet detail missing`);
     assert.match(live.decor[2].afterBg, /accessory-white-backpack\.svg/, `${browserName}: live white backpack detail missing`);
     assert.doesNotMatch(live.decor[1].beforeBg + live.decor[1].afterBg, /accessory-glasses\.svg/,
       `${browserName}: bottom-left character must remain no-glasses on live page`);
 
-    // Feedback 4 — verified generated-direction hierarchy must be active on the deployed page.
     assert.equal(live.heroTitleDisplay, 'none', `${browserName}: duplicate phone hero title returned on live page`);
     assert.equal(new Set(live.categoryTokens).size, 7, `${browserName}: live semantic category hierarchy is not active`);
 
