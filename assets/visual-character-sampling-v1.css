@@ -1,6 +1,6 @@
 /* V3 Session 2B.2 — high-resolution approved character sources.
    Preserve the verified Session 1 geometry/z-index and V2 story composition;
-   only replace undersampled raster sources and keep filter compositing disabled. */
+   only replace undersampled raster content and keep filter compositing disabled. */
 
 .decor-person{
   filter:none!important;
@@ -9,15 +9,15 @@
   backface-visibility:visible!important;
 }
 
-/* Same approved story roles, now derived from the user's approved reference
-   at Retina-capable resolution. Width/height/position remain owned by the
-   previously verified responsive/layering layers. */
+/* The authoritative approved asset paths are preserved. Their raster contents
+   are upgraded in-place to Retina-capable derivatives from the approved reference,
+   so every existing composition contract keeps the same semantic source identity. */
 .decor-a{
-  background-image:url("overlay-top-left-hires.webp")!important;
+  background-image:url("overlay-top-left.webp")!important;
 }
 .decor-b{
-  background-image:url("overlay-bottom-left-hires.webp")!important;
+  background-image:url("overlay-bottom-left.webp")!important;
 }
 .decor-c{
-  background-image:url("overlay-right-hires.webp")!important;
+  background-image:url("overlay-right.webp")!important;
 }
