@@ -1,68 +1,83 @@
-/* Central presentation mapping derived from recipe_master.json. */
-/* 23 semantic masters are packed into semantic-atlas-v1.webp (6x4 grid; one reserved mushroom cell). */
-.menu-card{--menu-art:none;--menu-art-x:50%;--menu-art-y:50%;}
+/* Phase 1 semantic thumbnail map derived from recipe_master.json. */
+/* Production atlas: semantic-atlas-v1.webp, 6x5 grid, 27 illustrated regions + 3 empty cells. */
+.menu-card{--menu-art:none;--menu-art-x:50%;--menu-art-y:50%;--menu-art-size:600% 500%;}
+/* set-seafood */
 .menu-card[data-menu="ชุดจุ่มหมูทะเล"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:0% !important;--menu-art-y:0% !important;}
+/* set-beef */
 .menu-card[data-menu="ชุดจุ่มเนื้อ"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:20% !important;--menu-art-y:0% !important;}
+/* set-pork */
 .menu-card[data-menu="ชุดจุ่มหมู"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:40% !important;--menu-art-y:0% !important;}
+/* set-pork-single */
 .menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:60% !important;--menu-art-y:0% !important;}
-.menu-card[data-menu="อิ่มเดี่ยว ต้มพร้อมทาน"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:100% !important;--menu-art-y:100% !important;}
-.menu-card[data-menu="อิ่มเดี่ยว หมูจุกจุก"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:100% !important;--menu-art-y:100% !important;}
-.menu-card[data-menu="หมูล้วน (ไม่มีเครื่องใน)"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:20% !important;--menu-art-y:33.333% !important;}
-.menu-card[data-menu="หมูหมัก NER"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:20% !important;--menu-art-y:33.333% !important;}
+/* pork-belly */
 .menu-card[data-menu="สามชั้นหมูสไลซ์"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:80% !important;--menu-art-y:0% !important;}
+/* pork-neck */
 .menu-card[data-menu="สันคอ"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:100% !important;--menu-art-y:0% !important;}
-.menu-card[data-menu="สันนอก"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:0% !important;--menu-art-y:33.333% !important;}
-.menu-card[data-menu="ตับหมู"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:60% !important;--menu-art-y:33.333% !important;}
-.menu-card[data-menu="เซ่งจี๊หมู"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:60% !important;--menu-art-y:33.333% !important;}
-.menu-card[data-menu="เนื้อใบพายสไลซ์"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:40% !important;--menu-art-y:33.333% !important;}
-.menu-card[data-menu="เนื้อริบอายสไลซ์"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:40% !important;--menu-art-y:33.333% !important;}
-.menu-card[data-menu="เนื้อเสือร้องไห้สไลซ์"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:40% !important;--menu-art-y:33.333% !important;}
-.menu-card[data-menu="เนื้อรวม"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:40% !important;--menu-art-y:33.333% !important;}
-.menu-card[data-menu="ปลาดอลลี่"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:0% !important;--menu-art-y:66.667% !important;}
-.menu-card[data-menu="กุ้ง"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:80% !important;--menu-art-y:33.333% !important;}
-.menu-card[data-menu="ปลาหมึก"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:100% !important;--menu-art-y:33.333% !important;}
-.menu-card[data-menu="ชุดผักรวม"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:40% !important;--menu-art-y:66.667% !important;}
-.menu-card[data-menu="กะหล่ำปลี"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:60% !important;--menu-art-y:66.667% !important;}
-.menu-card[data-menu="ผักบุ้ง"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:40% !important;--menu-art-y:66.667% !important;}
-.menu-card[data-menu="ผักชีฝรั่ง"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:40% !important;--menu-art-y:66.667% !important;}
-.menu-card[data-menu="โหระพา"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:40% !important;--menu-art-y:66.667% !important;}
-.menu-card[data-menu="ใบชะพลู"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:40% !important;--menu-art-y:66.667% !important;}
-.menu-card[data-menu="วุ้นเส้น"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:100% !important;--menu-art-y:66.667% !important;}
-.menu-card[data-menu="มาม่า"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:100% !important;--menu-art-y:66.667% !important;}
-.menu-card[data-menu="หมี่หยก(สด)"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:100% !important;--menu-art-y:66.667% !important;}
-.menu-card[data-menu="เส้นอุด้ง"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:100% !important;--menu-art-y:66.667% !important;}
-.menu-card[data-menu="ไข่ไก่สด"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:20% !important;--menu-art-y:100% !important;}
-.menu-card[data-menu="เต้าหู้ปลา"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:0% !important;--menu-art-y:100% !important;}
-.menu-card[data-menu="เต้าหู้ไข่"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:0% !important;--menu-art-y:100% !important;}
-.menu-card[data-menu="เต้าหู้ชีส"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:0% !important;--menu-art-y:100% !important;}
-.menu-card[data-menu="ฟองเต้าหู้แท่ง"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:0% !important;--menu-art-y:100% !important;}
-.menu-card[data-menu="ฟองเต้าหู้ทอด"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:0% !important;--menu-art-y:100% !important;}
-.menu-card[data-menu="ข้าวเปล่า"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:40% !important;--menu-art-y:100% !important;}
-.menu-card[data-menu="ไก่ป๊อป"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:60% !important;--menu-art-y:100% !important;}
-.menu-card[data-menu="แฮชบราวน์ เทเทอร์ ทอตส์"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:60% !important;--menu-art-y:100% !important;}
-.menu-card[data-menu="ข้าวเกรียบปลา"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:60% !important;--menu-art-y:100% !important;}
-.menu-card[data-menu="คาลามารี"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:60% !important;--menu-art-y:100% !important;}
-.menu-card[data-menu="ซาโมซ่ากล้วย"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:80% !important;--menu-art-y:100% !important;}
-.menu-card[data-menu="สละลอยแก้ว"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:80% !important;--menu-art-y:100% !important;}
-.menu-card[data-menu="ลูกตาลลอยแก้ว"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:80% !important;--menu-art-y:100% !important;}
-.menu-card[data-menu="โมจิไอศครีม"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:80% !important;--menu-art-y:100% !important;}
+/* pork-loin */
+.menu-card[data-menu="สันนอก"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:0% !important;--menu-art-y:25% !important;}
+/* pork-shoulder */
+.menu-card[data-menu="หมูล้วน (ไม่มีเครื่องใน)"],.menu-card[data-menu="หมูหมัก NER"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:20% !important;--menu-art-y:25% !important;}
+/* beef */
+.menu-card[data-menu="เนื้อใบพายสไลซ์"],.menu-card[data-menu="เนื้อริบอายสไลซ์"],.menu-card[data-menu="เนื้อเสือร้องไห้สไลซ์"],.menu-card[data-menu="เนื้อรวม"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:40% !important;--menu-art-y:25% !important;}
+/* organ */
+.menu-card[data-menu="ตับหมู"],.menu-card[data-menu="เซ่งจี๊หมู"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:60% !important;--menu-art-y:25% !important;}
+/* shrimp */
+.menu-card[data-menu="กุ้ง"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:80% !important;--menu-art-y:25% !important;}
+/* squid */
+.menu-card[data-menu="ปลาหมึก"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:100% !important;--menu-art-y:25% !important;}
+/* fish */
+.menu-card[data-menu="ปลาดอลลี่"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:0% !important;--menu-art-y:50% !important;}
+/* leafy-vegetables */
+.menu-card[data-menu="ชุดผักรวม"],.menu-card[data-menu="ผักบุ้ง"],.menu-card[data-menu="ผักชีฝรั่ง"],.menu-card[data-menu="โหระพา"],.menu-card[data-menu="ใบชะพลู"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:40% !important;--menu-art-y:50% !important;}
+/* cabbage */
+.menu-card[data-menu="กะหล่ำปลี"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:60% !important;--menu-art-y:50% !important;}
+/* noodles */
+.menu-card[data-menu="วุ้นเส้น"],.menu-card[data-menu="มาม่า"],.menu-card[data-menu="หมี่หยก(สด)"],.menu-card[data-menu="เส้นอุด้ง"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:80% !important;--menu-art-y:50% !important;}
+/* tofu */
+.menu-card[data-menu="เต้าหู้ปลา"],.menu-card[data-menu="เต้าหู้ไข่"],.menu-card[data-menu="เต้าหู้ชีส"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:100% !important;--menu-art-y:50% !important;}
+/* tofu-skin */
+.menu-card[data-menu="ฟองเต้าหู้แท่ง"],.menu-card[data-menu="ฟองเต้าหู้ทอด"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:0% !important;--menu-art-y:75% !important;}
+/* egg */
+.menu-card[data-menu="ไข่ไก่สด"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:20% !important;--menu-art-y:75% !important;}
+/* rice */
+.menu-card[data-menu="ข้าวเปล่า"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:40% !important;--menu-art-y:75% !important;}
+/* fried-bites */
+.menu-card[data-menu="ไก่ป๊อป"],.menu-card[data-menu="แฮชบราวน์ เทเทอร์ ทอตส์"],.menu-card[data-menu="ข้าวเกรียบปลา"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:60% !important;--menu-art-y:75% !important;}
+/* calamari */
+.menu-card[data-menu="คาลามารี"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:80% !important;--menu-art-y:75% !important;}
+/* banana-samosa */
+.menu-card[data-menu="ซาโมซ่ากล้วย"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:100% !important;--menu-art-y:75% !important;}
+/* loy-kaew */
+.menu-card[data-menu="สละลอยแก้ว"],.menu-card[data-menu="ลูกตาลลอยแก้ว"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:0% !important;--menu-art-y:100% !important;}
+/* mochi-icecream */
+.menu-card[data-menu="โมจิไอศครีม"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:20% !important;--menu-art-y:100% !important;}
+/* ready-to-eat */
+.menu-card[data-menu="อิ่มเดี่ยว ต้มพร้อมทาน"],.menu-card[data-menu="อิ่มเดี่ยว หมูจุกจุก"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp") !important;--menu-art-x:40% !important;--menu-art-y:100% !important;}
 
 /* Semantic-safe fallbacks for future names. Unknown names intentionally remain neutral. */
-.menu-card[data-menu*="ตับ"],.menu-card[data-menu*="เซ่งจี๊"],.menu-card[data-menu*="เครื่องใน"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:60%;--menu-art-y:33.333%;}
+.menu-card[data-menu*="ตับ"],.menu-card[data-menu*="เซ่งจี๊"],.menu-card[data-menu*="เครื่องใน"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:60%;--menu-art-y:25%;}
 .menu-card[data-menu*="สามชั้น"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:80%;--menu-art-y:0%;}
 .menu-card[data-menu*="สันคอ"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:100%;--menu-art-y:0%;}
-.menu-card[data-menu*="สันนอก"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:0%;--menu-art-y:33.333%;}
-.menu-card[data-menu*="หมู"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:20%;--menu-art-y:33.333%;}
-.menu-card[data-menu*="เนื้อ"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:40%;--menu-art-y:33.333%;}
-.menu-card[data-menu*="กุ้ง"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:80%;--menu-art-y:33.333%;}
-.menu-card[data-menu*="ปลาหมึก"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:100%;--menu-art-y:33.333%;}
-.menu-card[data-menu*="ปลา"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:0%;--menu-art-y:66.667%;}
-.menu-card[data-menu*="กะหล่ำ"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:60%;--menu-art-y:66.667%;}
-.menu-card[data-menu*="ผัก"],.menu-card[data-menu*="โหระพา"],.menu-card[data-menu*="ชะพลู"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:40%;--menu-art-y:66.667%;}
-.menu-card[data-menu*="วุ้นเส้น"],.menu-card[data-menu*="มาม่า"],.menu-card[data-menu*="หมี่"],.menu-card[data-menu*="อุด้ง"],.menu-card[data-menu*="เส้น"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:100%;--menu-art-y:66.667%;}
-.menu-card[data-menu*="เต้าหู้"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:0%;--menu-art-y:100%;}
-.menu-card[data-menu*="ไข่"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:20%;--menu-art-y:100%;}
-.menu-card[data-menu*="ข้าว"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:40%;--menu-art-y:100%;}
-.menu-card[data-menu*="ทอด"],.menu-card[data-menu*="ป๊อป"],.menu-card[data-menu*="แฮชบราวน์"],.menu-card[data-menu*="ข้าวเกรียบ"],.menu-card[data-menu*="คาลามารี"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:60%;--menu-art-y:100%;}
-.menu-card[data-menu*="ซาโมซ่า"],.menu-card[data-menu*="ลอยแก้ว"],.menu-card[data-menu*="โมจิ"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:80%;--menu-art-y:100%;}
-.menu-card[data-menu*="อิ่มเดี่ยว"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:100%;--menu-art-y:100%;}
+.menu-card[data-menu*="สันนอก"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:0%;--menu-art-y:25%;}
+.menu-card[data-menu*="หมู"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:20%;--menu-art-y:25%;}
+.menu-card[data-menu*="เนื้อ"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:40%;--menu-art-y:25%;}
+.menu-card[data-menu*="กุ้ง"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:80%;--menu-art-y:25%;}
+.menu-card[data-menu*="ปลาหมึก"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:100%;--menu-art-y:25%;}
+.menu-card[data-menu*="ซีฟู้ด"],.menu-card[data-menu*="ทะเล"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:20%;--menu-art-y:50%;}
+.menu-card[data-menu*="ปลา"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:0%;--menu-art-y:50%;}
+.menu-card[data-menu*="กะหล่ำ"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:60%;--menu-art-y:50%;}
+.menu-card[data-menu*="ผัก"],.menu-card[data-menu*="โหระพา"],.menu-card[data-menu*="ชะพลู"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:40%;--menu-art-y:50%;}
+.menu-card[data-menu*="วุ้นเส้น"],.menu-card[data-menu*="มาม่า"],.menu-card[data-menu*="หมี่"],.menu-card[data-menu*="อุด้ง"],.menu-card[data-menu*="เส้น"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:80%;--menu-art-y:50%;}
+.menu-card[data-menu*="ฟองเต้าหู้"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:0%;--menu-art-y:75%;}
+.menu-card[data-menu*="เต้าหู้"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:100%;--menu-art-y:50%;}
+.menu-card[data-menu*="ไข่"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:20%;--menu-art-y:75%;}
+.menu-card[data-menu*="ข้าว"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:40%;--menu-art-y:75%;}
+.menu-card[data-menu*="คาลามารี"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:80%;--menu-art-y:75%;}
+.menu-card[data-menu*="ซาโมซ่า"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:100%;--menu-art-y:75%;}
+.menu-card[data-menu*="ลอยแก้ว"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:0%;--menu-art-y:100%;}
+.menu-card[data-menu*="โมจิ"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:20%;--menu-art-y:100%;}
+.menu-card[data-menu*="ทอด"],.menu-card[data-menu*="ป๊อป"],.menu-card[data-menu*="แฮชบราวน์"],.menu-card[data-menu*="ข้าวเกรียบ"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:60%;--menu-art-y:75%;}
+.menu-card[data-menu*="อิ่มเดี่ยว"],.menu-card[data-menu*="ต้มพร้อมทาน"]{--menu-art:url("menu-thumbnails/semantic-atlas-v1.webp");--menu-art-x:40%;--menu-art-y:100%;}
+
+/* visual-core.css loads later; higher specificity locks the 6x5 atlas geometry. */
+#app-menus .menu-card::before{background-size:var(--menu-art-size,600% 500%)!important;}
