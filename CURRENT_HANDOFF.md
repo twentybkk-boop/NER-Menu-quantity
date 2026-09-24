@@ -68,14 +68,25 @@ Clean production-only mapping commit on `main`:
 - therefore no deletion commit was required; cleanup status is already clean.
 - production high-resolution overlay blobs remain mapped exactly as verified above.
 
-## UI QA TRIGGER — DURABLE; RUN NOT YET INSPECTED
+## UI QA TRIGGER — DURABLE
 - existing `.github/workflows/ui-qa.yml` supports `workflow_dispatch` and `push` on `qa/**`.
 - connector exposed no direct workflow-dispatch action, so QA was triggered through the workflow's existing `qa/**` push path without touching production/runtime/UI logic.
 - trigger marker: `qa/RUN_UI_QA_V3`.
 - marker content: `run-ui-qa-v3-production-overlays-v1`.
 - trigger commit: `f7748a65231282df621d2ba52ab10f355ee027ad` (`Trigger UI QA for verified production overlays`).
 - commit verification: changed ONLY `qa/RUN_UI_QA_V3`; no other file changed.
-- QA run ID/status/conclusion have NOT yet been inspected at this checkpoint and must not be inferred.
+
+## UI QA RUN — VERIFIED SUCCESS; SCREENSHOTS NOT YET INSPECTED
+- matching workflow: `UI QA` (`.github/workflows/ui-qa.yml`).
+- run ID: `36035600267`.
+- run number: `110`.
+- head SHA: `f7748a65231282df621d2ba52ab10f355ee027ad`.
+- event: `push`.
+- status: `completed`.
+- conclusion: `success`.
+- job ID: `107754792684` (`ui-qa`).
+- verified successful steps include Chromium + WebKit UI QA, P0-A/B/D local contracts, local orientation/layering, local V3 character high-res sharpness, calculator hierarchy, deployed P0-A/B/D checks, deployed orientation/layering, deployed V3 high-res sharpness, evidence rendering, and screenshot upload.
+- `31-*sharpness-v2` screenshots/artifacts have NOT yet been manually inspected at this checkpoint.
 
 ## DO NOT REPEAT / REJECTED
 - Do not redo repo-wide/source/Library/V2/Session1/2A/2B.1/layout/orientation/calculator/P0 investigations or redraw/reconstruction.
@@ -87,11 +98,12 @@ Clean production-only mapping commit on `main`:
 - Do not remap the three production high-resolution assets unless a later verified QA failure proves the mapping itself wrong.
 - Do not change verified layout/business logic during QA.
 - Do not perform repair cleanup again on `main`; current `main` is already verified free of repair-only residue.
-- Do not create another QA trigger while the run from `f7748a65231282df621d2ba52ab10f355ee027ad` is pending/being inspected.
+- Do not create another QA trigger or rerun `36035600267`; the run is verified successful.
+- Do not infer visual acceptance from workflow success alone; manually inspect the `31-*sharpness-v2` evidence next.
 
 ## OPEN BLOCKERS
-1. Inspect ONLY the UI QA run caused by trigger commit `f7748a65231282df621d2ba52ab10f355ee027ad`; record exact run ID/status/conclusion; checkpoint before screenshots/artifacts.
-2. Manually inspect `31-*sharpness-v2` screenshots for final acceptance of all three characters and verified composition; checkpoint final acceptance/result.
+1. Manually inspect `31-*sharpness-v2` screenshots from successful run `36035600267` for final acceptance of all three characters and verified composition; checkpoint final acceptance/result.
+2. After final visual acceptance, remove the temporary QA trigger marker `qa/RUN_UI_QA_V3` if no longer needed, without touching verified production/runtime/UI files; checkpoint final clean state.
 
 ## EXACT NEXT RECOVERY ACTION
-After confirming this QA-trigger checkpoint is durable, inspect ONLY GitHub Actions runs associated with QA trigger commit `f7748a65231282df621d2ba52ab10f355ee027ad`. Record the matching `UI QA` run ID/status/conclusion and immediately persist that QA-run checkpoint before manually inspecting `31-*sharpness-v2` screenshots or any QA artifacts. Do not make any other change in that work unit.
+After confirming this QA-run checkpoint is durable, inspect ONLY the `ui-qa-screenshots` artifact from successful run `36035600267`, focusing on the `31-*sharpness-v2` screenshots. Manually verify that all three required characters are present together where expected, bottom-left has no glasses, top-left/right story details remain correct, no stacking/layering regression is visible, and sharpness is acceptably improved across the generated viewport/orientation evidence. Immediately persist the visual-acceptance result before removing the temporary QA trigger marker or making any other change.
