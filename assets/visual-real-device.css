@@ -123,7 +123,7 @@
   /* Deliberate center lane with edge rails for the three-person frame. */
   #app-menus{
     width:min(326px,calc(100% - 56px))!important;
-    margin:18px auto 0!important;
+    margin:16px auto 0!important;
   }
   #app-menus::before{inset:-7px -9px -10px!important;border-radius:22px!important;}
 
@@ -174,11 +174,42 @@
   .decor-b{width:152px!important;height:141px!important;left:-50px!important;bottom:max(2px,calc(env(safe-area-inset-bottom) + 1px))!important;}
   .decor-c{width:118px!important;height:225px!important;right:-40px!important;bottom:max(1px,env(safe-area-inset-bottom))!important;}
 
-  .brand-masthead{margin-bottom:4px!important;}
-  .hero{width:min(326px,calc(100% - 56px))!important;padding:14px 14px!important;border-radius:20px!important;}
-  .brand-title{font-size:17px!important;}
-  .brand-subtitle{font-size:10.5px!important;margin-top:5px!important;}
-  .manager-btn{min-height:42px!important;font-size:11px!important;border-radius:13px!important;}
+  /* Mobile hierarchy: masthead owns the brand. The hero becomes a compact
+     utility strip instead of repeating the brand title and presenting Matrix
+     as the primary call-to-action. */
+  .brand-masthead{margin-bottom:2px!important;}
+  .hero{
+    width:min(326px,calc(100% - 56px))!important;
+    padding:10px 12px!important;
+    border-radius:17px!important;
+    background:rgba(255,253,249,.78)!important;
+    border-color:rgba(205,174,150,.34)!important;
+    box-shadow:0 4px 14px rgba(79,51,35,.045)!important;
+    backdrop-filter:blur(6px)!important;
+    -webkit-backdrop-filter:blur(6px)!important;
+  }
+  .hero-row{gap:7px!important;}
+  .brand-title{display:none!important;}
+  .brand-subtitle{
+    margin:0 auto!important;
+    max-width:280px!important;
+    font-size:10.5px!important;
+    line-height:1.35!important;
+    color:#87786f!important;
+    font-weight:600!important;
+  }
+  .manager-btn{
+    width:auto!important;
+    min-height:36px!important;
+    max-width:100%!important;
+    margin:0 auto!important;
+    padding:0 12px!important;
+    border-radius:999px!important;
+    font-size:10.5px!important;
+    background:rgba(111,72,53,.065)!important;
+    border-color:rgba(111,72,53,.15)!important;
+  }
+  .manager-btn::after{margin-left:8px!important;font-size:18px!important;}
 
   /* Modal keeps three people visible; reuse the detailed masters. */
   body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:80px!important;height:84px!important;left:-10px!important;}
