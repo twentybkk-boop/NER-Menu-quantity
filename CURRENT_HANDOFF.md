@@ -41,6 +41,18 @@ Desired corrected combined `right-01.b64`:
 - deterministic canonical text-blob target `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`.
 - Current production/staging `right-01.b64` has NOT yet been replaced at this checkpoint.
 
+## RIGHT-01 REPAIR WORKFLOW — CREATED, VERIFIED, NOT TRIGGERED
+Temporary repair-only workflow:
+- path `.github/workflows/repair-right-01-fresh.yml`
+- creation commit `16441f9888ff36b10021b3dd082efa5aed15ee0e`
+- trigger path `repair-staging/right/RUN_RIGHT01_FRESH` on repair branch only
+- commit verification: changed ONLY `.github/workflows/repair-right-01-fresh.yml`
+- workflow concatenates ONLY `right-01a-fresh.b64 + right-01b-fresh.b64`
+- requires assembled length exactly `12000`
+- requires `git hash-object` exactly `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`
+- only after those gates pass, replaces/commits ONLY `repair-staging/right/right-01.b64`
+- workflow has NOT been triggered at this checkpoint.
+
 ## FRESH CANONICAL EIGHT-RANGE TARGETS
 - `right-00` `4cfbab61acc0c0e6489b51da0bb423c2da1d5e50`
 - corrected `right-01` `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`
@@ -55,14 +67,16 @@ Desired corrected combined `right-01.b64`:
 - Do not redo repo-wide/source/Library/V2/Session1/2A/2B.1/layout/orientation/calculator/P0 investigations or redraw/reconstruction.
 - Do not alter the seven already matching staged ranges.
 - Do not rewrite either fresh `right-01a-fresh` or `right-01b-fresh`.
+- Do not recreate or rewrite `.github/workflows/repair-right-01-fresh.yml` unless current GitHub source of truth requires it.
 - Do not rerun final-right workflow before corrected `right-01.b64` itself is assembled/verified and checkpointed.
 - Do not touch production paths before final right binary target is VERIFIED durable.
 
 ## OPEN BLOCKERS
-1. Assemble fresh `right-01a + right-01b` into corrected `right-01.b64`, requiring length 12,000 and blob `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`; checkpoint.
-2. Revalidate all eight staged range blobs against fresh canonical targets; checkpoint.
-3. Trigger final-right assembler once with a new deterministic trigger change; verify final binary Git blob `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`; checkpoint.
-4. Only then: production mapping → cleanup → QA/manual acceptance.
+1. Trigger the already-created right-01 repair workflow exactly once; persist trigger state before inspecting run.
+2. Verify corrected `right-01.b64` length 12,000 and blob `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`; checkpoint immediately.
+3. Revalidate all eight staged range blobs against fresh canonical targets; checkpoint.
+4. Trigger final-right assembler once with a new deterministic trigger change; verify final binary Git blob `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`; checkpoint.
+5. Only then: production mapping → cleanup → QA/manual acceptance.
 
 ## EXACT NEXT RECOVERY ACTION
-After confirming this checkpoint is durable, create ONLY a temporary repair-branch workflow for correcting `right-01.b64` from the two already-verified fresh halves. It must concatenate `right-01a-fresh.b64 + right-01b-fresh.b64`, require length `12000` and `git hash-object` exactly `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`, and commit only corrected `right-01.b64` on success. Persist workflow creation before triggering it.
+After confirming this checkpoint is durable, create ONLY `repair-staging/right/RUN_RIGHT01_FRESH` on repair branch with a tiny deterministic marker to trigger `.github/workflows/repair-right-01-fresh.yml`. Verify the trigger commit is durable and immediately checkpoint trigger state before inspecting any Actions run. Do not make any other write in that work unit.
