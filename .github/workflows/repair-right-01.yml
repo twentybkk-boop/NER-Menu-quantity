@@ -1,0 +1,49 @@
+name: Repair canonical right-01 staging
+
+on:
+  push:
+    branches:
+      - repair/v3-2b2-exact-blobs-20260924
+    paths:
+      - repair-staging/right/RUN_RIGHT01_FRESH
+
+permissions:
+  contents: write
+
+jobs:
+  assemble-right-01:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Assemble and verify canonical right-01
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat \
+            repair-staging/right/right-01a-fresh.b64 \
+            repair-staging/right/right-01b-fresh.b64 \
+            > /tmp/right-01.b64
+
+          bytes="$(wc -c < /tmp/right-01.b64 | tr -d ' ')"
+          test "$bytes" = "12000"
+
+          actual="$(git hash-object /tmp/right-01.b64)"
+          expected="d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9"
+          echo "right-01 bytes=$bytes blob=$actual expected=$expected"
+          test "$actual" = "$expected"
+
+          cp /tmp/right-01.b64 repair-staging/right/right-01.b64
+          test "$(git hash-object repair-staging/right/right-01.b64)" = "$expected"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add repair-staging/right/right-01.b64
+          if git diff --cached --quiet; then
+            echo "right-01 already canonical; no commit needed"
+            exit 0
+          fi
+          git commit -m "Assemble canonical right chunk 01"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
