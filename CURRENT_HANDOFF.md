@@ -8,275 +8,220 @@
 
 - Repository: `twentybkk-boop/NER-Menu-quantity`
 - Branch: `main`
-- Latest known code/workflow commit before this handoff update: `f5950085f37101f10a10eb4b3294b92b76306291`
-- Message: `Restore temporary QA edits before verified atlas rebase`
-- Original Phase 1 work began from the repo state documented in `docs/UI_THUMBNAIL_ASSET_MAP.md` (`a9b26e4768972de59fd6a1ac9e1aa0fccf0077ea`).
+- Latest verified implementation / QA HEAD before this handoff-only commit: `7fbe6a3395052959351fd9b435b9b4d0bf1f7558`
+- Commit: `Persist contact sheet visual evidence in UI QA`
+- Final acceptance run: **35959886530** — SUCCESS
+- Final screenshot artifact: **10792165909** (`ui-qa-screenshots`)
+- Artifact includes 8 required UI screenshots + `09-thumbnail-contact-sheet.png`.
+
+This handoff update is documentation-only and is intentionally outside the UI QA path filter. Current `main` after this commit is the continuation source of truth.
 
 ---
 
-# NON-NEGOTIABLE CONSTRAINTS
+# FINAL VERIFIED STATUS
 
-Do **not** change recipe/business semantics without new bug evidence:
-
-- recipe calculations / quantities
-- canonical recipe meaning
-- exclusion semantics
-- replacement semantics
-- Matrix data logic
-- PIN behavior
-- unrelated import/export behavior
-
-Presentation/assets/layout/responsive/typography/visual hierarchy may be changed.
-
-## Locked visual requirement from real-device review
-
-Every state/page using the foreground character composition must show **all 3 people together**:
-
-1. top-left character
-2. bottom-left character
-3. right-side character
-
-The **bottom-left character must NOT wear glasses**.
-
-Foreground art must remain `pointer-events:none`, must never block tap/click, and must not cover menu names, thumbnails, subtitles, arrows, buttons, or form controls.
-
----
-
-# COMPLETED DURABLE WORK
-
-## Phase 1 — inventory / semantic thumbnail contract
-
-Completed and persisted; **do not rebuild from scratch** unless `recipe_master.json` changes:
+## Phase 1 — COMPLETE
 
 - Real menu inventory from `recipe_master.json`: **45 menus**.
-- Exact current-menu mapping coverage: **45/45 = 100%**.
-- Centralized mapping: `assets/menu-thumbnail-map.css`.
-- Durable map/report: `docs/UI_THUMBNAIL_ASSET_MAP.md`.
-- Browser contact sheet: `docs/UI_THUMBNAIL_CONTACT_SHEET.html`.
+- Exact current-menu thumbnail mapping: **45/45 = 100%**.
+- Central mapping: `assets/menu-thumbnail-map.css`.
+- Contact sheet: `docs/UI_THUMBNAIL_CONTACT_SHEET.html`.
 - Validator: `scripts/validate_thumbnail_assets.py`.
-- Atlas contract: **6×5 / 27 illustrated semantic regions / 3 unused cells**.
-- Four signature sets have distinct regions:
+- Atlas contract: **6×5**, **27 illustrated semantic regions**, **3 unused cells**.
+- Four signature sets use distinct regions:
   - `ชุดจุ่มหมูทะเล`
   - `ชุดจุ่มเนื้อ`
   - `ชุดจุ่มหมู`
   - `ชุดจุ่มเดี่ยวหมู`
-- Semantic mismatch guards/corrections exist for cabbage, ready-to-eat hotpot, tofu-skin vs tofu, calamari, banana samosa, `ลอยแก้ว`, and mochi.
-- No universal `unknown -> generic pot` fallback; only semantic-safe keyword fallback where appropriate.
+- Semantic guards/corrections remain in place for cabbage, ready-to-eat hotpot, tofu-skin vs tofu, calamari, banana samosa, `ลอยแก้ว`, and mochi.
+- No unsafe universal `unknown -> generic pot` fallback.
+- Production atlas: `assets/menu-thumbnails/semantic-atlas-v1.webp`.
+- Verified production atlas size: **59,500 bytes**.
+- Verified production atlas SHA-256: **`1976697397b1581091dc3936412ac9789256b6bd0210ef8afdeac6ac375cd9b4`**.
+- Integrity is now a durable validator gate: wrong size or SHA fails CI.
+- Temporary `tmp/ui-atlas/part-*.b64` staging is gone.
+- Production atlas promotion originally landed at `d03c84c70720f9b6b6171f8e3401a8a372329201` (`Install verified generated thumbnail atlas [skip ci]`).
+- Phase 1 acceptance was hardened with durable integrity gating at `0cb82b64be576891e374fc753cc322824cacf3a0`.
 
-## Phase 2 — UI/presentation work already integrated
+### Contact-sheet visual acceptance
 
-Already in repo; **do not restart**:
+`09-thumbnail-contact-sheet.png` from final artifact **10792165909** was inspected manually after promotion.
 
-- Background master integrated.
-- Three independent foreground assets:
-  - `assets/overlay-top-left.webp`
-  - `assets/overlay-bottom-left.webp`
-  - `assets/overlay-right.webp`
-- Character source assets under `assets/ner-character-*.png`.
-- Layer architecture: `assets/visual-core.css`.
-- Modal styling: `assets/visual-modal.css`.
-- Responsive phone/iPad portrait/iPad landscape: `assets/visual-responsive.css`.
-- `assets/visual-polish.css` imports the presentation layers + thumbnail map.
-- Safe-area support for `env(safe-area-inset-top)` / `env(safe-area-inset-bottom)`.
-- Menu cards use semantic thumbnail artwork and larger thumbnail regions.
-- Calculator and Matrix responsive work exists.
-- Modal page-scroll restoration regression was fixed and persisted:
-  - `f79f3fa49344968a5d1e0b64482e4e1f6d349b43`
-  - `Preserve page scroll across modal lifecycle [skip ci]`
+Observed:
 
-## Stable automated regression baseline
-
-Run **35951516719** passed:
-
-- Chromium + WebKit
-- `390×844`, `820×1180`, `1180×820`
-- thumbnail coverage `45/45 (100%)`
-- four signature regions unique
-- semantic correction/mismatch guards pass
-- screenshot artifact **10788862475**
+- 27/27 illustrated regions render.
+- Style/crop/color treatment is cohesive.
+- Four signature set images remain distinguishable.
+- Pork / beef / organ / shrimp / squid / fish / seafood regions are recognizable.
+- Leafy vegetable / cabbage / noodles / tofu / tofu-skin / egg / rice regions are semantically distinct.
+- Fried-bites / calamari / banana-samosa / loy-kaew / mochi / ready-to-eat regions are recognizable and not obviously mismatched.
+- No atlas regeneration is justified by current evidence.
 
 ---
 
-# GENERATED FOOD ATLAS — VERIFIED BY QA, FINAL PERSIST STILL IN PROGRESS
+## Phase 2 — VERIFIED AUTOMATED + SCREENSHOT ACCEPTANCE
 
-The newer cohesive generated food atlas is transported in crash-safe Base64 chunks because direct binary writes repeatedly timed out.
+Presentation-only work is integrated; recipe/business semantics were not intentionally changed.
 
-Temporary source on `main` until install succeeds:
+### Layer / background / brand
 
-`tmp/ui-atlas/part-00.b64` … `part-08.b64`
+- `assets/background-master.webp` remains the real background artwork.
+- `assets/visual-background.css` now shields the primary content zone strongly enough that the embedded background brand/text no longer creates a duplicate blurry NER logo behind UI content.
+- Illustrated background remains visible toward the edges, especially on iPad landscape.
+- Hero hierarchy is readable on phone, iPad portrait, and iPad landscape.
 
-All 9 parts reconstruct:
+### Foreground characters — locked requirement
 
-- target: `assets/menu-thumbnails/semantic-atlas-v1.webp`
-- decoded size: **59,500 bytes**
-- verified SHA-256: **`1976697397b1581091dc3936412ac9789256b6bd0210ef8afdeac6ac375cd9b4`**
+All three independent character layers remain present:
 
-The stale hash gate was corrected by:
-
-- `1bf8c4b503e7e92739d500ba28b1543e981c9f91`
-- `Correct generated atlas integrity gate`
-
-**Do not regenerate this atlas because of workflow persist failures. The bytes and UI behavior have already passed repeated QA.**
-
----
-
-# QA EVIDENCE FOR THE GENERATED ATLAS
-
-## Run 35957227382
-
-All functional/visual automation passed before persistence:
-
-- hydrate/hash/size: PASS
-- thumbnail validator: PASS
-  - `45/45 (100%)`
-  - atlas `6×5`
-  - signature regions `4/4 unique`
-  - semantic gates pass
-- Chromium iPhone / iPad portrait / iPad landscape: PASS
-- WebKit iPhone / iPad portrait / iPad landscape: PASS
-- overall target sizes: `390×844`, `820×1180`, `1180×820`: PASS
-- screenshot artifact: **10791275506**
-
-Only failure: verified asset commit could not push because remote `main` advanced during the long run (non-fast-forward race).
-
-## Run 35957450034
-
-This rerun again proved the generated atlas itself is good:
-
-- hydrate SHA `197669...`: **PASS**
-- 59,500-byte gate: **PASS**
-- thumbnail coverage `45/45`: **PASS**
-- signature `4/4 unique`: **PASS**
-- semantic guards: **PASS**
-- Chromium all 3 viewports: **PASS**
-- WebKit all 3 viewports: **PASS**
-- screenshots uploaded: **PASS**
-- screenshot artifact: **10790951388**
-
-The persist step created local commit prefix `48c7817` (`Install verified generated thumbnail atlas [skip ci]`) and correctly removed all 9 staging chunks locally, but rebase failed with:
-
-`error: cannot rebase: You have unstaged changes.`
-
-Root cause: the QA step temporarily rewrites tracked `qa/ui-qa.mjs` at runtime, so the worktree was intentionally dirty when the persist step tried to rebase onto a newer `main`. This is **not an atlas, UI, validator, or business-logic failure**.
-
-## Latest workflow fix
-
-Commit:
-
-- `f5950085f37101f10a10eb4b3294b92b76306291`
-- `Restore temporary QA edits before verified atlas rebase`
-
-adds this before the verified asset commit/rebase:
-
-`git restore --worktree qa/ui-qa.mjs`
-
-The persist flow is now intended to be:
-
-1. QA passes.
-2. Restore temporary tracked harness edits.
-3. Stage verified atlas + remove `tmp/ui-atlas/part-*.b64`.
-4. Commit `Install verified generated thumbnail atlas [skip ci]`.
-5. `git fetch origin main`.
-6. `git rebase origin/main`.
-7. Push normally; **no force push**.
-
-Commit `f5950085...` changes the workflow file and therefore triggers a fresh `Temporary UI QA` run.
-
----
-
-# EXACT NEXT ACTION
-
-**Do not redo inventory, taxonomy, atlas generation, architecture audit, or previous visual/root-cause investigation.**
-
-1. Re-check current `main` HEAD; current GitHub wins.
-2. Find the newest `Temporary UI QA` run for `f5950085...` or any newer `main` commit.
-3. Verify again:
-   - hydrate SHA/size pass
-   - validator 45/45 pass
-   - Chromium all 3 viewports pass
-   - WebKit all 3 viewports pass
-   - menu/calculator/modal-scroll pass
-   - Matrix/PIN/admin regression pass
-4. Confirm the persist step pushes `Install verified generated thumbnail atlas [skip ci]` (or equivalent) onto **current `main`**.
-5. Confirm on `main` after the push:
-   - `assets/menu-thumbnails/semantic-atlas-v1.webp` is the verified generated 59,500-byte atlas
-   - SHA-256 = `1976697397b1581091dc3936412ac9789256b6bd0210ef8afdeac6ac375cd9b4`
-   - `tmp/ui-atlas/part-*.b64` are gone
-6. Inspect the newest 8 screenshots manually; automated PASS is not final visual acceptance.
-7. Continue Phase 2 only from actual screenshot defects, especially:
-   - all 3 characters present together
-   - bottom-left character **without glasses**
-   - no important content hidden by foreground
-   - thumbnail crop/recognizability
-   - brand hierarchy
-   - iPhone/iPad safe areas
-   - mid/lower scroll composition
-   - calculator modal proportions and final-row reachability
-8. After visual acceptance, remove temporary staging/QA clutter that is no longer useful while keeping durable tests/validator/docs.
-
----
-
-# REQUIRED VISUAL QA BEFORE FINAL ACCEPTANCE
-
-Inspect actual screenshots for at least:
-
-1. iPhone top
-2. iPhone mid-scroll
-3. iPhone lower-scroll
-4. iPhone calculator modal
-5. iPad portrait top
-6. iPad portrait mid-scroll
-7. iPad landscape top
-8. iPad landscape mid-scroll
-
-Then perform final human real-device checks on iPhone/iPad.
-
----
-
-# KEY CONTINUATION FILES
-
-- `CURRENT_HANDOFF.md`
-- `index.html`
-- `recipe_master.json` — business source of truth
-- `assets/menu-thumbnail-map.css`
-- `assets/menu-thumbnails/semantic-atlas-v1.webp`
-- `assets/background-master.webp`
 - `assets/overlay-top-left.webp`
 - `assets/overlay-bottom-left.webp`
 - `assets/overlay-right.webp`
-- `assets/visual-core.css`
-- `assets/visual-modal.css`
-- `assets/visual-responsive.css`
-- `assets/visual-polish.css`
-- `docs/UI_THUMBNAIL_ASSET_MAP.md`
-- `docs/UI_THUMBNAIL_CONTACT_SHEET.html`
-- `scripts/validate_thumbnail_assets.py`
-- `qa/ui-qa.mjs`
-- `.github/workflows/ui-qa.yml` — temporary QA/install workflow
-- `tmp/ui-atlas/part-*.b64` — temporary transport staging; delete only after verified atlas is safely on `main`
 
-## Recovery-only branches — NOT source of truth
+Verified from final screenshots:
 
-- `tmp-ui-fix-upload`
-- `tmp-ui-fix-upload2`
-- `tmp-atlas-checkpoint`
+- all 3 characters are simultaneously visible at top/mid/lower page states;
+- calculator modal now reserves illustration rails so all 3 remain visible while the modal is open;
+- characters do not cover calculator controls in the final phone modal screenshot;
+- bottom-left character is the **no-glasses** version;
+- foreground remains non-interactive (`pointer-events:none`) through the existing layer contract.
 
-Use `main` unless there is a specific recovery reason.
+### Responsive / UI behavior
+
+Final automated QA covers:
+
+- Chromium + WebKit;
+- `390×844` iPhone portrait;
+- `820×1180` iPad portrait;
+- `1180×820` iPad landscape;
+- no horizontal overflow;
+- background / foreground asset activation;
+- exactly three foreground character blocks in the normal page state;
+- semantic thumbnails resolve;
+- 4 signature regions are distinct;
+- menu open;
+- calculator open / close;
+- exclusion state;
+- replacement affordance / disabled replacement behavior when fixture provides it;
+- final result row reachability;
+- page scroll restoration after modal close;
+- Matrix / PIN path;
+- Matrix horizontal scroll;
+- JSON download;
+- orientation reflow.
+
+### Final screenshot visual inspection
+
+Artifact **10792165909** contains and the session inspected:
+
+1. `01-iphone-top.png`
+2. `02-iphone-mid.png`
+3. `03-iphone-lower.png`
+4. `04-iphone-calculator.png`
+5. `05-ipad-portrait-top.png`
+6. `06-ipad-portrait-mid.png`
+7. `07-ipad-landscape-top.png`
+8. `08-ipad-landscape-mid.png`
+9. `09-thumbnail-contact-sheet.png`
+
+Visual result at the verified checkpoint:
+
+- duplicate/blurry central background branding removed from the readable content zone;
+- cards and thumbnails are legible at actual rendered size;
+- set cards retain stronger visual prominence;
+- all three foreground people remain visible in the required captured states;
+- bottom-left has no glasses;
+- calculator modal composition keeps controls readable and leaves the three characters visible around the modal;
+- iPad portrait hero no longer collapses into an over-wrapped title;
+- iPad landscape uses the wider illustrated composition without stretching the phone layout;
+- no obvious semantic thumbnail mismatch was found in the final contact sheet.
 
 ---
 
-# WHAT NOT TO REDO
+# DURABLE QA / CLEANUP STATE
 
-- No repo-wide architecture audit.
-- No rebuilding 45-menu inventory unless `recipe_master.json` changed.
-- No taxonomy redesign without new data evidence.
-- No atlas regeneration because a final Git push/rebase step fails.
-- No business-logic changes while fixing presentation/QA.
-- Do not drop the proven modal scroll-position fix.
-- Do not force-push `main` to solve workflow races.
+`.github/workflows/ui-qa.yml` is now a normal durable **UI QA** workflow, not a temporary asset-persistence workflow.
 
-## Business logic changed by this UI/asset stream
+- permissions: `contents: read`;
+- no runtime source repair step remains;
+- no workflow commit/push step remains;
+- no atlas hydration / Base64 promotion step remains;
+- it runs the durable atlas integrity validator;
+- it runs Chromium + WebKit UI QA;
+- it renders contact-sheet evidence;
+- it uploads screenshot evidence.
 
-**NO intentional recipe/business-logic change.**
+The earlier QA harness scope bug (`innerWidth` / `innerHeight` referenced in Node scope) was fixed durably in `qa/ui-qa.mjs` at:
 
-Work in this stream is presentation/assets/responsive/QA plus the modal page-scroll lifecycle regression fix.
+- `efd03fc0f387c66d7c03c6a6a9800ff1f5c80d46`
+- `Fix viewport scope in durable UI QA [skip ci]`
+
+No temporary atlas staging remains on `main`.
+
+---
+
+# FINAL ACCEPTANCE EVIDENCE
+
+Final run on verified implementation HEAD:
+
+- Run: **35959886530**
+- Conclusion: **SUCCESS**
+- Thumbnail + atlas integrity gate: PASS
+- Chromium + WebKit UI QA: PASS
+- Contact sheet render / 27-region count: PASS
+- Screenshot upload: PASS
+- Artifact: **10792165909**
+- Artifact digest: `sha256:a7631097d3bc1984a8234373bb3de38a800ed802e2a67f33d2420ff236acc4b2`
+
+Previous clean acceptance run before contact-sheet evidence was added:
+
+- Run: **35959395652** — SUCCESS
+- Artifact: **10790854083**
+
+---
+
+# CONTINUATION SESSION COMMITS
+
+The session first observed atlas-promotion-era `main` at `d03c84c70720f9b6b6171f8e3401a8a372329201`; `main` then advanced concurrently to `1a5c25d81e735080579d12c6603f99cb08bc4245` before the first write in this continuation. Current GitHub always wins.
+
+Commits created by this continuation after recovering current state:
+
+- `e3385020522c1136df2efda9a8401f4a0a8985cc` — Repair durable UI QA harness without exposing test PIN
+- `efd03fc0f387c66d7c03c6a6a9800ff1f5c80d46` — Fix viewport scope in durable UI QA [skip ci]
+- `577feea897359ce256320baf54cc54bd64c2f521` — Shield primary content from embedded background branding
+- `7aa6bb6f33f1a0bb44f2c4c74981108a9f65f388` — Keep all three characters visible around calculator modal
+- `0cb82b64be576891e374fc753cc322824cacf3a0` — Lock verified production atlas integrity gate
+- `6801a9ff494a6756c7de823ef4b44737ecd93f49` — Finalize durable read-only UI QA workflow
+- `7fbe6a3395052959351fd9b435b9b4d0bf1f7558` — Persist contact sheet visual evidence in UI QA
+
+Business logic changed by this continuation: **NO**.
+
+Files intentionally changed in this continuation:
+
+- `qa/ui-qa.mjs`
+- `assets/visual-background.css`
+- `assets/visual-responsive.css`
+- `scripts/validate_thumbnail_assets.py`
+- `.github/workflows/ui-qa.yml`
+- `CURRENT_HANDOFF.md` (this final checkpoint)
+
+---
+
+# REMAINING HUMAN / REAL-DEVICE CHECK
+
+No known repository blocker remains from the requested Phase 1 / Phase 2 stream.
+
+The only useful remaining validation is a physical-device spot check on real Safari/iPhone/iPad hardware for browser chrome / Dynamic Island / bottom-toolbar appearance and touch feel. This cannot be proven by GitHub-hosted Playwright screenshots alone.
+
+If a real-device discrepancy is found, capture the exact viewport/state and fix only that evidenced presentation defect; rerun `UI QA` and reinspect the generated screenshots.
+
+---
+
+# EXACT NEXT ACTION IF THIS PROJECT IS RESUMED
+
+1. Read current `main` and this file; do not restart or redo the completed inventory/atlas/architecture work.
+2. If there is **new real-device defect evidence**, reproduce only that exact state and fix the owning presentation layer.
+3. If `recipe_master.json` changes, rerun the inventory/mapping validator and update only affected mappings/assets.
+4. Otherwise, there is no pending repository implementation task in this workstream.
+
+Do not change recipe calculations, quantities, canonical recipe semantics, exclusion/replacement semantics, Matrix data logic, PIN behavior, or unrelated import/export behavior without new bug evidence.
