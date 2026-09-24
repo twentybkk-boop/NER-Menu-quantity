@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NER Character Asset Contact Sheet</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#2f2926;background:#f6efe7}
+    *{box-sizing:border-box} body{margin:0;padding:28px} h1{margin:0 0 8px;font-size:28px} p{margin:0 0 22px;color:#6f625b}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+    .card{background:#fff;border:1px solid #decfc3;border-radius:18px;padding:16px;box-shadow:0 8px 24px rgba(75,51,38,.08)}
+    .card h2{margin:0 0 10px;font-size:17px}.meta{font-size:12px;color:#8a776c;margin-bottom:10px;word-break:break-all}
+    .stage{min-height:320px;border-radius:14px;display:grid;place-items:center;overflow:hidden;background-color:#fffdf9;background-image:linear-gradient(45deg,#f2ece6 25%,transparent 25%),linear-gradient(-45deg,#f2ece6 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#f2ece6 75%),linear-gradient(-45deg,transparent 75%,#f2ece6 75%);background-size:28px 28px;background-position:0 0,0 14px,14px -14px,-14px 0}
+    .stage img{display:block;max-width:100%;max-height:520px;object-fit:contain}
+    .wide{grid-column:1/-1}.wide .stage{min-height:520px}
+    .triptych{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;padding:12px}.triptych figure{margin:0;min-width:0}.triptych img{width:100%;height:360px;object-fit:contain}.triptych figcaption{text-align:center;font-size:12px;color:#715f54;margin-top:6px}
+    .accessories{display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:center}.accessories figure{margin:0;text-align:center}.accessories img{width:150px;height:150px;object-fit:contain}.accessories figcaption{font-size:12px;color:#715f54}
+  </style>
+</head>
+<body>
+  <h1>P0-A — Character asset inventory</h1>
+  <p>Durable visual evidence only. This page does not alter production behavior.</p>
+  <section class="grid">
+    <article class="card wide">
+      <h2>Team background / possible complete composition source</h2>
+      <div class="meta">assets/ner-team-bg.webp</div>
+      <div class="stage"><img src="../assets/ner-team-bg.webp" alt="NER team background" /></div>
+    </article>
+    <article class="card wide">
+      <h2>High-detail PNG character masters</h2>
+      <div class="triptych">
+        <figure><img src="../assets/ner-character-top-left.png" alt="top left character master" /><figcaption>top-left PNG</figcaption></figure>
+        <figure><img src="../assets/ner-character-bottom-left.png" alt="bottom left character master" /><figcaption>bottom-left PNG</figcaption></figure>
+        <figure><img src="../assets/ner-character-right.png" alt="right character master" /><figcaption>right PNG</figcaption></figure>
+      </div>
+    </article>
+    <article class="card wide">
+      <h2>Current live overlay assets</h2>
+      <div class="triptych">
+        <figure><img src="../assets/overlay-top-left.webp" alt="top left live overlay" /><figcaption>overlay-top-left.webp</figcaption></figure>
+        <figure><img src="../assets/overlay-bottom-left.webp" alt="bottom left live overlay" /><figcaption>overlay-bottom-left.webp</figcaption></figure>
+        <figure><img src="../assets/overlay-right.webp" alt="right live overlay" /><figcaption>overlay-right.webp</figcaption></figure>
+      </div>
+    </article>
+    <article class="card wide">
+      <h2>Identity accessory assets</h2>
+      <div class="stage accessories">
+        <figure><img src="../assets/accessory-glasses.svg" alt="glasses" /><figcaption>glasses</figcaption></figure>
+        <figure><img src="../assets/accessory-gray-fullface-helmet.svg" alt="gray full-face helmet" /><figcaption>gray full-face helmet</figcaption></figure>
+        <figure><img src="../assets/accessory-white-backpack.svg" alt="white backpack" /><figcaption>white backpack</figcaption></figure>
+      </div>
+    </article>
+    <article class="card wide">
+      <h2>Current background master</h2>
+      <div class="meta">assets/background-master.webp</div>
+      <div class="stage"><img src="../assets/background-master.webp" alt="background master" /></div>
+    </article>
+  </section>
+</body>
+</html>
