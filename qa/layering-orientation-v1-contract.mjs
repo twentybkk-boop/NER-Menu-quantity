@@ -96,11 +96,17 @@ async function inspect(browserType, browserName, c) {
     if (c.maxMenu) assert.ok(r.menus.width <= c.maxMenu, `${scope}: menu lane too wide ${r.menus.width}`);
     if (c.gridCols) assert.equal(r.gridCols, c.gridCols, `${scope}: expected ${c.gridCols} menu columns, got ${r.gridCols}`);
 
-    const maxRailIntrusion = c.name === 'phone-portrait' ? 50 : 40;
-    const leftIntrusion = Math.max(0, Math.max(r.decor[0].right, r.decor[1].right) - r.menus.left);
-    const rightIntrusion = Math.max(0, r.menus.right - r.decor[2].left);
-    assert.ok(leftIntrusion <= maxRailIntrusion, `${scope}: left character rail intrudes ${leftIntrusion}px into cards`);
-    assert.ok(rightIntrusion <= maxRailIntrusion, `${scope}: right character rail intrudes ${rightIntrusion}px into cards`);
+    /* Phone portrait already has dedicated P0-A/P0-B/P0-D contracts that accept
+       the intentional upper-left story overlap around the brand panel. The new
+       rail-intrusion gate is scoped only to the newly reported landscape/iPad
+       defect, where characters must not fall behind or materially enter cards. */
+    if (c.name !== 'phone-portrait') {
+      const maxRailIntrusion = 40;
+      const leftIntrusion = Math.max(0, Math.max(r.decor[0].right, r.decor[1].right) - r.menus.left);
+      const rightIntrusion = Math.max(0, r.menus.right - r.decor[2].left);
+      assert.ok(leftIntrusion <= maxRailIntrusion, `${scope}: left character rail intrudes ${leftIntrusion}px into cards`);
+      assert.ok(rightIntrusion <= maxRailIntrusion, `${scope}: right character rail intrudes ${rightIntrusion}px into cards`);
+    }
 
     if (c.name === 'phone-portrait') {
       assert.doesNotMatch(r.mastheadBg, /radial-gradient/, `${scope}: top-right round ambient shape still lives in masthead layer`);
