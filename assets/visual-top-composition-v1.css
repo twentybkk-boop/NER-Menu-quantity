@@ -1,0 +1,190 @@
+/* P0-D TOP COMPOSITION V1 — bounded first-screen art-direction pass.
+   Scope: phone masthead + compact utility hero + first category only.
+   Preserve P0-A approved character sources, P0-B ~300px center frame,
+   P0-C infographic tiles, and all recipe / replacement / Matrix / PIN behavior. */
+
+@media(max-width:767px){
+  /* Turn the brand moment into an illustrated editorial panel rather than a
+     free-floating logo above a utility list. The upper-left approved character
+     intentionally participates in this panel without covering the wordmark. */
+  .brand-masthead{
+    box-sizing:border-box!important;
+    width:min(300px,calc(100vw - 80px))!important;
+    min-height:150px!important;
+    margin:0 auto 6px!important;
+    padding:16px 16px 14px 58px!important;
+    text-align:left!important;
+    border:1px solid rgba(196,154,126,.26)!important;
+    border-radius:29px 29px 22px 22px!important;
+    background:
+      radial-gradient(circle at 91% 20%,rgba(198,216,170,.50) 0 22px,transparent 23px),
+      radial-gradient(circle at 82% 37%,rgba(230,198,173,.31) 0 34px,transparent 35px),
+      linear-gradient(145deg,rgba(255,253,248,.975),rgba(255,247,238,.92) 62%,rgba(248,243,226,.84))!important;
+    box-shadow:0 12px 30px rgba(88,57,42,.075),inset 0 1px 0 rgba(255,255,255,.88)!important;
+    overflow:visible!important;
+    isolation:isolate!important;
+  }
+  .brand-masthead::before{
+    content:"";
+    position:absolute;
+    z-index:1;
+    right:13px;
+    bottom:16px;
+    width:64px;
+    height:36px;
+    pointer-events:none;
+    border-radius:54% 46% 58% 42%;
+    background:radial-gradient(ellipse at center,rgba(221,149,116,.19) 0 48%,rgba(221,149,116,.08) 58%,transparent 72%);
+    transform:rotate(-7deg);
+  }
+  .brand-masthead::after{
+    content:"";
+    position:absolute;
+    z-index:1;
+    left:59px;
+    right:18px;
+    bottom:9px;
+    height:2px;
+    pointer-events:none;
+    border-radius:999px;
+    background:linear-gradient(90deg,rgba(207,126,94,.58),rgba(207,126,94,.16) 58%,transparent 100%);
+    transform:rotate(-.8deg);
+  }
+  .brand-mark{
+    font-size:58px!important;
+    line-height:.82!important;
+    letter-spacing:.018em!important;
+    color:#744835!important;
+    text-shadow:none!important;
+  }
+  .brand-thai{
+    margin-top:8px!important;
+    font-size:22.5px!important;
+    line-height:1!important;
+    color:#644031!important;
+  }
+  .brand-english{
+    margin-top:7px!important;
+    font-size:8.5px!important;
+    letter-spacing:.31em!important;
+    color:#94705d!important;
+  }
+  .brand-note{
+    max-width:198px!important;
+    margin:10px 0 0!important;
+    font-size:9.8px!important;
+    line-height:1.35!important;
+    color:#9c6755!important;
+    font-weight:750!important;
+    white-space:normal!important;
+  }
+
+  /* Enlarge and lower the approved upper-left story asset so the drink,
+     glasses, gesture and bubble read as part of the masthead illustration. */
+  .decor-a{
+    width:104px!important;
+    height:112px!important;
+    left:2px!important;
+    right:auto!important;
+    top:max(20px,calc(env(safe-area-inset-top) + 10px))!important;
+    bottom:auto!important;
+  }
+
+  /* The hero is a secondary utility ribbon under the brand panel. Matrix stays
+     available but no longer reads as the first-screen primary call-to-action. */
+  .hero{
+    box-sizing:border-box!important;
+    width:min(300px,calc(100vw - 80px))!important;
+    margin:-1px auto 0!important;
+    padding:9px 10px!important;
+    border:1px solid rgba(202,169,146,.27)!important;
+    border-radius:16px 16px 20px 20px!important;
+    background:linear-gradient(90deg,rgba(255,253,249,.86),rgba(250,242,231,.73))!important;
+    box-shadow:0 5px 16px rgba(79,51,35,.045)!important;
+    backdrop-filter:blur(6px)!important;
+    -webkit-backdrop-filter:blur(6px)!important;
+  }
+  .hero-row{
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:8px!important;
+    text-align:left!important;
+  }
+  .hero-row>div:first-child{
+    width:auto!important;
+    min-width:0!important;
+    flex:1 1 auto!important;
+  }
+  .brand-title{display:none!important;}
+  .brand-subtitle{
+    max-width:118px!important;
+    margin:0!important;
+    font-size:9.6px!important;
+    line-height:1.35!important;
+    color:#84746a!important;
+    font-weight:650!important;
+  }
+  .manager-btn{
+    width:auto!important;
+    min-width:0!important;
+    min-height:32px!important;
+    max-width:145px!important;
+    margin:0!important;
+    padding:0 9px!important;
+    flex:0 0 auto!important;
+    border-radius:999px!important;
+    border:1px solid rgba(111,72,53,.14)!important;
+    background:rgba(111,72,53,.055)!important;
+    color:#6f4a39!important;
+    box-shadow:none!important;
+    font-size:8.8px!important;
+    line-height:1.15!important;
+    white-space:nowrap!important;
+  }
+  .manager-btn::after{
+    margin-left:5px!important;
+    font-size:15px!important;
+  }
+
+  /* Only the first category receives the environmental/editorial treatment in
+     this bounded pass. The long list below remains untouched for the next P0-D
+     session so evidence can isolate whether this first-screen direction works. */
+  #app-menus{margin-top:12px!important;}
+  .category-block:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"]){
+    position:relative!important;
+    margin:0 -3px 22px!important;
+    padding:9px 5px 8px!important;
+    border-radius:22px!important;
+    background:
+      radial-gradient(circle at 92% 11%,rgba(199,217,177,.36) 0 23px,transparent 24px),
+      linear-gradient(180deg,rgba(255,247,239,.74),rgba(255,253,249,.22))!important;
+    box-shadow:inset 0 0 0 1px rgba(205,173,149,.12),0 9px 24px rgba(79,51,35,.03)!important;
+  }
+  .category-block:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"]) .category-title{
+    width:fit-content!important;
+    min-height:31px!important;
+    margin:0 3px 9px!important;
+    padding:4px 8px 6px 4px!important;
+    border-radius:12px!important;
+    background:rgba(255,253,249,.68)!important;
+    color:#55362c!important;
+    font-size:16.5px!important;
+    box-shadow:0 3px 10px rgba(79,51,35,.025)!important;
+  }
+  .category-block:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"]) .category-title::after{
+    left:5px!important;
+    right:20%!important;
+    bottom:2px!important;
+    height:2px!important;
+    background:linear-gradient(90deg,#d18467,rgba(209,132,103,.12),transparent)!important;
+  }
+  .category-block:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"]) .menu-grid{
+    gap:7px!important;
+  }
+  .category-block:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"]) .menu-card{
+    border-color:rgba(199,156,126,.38)!important;
+    background:linear-gradient(90deg,rgba(220,149,115,.065) 0 4px,rgba(255,253,249,.99) 4px 100%)!important;
+    box-shadow:0 4px 12px rgba(76,52,39,.045)!important;
+  }
+}
