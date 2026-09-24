@@ -1,0 +1,176 @@
+/* V4 HANDS-ON UAT — Chunk 2: landscape calculator interaction, 2026-09-25.
+   Scope: UAT-004 / UAT-005 / UAT-010 only.
+   Presentation/responsive geometry only; business/exclusion/replacement/quantity semantics stay unchanged. */
+
+/* A phone rotated to 844x390 previously matched the generic 768–1023 tablet
+   rules. Those rules reserved 114px above + 150px below the calculator for art,
+   collapsing the modal card to 126px and turning exclusion/quantity into an
+   effectively unusable vertical strip. Low-height landscape is its own mode. */
+@media (orientation:landscape) and (max-height:540px) and (max-width:950px){
+  #calculatorModal:not(.is-hidden){
+    align-items:center!important;
+    justify-content:center!important;
+    padding-top:max(6px,env(safe-area-inset-top))!important;
+    padding-bottom:max(6px,env(safe-area-inset-bottom))!important;
+    padding-left:max(76px,env(safe-area-inset-left))!important;
+    padding-right:max(76px,env(safe-area-inset-right))!important;
+    overflow:hidden!important;
+  }
+
+  #calculatorModal:not(.is-hidden) .modal-card{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:none!important;
+    height:calc(100dvh - 12px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;
+    min-height:300px!important;
+    max-height:calc(100dvh - 12px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;
+    border-radius:18px!important;
+    overflow:hidden!important;
+    background:#fffdf9!important;
+  }
+
+  #calculatorModal:not(.is-hidden) .modal-header{
+    min-height:0!important;
+    flex:0 0 auto!important;
+    padding:7px 10px!important;
+    gap:8px!important;
+    background:rgba(255,252,247,.985)!important;
+    border-bottom:1px solid rgba(205,174,150,.30)!important;
+  }
+  #calculatorModal:not(.is-hidden) .modal-title{
+    font-size:15px!important;
+    line-height:1.15!important;
+  }
+  #calculatorModal:not(.is-hidden) .modal-subtitle{
+    margin-top:2px!important;
+    font-size:8.5px!important;
+    line-height:1.2!important;
+  }
+  #calculatorModal:not(.is-hidden) .close-btn{
+    width:31px!important;
+    height:31px!important;
+    flex:0 0 31px!important;
+    font-size:14px!important;
+  }
+
+  /* Restore simultaneous exclusion + quantity visibility. Each side owns its
+     vertical scrolling so the backdrop/card never becomes a split scroll seam. */
+  #calculatorModal:not(.is-hidden) .calculator-body{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    height:auto!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,46%) minmax(0,54%)!important;
+    overflow:hidden!important;
+    overflow-x:hidden!important;
+    overflow-y:hidden!important;
+    padding:0!important;
+    background:#fffdf9!important;
+  }
+  #calculatorModal:not(.is-hidden) .calc-panel{
+    box-sizing:border-box!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:auto!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    -webkit-overflow-scrolling:touch!important;
+    overscroll-behavior:contain!important;
+    padding:9px 10px!important;
+    position:relative!important;
+  }
+  #calculatorModal:not(.is-hidden) #leftPanel{
+    z-index:1!important;
+    width:auto!important;
+    background:linear-gradient(180deg,#fffdf9 0%,#fff9f6 100%)!important;
+    border-right:1px solid rgba(196,151,132,.24)!important;
+    border-bottom:0!important;
+    box-shadow:none!important;
+  }
+  #calculatorModal:not(.is-hidden) #rightPanel{
+    z-index:1!important;
+    width:auto!important;
+    flex:initial!important;
+    background:linear-gradient(180deg,#fbf7ef 0%,#f8f5ed 100%)!important;
+    box-shadow:none!important;
+  }
+  #calculatorModal:not(.is-hidden) .panel-title{
+    margin-bottom:7px!important;
+    font-size:11px!important;
+  }
+  #calculatorModal:not(.is-hidden) .exclude-item{margin-bottom:6px!important;}
+  #calculatorModal:not(.is-hidden) .exclude-btn{
+    min-height:40px!important;
+    padding:6px 8px!important;
+    border-radius:11px!important;
+    font-size:11px!important;
+  }
+  #calculatorModal:not(.is-hidden) .replacement-wrap{
+    margin:5px 0 3px 5px!important;
+    padding-left:6px!important;
+  }
+  #calculatorModal:not(.is-hidden) .replacement-trigger{
+    min-height:38px!important;
+    padding:6px 8px!important;
+    font-size:10.5px!important;
+  }
+  #calculatorModal:not(.is-hidden) .replacement-menu{
+    position:static!important;
+    max-height:150px!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  #calculatorModal:not(.is-hidden) .replacement-option{
+    min-height:36px!important;
+    padding:6px 8px!important;
+    font-size:10.5px!important;
+  }
+  #calculatorModal:not(.is-hidden) #netResultList{
+    grid-template-columns:1fr!important;
+    gap:5px!important;
+  }
+  #calculatorModal:not(.is-hidden) .net-card{
+    min-height:42px!important;
+    padding:6px 8px!important;
+    border-radius:11px!important;
+  }
+  #calculatorModal:not(.is-hidden) .net-name{font-size:10.5px!important;}
+  #calculatorModal:not(.is-hidden) .net-qty{font-size:18px!important;}
+  #calculatorModal:not(.is-hidden) .net-unit{font-size:8.5px!important;}
+
+  /* Preserve all three approved story characters, but move them into dedicated
+     non-interactive side rails instead of reserving vertical modal space or
+     painting across controls. */
+  body:has(#calculatorModal:not(.is-hidden)) #decor-layer{
+    z-index:105!important;
+    pointer-events:none!important;
+  }
+  body:has(#calculatorModal:not(.is-hidden)) .decor-person{
+    pointer-events:none!important;
+  }
+  body:has(#calculatorModal:not(.is-hidden)) .decor-a{
+    width:72px!important;
+    height:78px!important;
+    left:0!important;
+    right:auto!important;
+    top:max(7px,env(safe-area-inset-top))!important;
+    bottom:auto!important;
+  }
+  body:has(#calculatorModal:not(.is-hidden)) .decor-b{
+    width:74px!important;
+    height:70px!important;
+    left:0!important;
+    right:auto!important;
+    top:auto!important;
+    bottom:max(7px,env(safe-area-inset-bottom))!important;
+  }
+  body:has(#calculatorModal:not(.is-hidden)) .decor-c{
+    width:72px!important;
+    height:112px!important;
+    left:auto!important;
+    right:0!important;
+    top:auto!important;
+    bottom:max(7px,env(safe-area-inset-bottom))!important;
+  }
+}
