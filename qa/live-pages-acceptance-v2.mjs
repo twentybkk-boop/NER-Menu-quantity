@@ -9,9 +9,9 @@ fs.mkdirSync(shotDir, { recursive: true });
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 const EXPECTED = [
-  ['.decor-a', 'overlay-top-left.webp'],
-  ['.decor-b', 'overlay-bottom-left.webp'],
-  ['.decor-c', 'overlay-right.webp'],
+  ['.decor-a', 'overlay-top-left-hires.webp'],
+  ['.decor-b', 'overlay-bottom-left-hires.webp'],
+  ['.decor-c', 'overlay-right-hires.webp'],
 ];
 
 async function waitForCurrentDeployment(page) {
