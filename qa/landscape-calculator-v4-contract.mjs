@@ -154,8 +154,13 @@ async function tapFlow(page, scope, candidate) {
 
   const trigger = page.locator('.replacement-trigger').filter({hasText:candidate.replacement}).first();
   assert.equal(await trigger.count(), 1, `${scope}: replacement trigger missing for ${candidate.replacement}`);
-  await trigger.click();
   const option = page.locator('.replacement-option.selectable').filter({hasText:candidate.replacement}).first();
+  // toggleExclude intentionally opens the replacement picker. Do not click the
+  // trigger again when it is already expanded, because that would close the
+  // very menu this interaction gate is trying to exercise.
+  if (await option.count() === 0 && (await trigger.getAttribute('aria-expanded')) !== 'true') {
+    await trigger.click();
+  }
   assert.equal(await option.count(), 1, `${scope}: selectable replacement option missing: ${candidate.replacement}`);
   await option.click();
   assert.match(await page.locator('.replacement-trigger').first().innerText(), new RegExp(candidate.replacement), `${scope}: selected replacement is not reflected in trigger`);
