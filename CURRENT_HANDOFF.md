@@ -32,7 +32,8 @@
    - right candidate target blob `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`
 
 ## WORK OBSERVED BUT NOT YET DURABLY VERIFIED
-- A Git blob `812e704774c25a1c2387e03e48a3d1eb27b9e672` was created during the latest interrupted attempt, but the current handoff explicitly says it does NOT equal the verified top candidate deterministic Git SHA; do NOT wire it into production.
+- A Git blob `812e704774c25a1c2387e03e48a3d1eb27b9e672` was created during an interrupted attempt, but it does NOT equal the verified top candidate deterministic Git SHA; do NOT wire it into production.
+- A bottom q30/recompressed Git blob `65c0568c8b4895ead37932fa6c7f2814ec4c90a1` was created during emergency recovery and its returned SHA matched that q30 byte payload, but it does NOT equal the verified bottom candidate target SHA `cf1f98efe9c9f67cb48e3bd80f512b0f9adece45`; therefore it is NOT an accepted production candidate and must not be wired into production.
 - Local recovered candidate files visible in this conversation include `top-q70-a8.webp`, `bottom-q70-a60.webp`, and `right-q70-a60.webp`; they must be re-verified only as needed before production wiring.
 - No clean production commit changing exactly the three high-res WebP paths is yet durably VERIFIED.
 - Post-repair UI QA/sharpness PASS is not yet verified.
@@ -52,7 +53,7 @@
 - Invalid orphan blobs `35c12cd9...`, `42c06cd2...`, `9af0dd1f...`.
 - Previously rejected blank/transparent high-res replacements.
 - Re-audit of already-cleaned staging/tmp incidents.
-- Wiring unverified blobs such as `812e7047...` into production.
+- Wiring unverified/non-target blobs such as `812e7047...` or `65c0568c...` into production.
 
 ## EXACT NEXT RECOVERY ACTION
 Recover in one small chunk only: verify the exact current `main` head and create/use a temporary repair branch from that head; then transport only ONE candidate asset first (top-left) and verify its resulting Git blob SHA exactly equals `990c6b3523f79a483f41f17032f03f880f97f461`. Immediately persist that result in `CURRENT_HANDOFF.md` before attempting bottom-left or right. Do not modify production `main` asset paths until all three exact blob SHAs are durably verified.
