@@ -38,9 +38,10 @@ async function waitForDeployment(page) {
 
 const CASES = [
   {name:'phone-portrait', width:390, height:844, maxMenu:302},
-  {name:'phone-landscape', width:844, height:390, minMenu:600, maxMenu:625},
+  {name:'phone-landscape', width:844, height:390, minMenu:600, maxMenu:625, gridCols:2},
   {name:'ipad-portrait', width:768, height:1024, minMenu:500, maxMenu:525},
-  {name:'ipad-landscape', width:1024, height:768, minMenu:660, maxMenu:685},
+  {name:'ipad-landscape', width:1024, height:768, minMenu:660, maxMenu:685, gridCols:2},
+  {name:'ipad-wide-landscape', width:1180, height:820, minMenu:660, maxMenu:685, gridCols:3},
 ];
 
 async function inspect(browserType, browserName, c) {
@@ -58,7 +59,7 @@ async function inspect(browserType, browserName, c) {
 
     const r = await page.evaluate(() => {
       const menus = document.querySelector('#app-menus').getBoundingClientRect();
-      const shell = document.querySelector('#app-shell').getBoundingClientRect();
+      const gridStyle = getComputedStyle(document.querySelector('.menu-grid'));
       const decor = [...document.querySelectorAll('.decor-person')].map(el => {
         const rect = el.getBoundingClientRect();
         return {left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,width:rect.width,height:rect.height,pointer:getComputedStyle(el).pointerEvents,bg:getComputedStyle(el).backgroundImage};
@@ -67,6 +68,7 @@ async function inspect(browserType, browserName, c) {
       const later = [...document.querySelectorAll('.category-block')].find(el => !el.matches(':has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"])'));
       return {
         menus:{left:menus.left,right:menus.right,width:menus.width},
+        gridCols:gridStyle.gridTemplateColumns.split(' ').length,
         shell:{z:parseInt(getComputedStyle(document.querySelector('#app-shell')).zIndex)||0},
         decorZ:parseInt(getComputedStyle(document.querySelector('#decor-layer')).zIndex)||0,
         decor,
@@ -91,6 +93,7 @@ async function inspect(browserType, browserName, c) {
     }
     if (c.minMenu) assert.ok(r.menus.width >= c.minMenu, `${scope}: menu lane too narrow ${r.menus.width}`);
     if (c.maxMenu) assert.ok(r.menus.width <= c.maxMenu, `${scope}: menu lane too wide ${r.menus.width}`);
+    if (c.gridCols) assert.equal(r.gridCols, c.gridCols, `${scope}: expected ${c.gridCols} menu columns, got ${r.gridCols}`);
 
     const maxRailIntrusion = c.name === 'phone-portrait' ? 50 : 40;
     const leftIntrusion = Math.max(0, Math.max(r.decor[0].right, r.decor[1].right) - r.menus.left);
