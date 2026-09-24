@@ -1,0 +1,158 @@
+/* P0-A — approved three-character composition restoration, 2026-09-24.
+   Source of truth: docs/UI_REAL_DEVICE_FEEDBACK_2026-09-24_V2.md +
+   docs/UI_CHARACTER_ASSET_CONTACT_SHEET.html.
+
+   The repository already contains the complete approved story assets:
+   - overlay-top-left.webp: glasses + drink + gesture + speech bubble
+   - overlay-bottom-left.webp: NO glasses + gray full-face helmet + cat/table + speech bubble
+   - overlay-right.webp: white backpack + clipboard/pen + hotpot scene + speech bubble
+
+   Earlier real-device CSS replaced these self-contained compositions with partial PNG
+   masters plus generic accessory SVGs, then positioned much of each box outside the
+   viewport. This layer restores the authoritative complete artwork without touching
+   recipe, replacement, Matrix, PIN, import/export or thumbnail semantics. */
+
+#decor-layer{
+  z-index:24!important;
+  pointer-events:none!important;
+}
+
+.decor-person{
+  background-repeat:no-repeat!important;
+  background-position:center!important;
+  background-size:contain!important;
+  opacity:1!important;
+  overflow:visible!important;
+  pointer-events:none!important;
+  user-select:none!important;
+  mix-blend-mode:normal!important;
+  filter:drop-shadow(0 6px 12px rgba(73,45,31,.08)) saturate(1.015) contrast(1.01)!important;
+}
+
+/* Restore the self-contained approved story compositions. */
+.decor-a{background-image:url("overlay-top-left.webp")!important;}
+.decor-b{background-image:url("overlay-bottom-left.webp")!important;}
+.decor-c{background-image:url("overlay-right.webp")!important;}
+
+/* The approved overlays already contain their identity accessories.
+   Disable later synthetic accessory patching so helmet/backpack are not duplicated. */
+.decor-person::before,
+.decor-person::after{
+  content:none!important;
+  display:none!important;
+  background-image:none!important;
+}
+
+/* Phone: keep the entire artwork box inside the viewport. The protected center
+   surface remains above this layer, so characters never intercept controls. */
+@media(max-width:767px){
+  .decor-a{
+    width:108px!important;
+    height:118px!important;
+    left:2px!important;
+    right:auto!important;
+    top:max(10px,calc(env(safe-area-inset-top) + 4px))!important;
+    bottom:auto!important;
+  }
+  .decor-b{
+    width:132px!important;
+    height:98px!important;
+    left:2px!important;
+    right:auto!important;
+    top:auto!important;
+    bottom:max(3px,calc(env(safe-area-inset-bottom) + 2px))!important;
+  }
+  .decor-c{
+    width:96px!important;
+    height:154px!important;
+    right:2px!important;
+    left:auto!important;
+    top:auto!important;
+    bottom:max(2px,calc(env(safe-area-inset-bottom) + 1px))!important;
+  }
+
+  /* Calculator keeps the same complete three story assets in the reserved rails. */
+  body:has(#calculatorModal:not(.is-hidden)) #decor-layer{z-index:105!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-a{
+    width:86px!important;
+    height:94px!important;
+    left:3px!important;
+    top:calc(env(safe-area-inset-top) + 2px)!important;
+  }
+  body:has(#calculatorModal:not(.is-hidden)) .decor-b{
+    width:108px!important;
+    height:80px!important;
+    left:3px!important;
+    bottom:calc(env(safe-area-inset-bottom) + 2px)!important;
+  }
+  body:has(#calculatorModal:not(.is-hidden)) .decor-c{
+    width:82px!important;
+    height:132px!important;
+    right:3px!important;
+    bottom:calc(env(safe-area-inset-bottom) + 2px)!important;
+  }
+}
+
+/* iPad portrait: preserve full story silhouettes rather than clipping them to rails. */
+@media(min-width:768px) and (max-width:1023px){
+  .decor-a{
+    width:166px!important;
+    height:182px!important;
+    left:8px!important;
+    right:auto!important;
+    top:max(14px,calc(env(safe-area-inset-top) + 7px))!important;
+    bottom:auto!important;
+  }
+  .decor-b{
+    width:206px!important;
+    height:148px!important;
+    left:8px!important;
+    right:auto!important;
+    top:auto!important;
+    bottom:max(7px,calc(env(safe-area-inset-bottom) + 4px))!important;
+  }
+  .decor-c{
+    width:146px!important;
+    height:228px!important;
+    right:8px!important;
+    left:auto!important;
+    top:auto!important;
+    bottom:max(6px,calc(env(safe-area-inset-bottom) + 3px))!important;
+  }
+
+  body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:120px!important;height:132px!important;left:8px!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-b{width:150px!important;height:108px!important;left:8px!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-c{width:108px!important;height:168px!important;right:8px!important;}
+}
+
+/* iPad landscape / desktop: use larger complete compositions, still fully inside viewport. */
+@media(min-width:1024px){
+  .decor-a{
+    width:188px!important;
+    height:206px!important;
+    left:10px!important;
+    right:auto!important;
+    top:max(14px,calc(env(safe-area-inset-top) + 6px))!important;
+    bottom:auto!important;
+  }
+  .decor-b{
+    width:232px!important;
+    height:166px!important;
+    left:10px!important;
+    right:auto!important;
+    top:auto!important;
+    bottom:max(5px,calc(env(safe-area-inset-bottom) + 2px))!important;
+  }
+  .decor-c{
+    width:168px!important;
+    height:260px!important;
+    right:10px!important;
+    left:auto!important;
+    top:auto!important;
+    bottom:max(4px,calc(env(safe-area-inset-bottom) + 2px))!important;
+  }
+
+  body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:132px!important;height:145px!important;left:10px!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-b{width:162px!important;height:116px!important;left:10px!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-c{width:116px!important;height:180px!important;right:10px!important;}
+}
