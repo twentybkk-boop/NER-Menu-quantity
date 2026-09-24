@@ -43,7 +43,7 @@ jobs:
       - name: Verify P0-A complete character composition
         run: node qa/character-composition-v2-contract.mjs
       - name: Verify calculator visual hierarchy contract
-        run: node qa/calculator-visual-contract.mjs
+        run: node qa/calculator-visual-v2-runner.mjs
       - name: Verify deployed GitHub Pages P0-A acceptance
         run: node qa/live-pages-acceptance-v2.mjs
       - name: Render thumbnail contact sheet evidence
