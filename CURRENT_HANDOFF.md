@@ -15,84 +15,52 @@ Finish V3 Session 2B.2 exact high-resolution character overlay recovery without 
 
 ## FAILURE ROOT CAUSE — LOCALIZED
 Failed final assembler run `36032106873` decoded 51,376 bytes but produced SHA256 `f2f715dc111e302ea6dd612df1e8a475a14ff33706bfc5c48f0fa3143583182c` instead of canonical `d94dffb...`.
-Fresh one-pass range comparison proved the only mismatching staged file was:
-- stale `right-01.b64` blob `c4a33fd7e0ebf46121c8a2c7a7db397364b0be26`
-- canonical `[6000:18000]` target blob `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`
-All other seven staged ranges matched fresh canonical expected values at that checkpoint.
+Fresh one-pass range comparison proved the only mismatching staged file was stale `right-01.b64`; all other seven staged ranges matched fresh canonical expected values.
 
-## RIGHT-01 FRESH SUBCHUNKS — BOTH VERIFIED EXACT
-Repair branch: `repair/v3-2b2-exact-blobs-20260924`.
-
-1. `repair-staging/right/right-01a-fresh.b64`
-   - canonical range `[6000:12000]`
-   - 6,000 chars
-   - expected/file blob `e39624890160330617bd4f28aa005fc9d91e9b4d`
-   - commit `014495378ee667195aad18d1471ff667bc139a63`
-   - STATUS VERIFIED EXACT.
-2. `repair-staging/right/right-01b-fresh.b64`
-   - canonical range `[12000:18000]`
-   - 6,000 chars
-   - expected/file blob `4c9767b0898fea0c847306c02863f57e92d24342`
-   - commit `dbcf5caa6c9c227f3dbd948d189b89b10008b86f`
-   - STATUS VERIFIED EXACT.
-
-## RIGHT-01 REPAIR WORKFLOW — CREATED, VERIFIED
-Temporary repair-only workflow:
-- path `.github/workflows/repair-right-01-fresh.yml`
-- creation commit `16441f9888ff36b10021b3dd082efa5aed15ee0e`
-- trigger path `repair-staging/right/RUN_RIGHT01_FRESH` on repair branch only
-- commit verification: changed ONLY `.github/workflows/repair-right-01-fresh.yml`
-- workflow concatenates ONLY `right-01a-fresh.b64 + right-01b-fresh.b64`
-- requires assembled length exactly `12000`
-- requires `git hash-object` exactly `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`
-- only after those gates pass, replaces/commits ONLY `repair-staging/right/right-01.b64`
-
-## RIGHT-01 REPAIR TRIGGER — DURABLE; ACTIONS RUN VERIFIED SUCCESS
-- trigger file `repair-staging/right/RUN_RIGHT01_FRESH`
-- deterministic marker `run-right01-fresh-v1`
-- trigger blob `ced56538cd6d9d7c712c49dbc8914c66d124af7c`
-- trigger commit `557181b4428905750c5bd13011bddc0ca6fb10a2`
-- commit changed ONLY `repair-staging/right/RUN_RIGHT01_FRESH`
-- Actions run for workflow `Repair right-01 from fresh halves`:
-  - run ID `36033565588`
-  - head SHA `557181b4428905750c5bd13011bddc0ca6fb10a2`
-  - event `push`
-  - status `completed`
-  - conclusion `success`
-
-## CORRECTED RIGHT-01 OUTPUT — INDEPENDENTLY VERIFIED EXACT
-- path `repair-staging/right/right-01.b64` on repair branch
-- latest path output commit `5d2164714cfc1e3dd010dd5509dc430fb883ed33` (`Repair exact right-01 from fresh halves`)
-- independently fetched file blob SHA: `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`
-- independent Git tree metadata for that output commit reports size exactly `12000`
-- required blob target `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`: MATCH
-- required length `12000`: MATCH
-- STATUS: VERIFIED EXACT; do not rewrite.
+## RIGHT-01 REPAIR — VERIFIED EXACT
+- fresh halves `right-01a-fresh.b64` and `right-01b-fresh.b64`: VERIFIED EXACT.
+- repair workflow `.github/workflows/repair-right-01-fresh.yml`: VERIFIED.
+- trigger commit `557181b4428905750c5bd13011bddc0ca6fb10a2`.
+- Actions run `36033565588`: `completed` / `success`.
+- corrected output commit `5d2164714cfc1e3dd010dd5509dc430fb883ed33`.
+- corrected `repair-staging/right/right-01.b64`: size `12000`; blob `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`; VERIFIED EXACT.
 
 ## FRESH CANONICAL EIGHT-RANGE TARGETS
-- `right-00` `4cfbab61acc0c0e6489b51da0bb423c2da1d5e50`
-- corrected `right-01` `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`
-- `right-02` `010d7aedd8d7681240b1e6d555819065fab9ac33`
-- `right-03` `654a08614380f215c9b3c785bf6945add55b897f`
-- `right-04a` `0699b88e134d2ae675e7dee3a46d829eff79208e`
-- `right-04b` `1de2d4138e0ac4ba68f11a26329f15f8dcf6533a`
-- `right-04c` `41bd3338b623908f19399f4d4dac59dcf832903f`
-- `right-04d` `87d79ed174e11938becb04788693164198f5e632`
+- `right-00.b64` → `4cfbab61acc0c0e6489b51da0bb423c2da1d5e50`
+- `right-01.b64` → `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`
+- `right-02.b64` → `010d7aedd8d7681240b1e6d555819065fab9ac33`
+- `right-03.b64` → `654a08614380f215c9b3c785bf6945add55b897f`
+- `right-04a.b64` → `0699b88e134d2ae675e7dee3a46d829eff79208e`
+- `right-04b.b64` → `1de2d4138e0ac4ba68f11a26329f15f8dcf6533a`
+- `right-04c.b64` → `41bd3338b623908f19399f4d4dac59dcf832903f`
+- `right-04d.b64` → `87d79ed174e11938becb04788693164198f5e632`
+
+## COMPLETE EIGHT-RANGE REVALIDATION — VERIFIED 8/8
+Repair branch head inspected: `5d2164714cfc1e3dd010dd5509dc430fb883ed33`; tree `dc81c5e2ff5ef7d43432b95b5fffef5d7097e636`.
+Current Git tree metadata matches the canonical targets for all eight files:
+- `right-00.b64`: blob `4cfbab61acc0c0e6489b51da0bb423c2da1d5e50`, size `6000` — MATCH.
+- `right-01.b64`: blob `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`, size `12000` — MATCH.
+- `right-02.b64`: blob `010d7aedd8d7681240b1e6d555819065fab9ac33`, size `12000` — MATCH.
+- `right-03.b64`: blob `654a08614380f215c9b3c785bf6945add55b897f`, size `18000` — MATCH.
+- `right-04a.b64`: blob `0699b88e134d2ae675e7dee3a46d829eff79208e`, size `6000` — MATCH.
+- `right-04b.b64`: blob `1de2d4138e0ac4ba68f11a26329f15f8dcf6533a`, size `6000` — MATCH.
+- `right-04c.b64`: blob `41bd3338b623908f19399f4d4dac59dcf832903f`, size `6000` — MATCH.
+- `right-04d.b64`: blob `87d79ed174e11938becb04788693164198f5e632`, size `2504` — MATCH.
+- STATUS: COMPLETE STAGED SET VERIFIED EXACT 8/8. Do not rewrite any of these eight files.
 
 ## DO NOT REPEAT / REJECTED
 - Do not redo repo-wide/source/Library/V2/Session1/2A/2B.1/layout/orientation/calculator/P0 investigations or redraw/reconstruction.
-- Do not alter any staged range before the complete eight-range revalidation checkpoint requires it.
+- Do not alter any of the eight now-verified staged ranges.
 - Do not rewrite corrected `right-01.b64` or either fresh half.
-- Do not recreate or rewrite `.github/workflows/repair-right-01-fresh.yml`.
-- Do not recreate or rewrite `RUN_RIGHT01_FRESH` unless current GitHub source of truth explicitly requires it.
-- Do not re-inspect/re-trigger run `36033565588`; its status/conclusion is checkpointed as completed/success.
-- Do not rerun final-right workflow before the complete eight-range staged set is revalidated and checkpointed.
-- Do not touch production paths before final right binary target is VERIFIED durable.
+- Do not recreate/rewrite the right-01 repair workflow or trigger.
+- Do not re-inspect/re-trigger run `36033565588`.
+- Do not rerun the old failed final-right trigger unchanged.
+- Do not touch production paths before final right binary target `a4d051c52a4b0f5191ad2770c3eee416fa01aba4` is VERIFIED durable.
 
 ## OPEN BLOCKERS
-1. Revalidate all eight staged range blobs against fresh canonical targets; checkpoint.
-2. Trigger final-right assembler once with a new deterministic trigger change; verify final binary Git blob `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`; checkpoint.
+1. Trigger final-right assembler once with a NEW deterministic trigger change; persist trigger state before inspecting the run.
+2. Verify the new final-right Actions run and final binary Git blob `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`; checkpoint.
 3. Only then: production mapping → cleanup → QA/manual acceptance.
 
 ## EXACT NEXT RECOVERY ACTION
-After confirming this checkpoint is durable, inspect ONLY Git blob/tree metadata for the eight staged canonical files `right-00.b64`, corrected `right-01.b64`, `right-02.b64`, `right-03.b64`, `right-04a.b64`, `right-04b.b64`, `right-04c.b64`, `right-04d.b64` on the repair branch. Compare each current blob SHA to the fresh canonical target list above and immediately persist the complete eight-range revalidation result before rerunning or editing anything. Do not make any other write in that work unit.
+After confirming this checkpoint is durable, update ONLY `repair-staging/right/RUN_RIGHT_FINAL` on repair branch to a NEW deterministic marker value so `.github/workflows/repair-right-final.yml` runs exactly once against the now-verified 8/8 staged set. Verify the trigger commit is durable and immediately persist trigger state before inspecting any Actions run. Do not make any other write in that work unit.
