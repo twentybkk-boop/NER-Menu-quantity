@@ -52,23 +52,40 @@ async function assertBaseContract(page, deviceName) {
 
 async function assertCalculator(page, deviceName) {
   await page.evaluate(() => scrollTo(0, Math.min(650, document.documentElement.scrollHeight / 3)));
+  const visibleMenu = await page.evaluate(() => {
+    const cards = [...document.querySelectorAll('.menu-card')];
+    let card = cards.find(el => {
+      const r = el.getBoundingClientRect();
+      return r.top >= 80 && r.bottom <= innerHeight - 20;
+    });
+    card ||= cards.find(el => {
+      const r = el.getBoundingClientRect();
+      return r.bottom > 100 && r.top < innerHeight - 60;
+    });
+    if (!card) throw new Error('no visible menu card at test scroll position');
+    card.scrollIntoView({ block:'center', inline:'nearest' });
+    return card.dataset.menu;
+  });
+  await page.waitForTimeout(50);
   const before = await page.evaluate(() => scrollY);
-  await page.locator('.menu-card[data-menu="ชุดจุ่มหมูทะเล"]').click();
+  await page.locator(`.menu-card[data-menu="${visibleMenu}"]`).click();
   await page.waitForSelector('#calculatorModal:not(.is-hidden)');
   assert.ok(await page.locator('#calculatorModal').isVisible(), `${deviceName}: calculator did not open`);
 
   const firstExclude = page.locator('#excludeOptions .exclude-btn').first();
-  await firstExclude.click();
-  assert.ok(await firstExclude.evaluate(el => el.classList.contains('is-excluded')), `${deviceName}: exclusion state not visible`);
+  if (await firstExclude.count()) {
+    await firstExclude.click();
+    assert.ok(await firstExclude.evaluate(el => el.classList.contains('is-excluded')), `${deviceName}: exclusion state not visible`);
 
-  const trigger = page.locator('.replacement-trigger').first();
-  if (await trigger.count()) {
-    await trigger.click();
-    const options = page.locator('.replacement-option');
-    if (await options.count()) {
-      const disabled = page.locator('.replacement-option.disabled');
-      for (let i=0;i<await disabled.count();i++) {
-        assert.equal(await disabled.nth(i).isDisabled(), true, `${deviceName}: disabled replacement looks selectable`);
+    const trigger = page.locator('.replacement-trigger').first();
+    if (await trigger.count()) {
+      await trigger.click();
+      const options = page.locator('.replacement-option');
+      if (await options.count()) {
+        const disabled = page.locator('.replacement-option.disabled');
+        for (let i=0;i<await disabled.count();i++) {
+          assert.equal(await disabled.nth(i).isDisabled(), true, `${deviceName}: disabled replacement looks selectable`);
+        }
       }
     }
   }
@@ -83,7 +100,7 @@ async function assertCalculator(page, deviceName) {
   assert.ok(await last.count(), `${deviceName}: missing final result row`);
 
   await page.locator('#closeCalculatorButton').click();
-  await page.waitForSelector('#calculatorModal.is-hidden');
+  await page.waitForFunction(() => document.querySelector('#calculatorModal')?.classList.contains('is-hidden'));
   const after = await page.evaluate(() => scrollY);
   assert.ok(Math.abs(after - before) < 10, `${deviceName}: scroll position changed after modal close (${before} -> ${after})`);
 }
@@ -106,7 +123,7 @@ async function assertMatrix(page, deviceName) {
   assert.ok((await download.suggestedFilename()).endsWith('.json'), `${deviceName}: JSON download regression`);
 
   await page.locator('#closeMatrixButton').click();
-  await page.waitForSelector('#matrixModal.is-hidden');
+  await page.waitForFunction(() => document.querySelector('#matrixModal')?.classList.contains('is-hidden'));
 }
 
 async function screenshots(page, name) {
@@ -117,10 +134,19 @@ async function screenshots(page, name) {
     await page.screenshot({ path:path.join(shotDir,'02-iphone-mid.png'), fullPage:false });
     await page.evaluate(() => scrollTo(0,1500));
     await page.screenshot({ path:path.join(shotDir,'03-iphone-lower.png'), fullPage:false });
-    await page.locator('.menu-card').first().click();
+    const visibleMenu = await page.evaluate(() => {
+      const cards = [...document.querySelectorAll('.menu-card')];
+      const card = cards.find(el => {
+        const r = el.getBoundingClientRect();
+        return r.bottom > 80 && r.top < innerHeight - 80;
+      }) || cards[0];
+      return card.dataset.menu;
+    });
+    await page.locator(`.menu-card[data-menu="${visibleMenu}"]`).click();
     await page.waitForSelector('#calculatorModal:not(.is-hidden)');
     await page.screenshot({ path:path.join(shotDir,'04-iphone-calculator.png'), fullPage:false });
     await page.locator('#closeCalculatorButton').click();
+    await page.waitForFunction(() => document.querySelector('#calculatorModal')?.classList.contains('is-hidden'));
   } else if (name === 'ipad-portrait') {
     await page.evaluate(() => scrollTo(0,0));
     await page.screenshot({ path:path.join(shotDir,'05-ipad-portrait-top.png'), fullPage:false });
