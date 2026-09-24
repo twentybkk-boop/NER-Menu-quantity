@@ -17,7 +17,7 @@ const CASES = [
     key:'phone-portrait', viewport:{width:390,height:844}, dpr:3, mobile:true,
     // P0-B limits the lower-right composition to the 122px shelf. The verified
     // pre-Chunk-4 baseline was 78x121; require a real increase without escaping it.
-    normal:[[115,126],[141,104],[81,126]], modal:[[91,100],[114,84],[85,138]], actionMax:94,
+    normal:[[115,126],[141,104],[81,126]], modal:[null,[114,84],[85,138]], actionMax:94, modalTopLeftSafe:true,
   },
   {
     key:'phone-landscape', viewport:{width:844,height:390}, dpr:2, mobile:true,
@@ -25,11 +25,11 @@ const CASES = [
   },
   {
     key:'ipad-portrait', viewport:{width:820,height:1180}, dpr:2, mobile:true,
-    normal:[[151,166],[161,118],[125,197]], modal:[[127,140],[159,114],[115,179]], actionMax:105,
+    normal:[[151,166],[161,118],[125,197]], modal:[null,[159,114],[115,179]], actionMax:105, modalTopLeftSafe:true,
   },
   {
     key:'ipad-landscape', viewport:{width:1180,height:820}, dpr:2, mobile:true,
-    normal:[[191,209],[197,145],[159,247]], modal:[[141,155],[173,123],[123,191]], actionMax:105,
+    normal:[[191,209],[197,145],[159,247]], modal:[null,[173,123],[123,191]], actionMax:105, modalTopLeftSafe:true,
   },
 ];
 
@@ -91,8 +91,38 @@ function assertDecor(items, minimums, scope) {
     assert.match(item.bg, new RegExp(EXPECTED_ASSETS[i].replace('.', '\\.')), `${scope}: ${item.selector} lost approved high-res source`);
     assert.equal(item.pointer, 'none', `${scope}: ${item.selector} intercepts pointer events`);
     assert.equal(item.bgSize, 'contain', `${scope}: ${item.selector} no longer preserves full composition`);
-    assert.ok(item.width >= minimums[i][0] && item.height >= minimums[i][1], `${scope}: ${item.selector} did not receive moderate scale increase (${item.width}x${item.height})`);
+    const minimum = minimums[i];
+    if (minimum) {
+      assert.ok(item.width >= minimum[0] && item.height >= minimum[1], `${scope}: ${item.selector} did not receive moderate scale increase (${item.width}x${item.height})`);
+    }
   });
+}
+
+async function assertModalTopLeftSafe(page, scope) {
+  const g = await page.evaluate(() => {
+    const rect = el => {
+      const r = el.getBoundingClientRect();
+      return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
+    };
+    return {
+      decor:rect(document.querySelector('.decor-a')),
+      title:rect(document.querySelector('#calculatorModal .modal-title')),
+      subtitle:rect(document.querySelector('#calculatorModal .modal-subtitle')),
+      viewport:{left:0,top:0,right:innerWidth,bottom:innerHeight},
+    };
+  });
+
+  const separated = (a,b,gap=2) => (
+    a.right + gap <= b.left ||
+    a.left >= b.right + gap ||
+    a.bottom + gap <= b.top ||
+    a.top >= b.bottom + gap
+  );
+
+  assert.ok(g.decor.left >= g.viewport.left && g.decor.top >= g.viewport.top && g.decor.right <= g.viewport.right && g.decor.bottom <= g.viewport.bottom,
+    `${scope}: top-left composition is clipped by the viewport ${JSON.stringify(g.decor)}`);
+  assert.ok(separated(g.decor,g.title), `${scope}: top-left composition overlaps modal title ${JSON.stringify({decor:g.decor,title:g.title})}`);
+  assert.ok(separated(g.decor,g.subtitle), `${scope}: top-left composition overlaps modal subtitle ${JSON.stringify({decor:g.decor,subtitle:g.subtitle})}`);
 }
 
 async function chooseCandidate(page) {
@@ -281,6 +311,7 @@ async function runCase(browserType, browserName, cfg) {
     await page.waitForSelector('#calculatorModal:not(.is-hidden)');
 
     assertDecor(await readDecor(page), cfg.modal, `${scope}/modal`);
+    if (cfg.modalTopLeftSafe) await assertModalTopLeftSafe(page, `${scope}/modal-safe-zone`);
     await density(page, cfg, `${scope}/density`);
 
     if (browserName === 'chromium') {
