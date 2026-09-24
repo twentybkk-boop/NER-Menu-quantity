@@ -1,6 +1,7 @@
 name: UI QA
 
 # Orientation/layering V1 keeps wide iPad landscape responsive while preserving character rails.
+# Ambient round shapes are accepted only on the backmost environmental layer.
 on:
   push:
     branches: [main]
