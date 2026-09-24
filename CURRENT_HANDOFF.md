@@ -16,23 +16,19 @@ Finish V3 Session 2B.2: restore the three exact browser-decodable approved high-
 ## RIGHT STAGING — FULL BASE64 VERIFIED EXACT
 Repair branch: `repair/v3-2b2-exact-blobs-20260924`.
 - Exact staged ranges cover all base64 chars `0–68,503` via `right-00`, `right-01`, `right-02`, assembled `right-03`, and `right-04a/b/c/d`.
-- Final tail `right-04d.b64` `[66000:68504]` is 2,504 chars, blob `87d79ed174e11938becb04788693164198f5e632`, commit `dc52a6560415d974cffe9161978e42bee0af3283`, VERIFIED.
 - No more chunk/source recovery is needed.
 
-## FINAL-RIGHT ASSEMBLER — CREATED, NOT TRIGGERED
-Temporary repair-only workflow:
-- path `.github/workflows/repair-right-final.yml`
+## FINAL-RIGHT ASSEMBLER
+- workflow `.github/workflows/repair-right-final.yml`
 - creation commit `b882cab89a6b2bcf87ada276b51a7f21ce108a30`
-- trigger path: `repair-staging/right/RUN_RIGHT_FINAL` on repair branch only
-- permissions: `contents: write`
-- workflow gates before any proof commit:
-  1. concatenate exact staging files in order: `right-00 + right-01 + right-02 + right-03 + right-04a + right-04b + right-04c + right-04d`
-  2. require assembled base64 length `68504`
-  3. decode to WebP and require size `51376`
-  4. require SHA256 exactly `d94dffb06bf229f01cbed71f87133a18c8b80decabdcd32577bb7a1ff66958ed`
-  5. require `git hash-object` exactly `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`
-  6. only then copy/commit repair-only binary proof `repair-staging/right/right-q70-a60.webp`
-- Workflow has NOT been triggered at this checkpoint.
+- gates: assembled base64 length `68504`; decoded WebP size `51376`; SHA256 `d94dffb06bf229f01cbed71f87133a18c8b80decabdcd32577bb7a1ff66958ed`; Git blob `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`; only then commit repair-only proof `repair-staging/right/right-q70-a60.webp`.
+
+## FINAL-RIGHT TRIGGER — DURABLE, RUN NOT YET INSPECTED
+- trigger file `repair-staging/right/RUN_RIGHT_FINAL` created on repair branch with deterministic marker `run-right-final-v1`.
+- trigger commit `0f70807c3c33e30335874c7337e4121572a036ad`.
+- This was the only write in the trigger work unit.
+- Actions run ID/status/conclusion have NOT yet been inspected at this checkpoint and must not be inferred.
+- Production asset paths remain untouched.
 
 ## REJECTED / DO NOT USE
 - top non-target `812e704774c25a1c2387e03e48a3d1eb27b9e672`
@@ -44,17 +40,16 @@ Temporary repair-only workflow:
 
 ## DO NOT REPEAT
 - No repo-wide/source/Library audits or completed V2/Session1/2A/2B.1/layout/orientation/calculator/P0 work; no redraw/reconstruction.
-- Do not rewrite any staged right chunk; all 68,504 base64 chars are exact.
+- Do not rewrite staged right chunks or create another final trigger.
 - Do not rerun old right-03 assembler workflow `36030835252`.
-- Do not create more right source chunks.
 - Do not touch production paths before final right binary target `a4d051c5...` is VERIFIED durable.
 
 ## OPEN BLOCKERS
-1. Trigger final-right assembler exactly once and persist trigger state before inspecting run.
-2. Require successful run and independently verify repair proof file blob `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`; checkpoint immediately.
+1. Inspect ONLY Actions run caused by trigger commit `0f70807c3c33e30335874c7337e4121572a036ad`; persist run ID/status/conclusion before inspecting proof output.
+2. If successful, independently verify repair proof file blob exactly `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`; checkpoint immediately.
 3. Then map exact top/bottom/right blobs to production paths in one clean production commit.
 4. Cleanup repair-only artifacts/workflows/triggers.
 5. Run post-repair QA and manual `31-*sharpness-v2` screenshot acceptance.
 
 ## EXACT NEXT RECOVERY ACTION
-After confirming this checkpoint is durable, create ONLY `repair-staging/right/RUN_RIGHT_FINAL` on the repair branch with a tiny deterministic marker. Verify trigger commit is durable and immediately checkpoint trigger state before inspecting any Actions run. Do not make any other write in that work unit.
+After confirming this checkpoint is durable, inspect ONLY GitHub Actions runs associated with repair trigger commit `0f70807c3c33e30335874c7337e4121572a036ad`. Record run ID/status/conclusion and immediately checkpoint that evidence before inspecting any assembler output commit/file.
