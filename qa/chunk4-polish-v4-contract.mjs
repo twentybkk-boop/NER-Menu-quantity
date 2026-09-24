@@ -15,7 +15,9 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const CASES = [
   {
     key:'phone-portrait', viewport:{width:390,height:844}, dpr:3, mobile:true,
-    normal:[[115,126],[141,104],[103,165]], modal:[[91,100],[114,84],[85,138]], actionMax:94,
+    // P0-B limits the lower-right composition to the 122px shelf. The verified
+    // pre-Chunk-4 baseline was 78x121; require a real increase without escaping it.
+    normal:[[115,126],[141,104],[81,126]], modal:[[91,100],[114,84],[85,138]], actionMax:94,
   },
   {
     key:'phone-landscape', viewport:{width:844,height:390}, dpr:2, mobile:true,
