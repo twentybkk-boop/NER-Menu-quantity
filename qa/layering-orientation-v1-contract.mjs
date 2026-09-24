@@ -1,4 +1,5 @@
-// V3 Session 1 final gate: layering/orientation/background depth across phone + iPad states.
+// V3 Session 1 final gate + V4 UAT Chunk 1 regression checks:
+// layering/orientation/background depth across phone + iPad states.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -28,13 +29,14 @@ async function waitForDeployment(page) {
   while (Date.now() < deadline) {
     const polish = await page.request.get(`${root}assets/visual-polish.css?layer=${Date.now()}`, { headers: {'cache-control':'no-cache'} });
     const layer = await page.request.get(`${root}assets/visual-layering-orientation-v1.css?layer=${Date.now()}`, { headers: {'cache-control':'no-cache'} });
-    if (polish.ok() && layer.ok()) {
-      const [p,l] = await Promise.all([polish.text(), layer.text()]);
-      if (p.includes('visual-layering-orientation-v1.css') && l.includes('layering/orientation/background V1')) return;
+    const v4 = await page.request.get(`${root}assets/visual-uat-v4-chunk1.css?layer=${Date.now()}`, { headers: {'cache-control':'no-cache'} });
+    if (polish.ok() && layer.ok() && v4.ok()) {
+      const [p,l,v] = await Promise.all([polish.text(), layer.text(), v4.text()]);
+      if (p.includes('visual-layering-orientation-v1.css') && p.includes('visual-uat-v4-chunk1.css') && l.includes('layering/orientation/background V1') && v.includes('V4 HANDS-ON UAT')) return;
     }
     await sleep(8_000);
   }
-  throw new Error('GitHub Pages did not expose orientation/layering V1 before timeout');
+  throw new Error('GitHub Pages did not expose V4 Chunk 1 layering assets before timeout');
 }
 
 const CASES = [
@@ -61,6 +63,10 @@ async function inspect(browserType, browserName, c) {
     const r = await page.evaluate(() => {
       const menus = document.querySelector('#app-menus').getBoundingClientRect();
       const gridStyle = getComputedStyle(document.querySelector('.menu-grid'));
+      const decorLayer = document.querySelector('#decor-layer');
+      const decorBefore = getComputedStyle(decorLayer, '::before');
+      const decorAfter = getComputedStyle(decorLayer, '::after');
+      const bodyBefore = getComputedStyle(document.body,'::before');
       const decor = [...document.querySelectorAll('.decor-person')].map(el => {
         const rect = el.getBoundingClientRect();
         return {left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,width:rect.width,height:rect.height,pointer:getComputedStyle(el).pointerEvents,bg:getComputedStyle(el).backgroundImage};
@@ -71,10 +77,15 @@ async function inspect(browserType, browserName, c) {
         menus:{left:menus.left,right:menus.right,width:menus.width},
         gridCols:gridStyle.gridTemplateColumns.split(' ').length,
         shell:{z:parseInt(getComputedStyle(document.querySelector('#app-shell')).zIndex)||0},
-        decorZ:parseInt(getComputedStyle(document.querySelector('#decor-layer')).zIndex)||0,
+        decorZ:parseInt(getComputedStyle(decorLayer).zIndex)||0,
         decor,
-        bodyBg:getComputedStyle(document.body,'::before').backgroundImage,
-        bodyBgZ:parseInt(getComputedStyle(document.body,'::before').zIndex)||0,
+        decorPseudo:[
+          {display:decorBefore.display,content:decorBefore.content,bg:decorBefore.backgroundImage,pointer:decorBefore.pointerEvents},
+          {display:decorAfter.display,content:decorAfter.content,bg:decorAfter.backgroundImage,pointer:decorAfter.pointerEvents},
+        ],
+        bodyBg:bodyBefore.backgroundImage,
+        bodyBgZ:parseInt(bodyBefore.zIndex)||0,
+        bodyBgPointer:bodyBefore.pointerEvents,
         mastheadBg:getComputedStyle(document.querySelector('.brand-masthead')).backgroundImage,
         firstBg:getComputedStyle(first).backgroundImage,
         laterBg:getComputedStyle(later).backgroundImage,
@@ -86,8 +97,18 @@ async function inspect(browserType, browserName, c) {
     assert.equal(r.decor.length, 3, `${scope}: expected three character compositions`);
     assert.ok(r.decorZ > r.shell.z, `${scope}: characters are not above content (${r.decorZ} <= ${r.shell.z})`);
     assert.ok(r.bodyBgZ < r.shell.z && r.bodyBgZ < r.decorZ, `${scope}: environmental background is not backmost`);
+    assert.equal(r.bodyBgPointer, 'none', `${scope}: backmost environment intercepts controls`);
     assert.match(r.bodyBg, /background-master\.webp/, `${scope}: backmost illustrated background missing`);
     assert.match(r.bodyBg, /radial-gradient/, `${scope}: backmost ambient circles missing`);
+
+    /* V4 UAT-001: no round ambient shape may remain inside the foreground
+       character stacking context. This is the regression the V3 gate missed. */
+    for (const [i,p] of r.decorPseudo.entries()) {
+      assert.equal(p.pointer, 'none', `${scope}: decor pseudo ${i} intercepts controls`);
+      assert.equal(p.display, 'none', `${scope}: decor pseudo ${i} still paints above the UI`);
+      assert.equal(p.bg, 'none', `${scope}: decor pseudo ${i} still owns ambient artwork`);
+    }
+
     for (const d of r.decor) {
       assert.equal(d.pointer, 'none', `${scope}: character intercepts controls`);
       assert.match(d.bg, /overlay-(top-left|bottom-left|right)-hires\.webp/, `${scope}: approved character source changed`);
@@ -113,6 +134,9 @@ async function inspect(browserType, browserName, c) {
       assert.doesNotMatch(r.firstBg, /radial-gradient/, `${scope}: round ambient shape still lives in first category layer`);
       assert.doesNotMatch(r.laterBg, /radial-gradient/, `${scope}: round ambient shape still lives in long-list category layer`);
     }
+    if (c.name.includes('landscape')) {
+      assert.match(r.mastheadBg, /linear-gradient/, `${scope}: NER masthead has no protected landscape background plate`);
+    }
     if (c.name === 'phone-landscape') assert.equal(r.shelfDisplay, 'none', `${scope}: portrait shelf still paints over landscape content`);
 
     if (browserName === 'chromium') {
@@ -130,4 +154,4 @@ for (const c of CASES) {
   await inspect(chromium,'chromium',c);
   await inspect(webkit,'webkit',c);
 }
-console.log(`LAYERING ORIENTATION V1 ${LIVE?'LIVE':'LOCAL'} PASS`);
+console.log(`LAYERING ORIENTATION V1/V4 CHUNK 1 ${LIVE?'LIVE':'LOCAL'} PASS`);
