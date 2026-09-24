@@ -9,12 +9,13 @@ const shotDir = path.resolve('qa-artifacts');
 fs.mkdirSync(shotDir, { recursive: true });
 const isLive = !BASE.startsWith('http://127.0.0.1');
 
-/* The approved asset paths are stable; their raster contents are now the
-   high-resolution derivatives from the user's approved story-complete reference. */
+/* Stable approved asset paths now contain the high-resolution derivatives
+   from the user's approved story-complete reference. The contract verifies
+   both the path and the natural dimensions actually loaded by the browser. */
 const SOURCES = {
-  '.decor-a': { file: 'overlay-top-left.webp', w: 518, h: 500 },
-  '.decor-b': { file: 'overlay-bottom-left.webp', w: 655, h: 524 },
-  '.decor-c': { file: 'overlay-right.webp', w: 556, h: 851 },
+  '.decor-a': { file: 'overlay-top-left.webp', minW: 518, minH: 500 },
+  '.decor-b': { file: 'overlay-bottom-left.webp', minW: 655, minH: 524 },
+  '.decor-c': { file: 'overlay-right.webp', minW: 556, minH: 851 },
 };
 
 const CASES = [
@@ -45,18 +46,29 @@ async function run(browserType, browserName) {
       await page.goto(BASE, { waitUntil: 'domcontentloaded' });
       await page.waitForFunction(() => document.querySelectorAll('.menu-card').length === 45);
 
-      const sample = await page.evaluate(() => {
+      const sample = await page.evaluate(async () => {
         const result = {};
         for (const selector of ['.decor-a','.decor-b','.decor-c']) {
           const el = document.querySelector(selector);
           const s = getComputedStyle(el);
           const r = el.getBoundingClientRect();
+          const match = s.backgroundImage.match(/url\(["']?(.*?)["']?\)/);
+          const assetUrl = match?.[1] || '';
+          const natural = await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve({ naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight });
+            img.onerror = () => reject(new Error(`failed to load ${assetUrl}`));
+            img.src = assetUrl;
+          });
           result[selector] = {
             width: r.width,
             height: r.height,
             filter: s.filter,
             backgroundImage: s.backgroundImage,
             pointerEvents: s.pointerEvents,
+            assetUrl,
+            naturalWidth: natural.naturalWidth,
+            naturalHeight: natural.naturalHeight,
           };
         }
         return result;
@@ -67,10 +79,12 @@ async function run(browserType, browserName) {
         assert.equal(item.filter, 'none', `${browserName}/${label}: ${selector} still uses raster filter ${item.filter}`);
         assert.equal(item.pointerEvents, 'none', `${browserName}/${label}: ${selector} must stay non-interactive`);
         assert.ok(item.backgroundImage.includes(source.file), `${browserName}/${label}: ${selector} must use upgraded approved source: ${item.backgroundImage}`);
+        assert.ok(item.naturalWidth >= source.minW && item.naturalHeight >= source.minH,
+          `${browserName}/${label}: ${selector} loaded ${item.naturalWidth}x${item.naturalHeight}, expected at least ${source.minW}x${source.minH}`);
 
-        const sourcePxPerCssPx = Math.min(source.w / item.width, source.h / item.height);
+        const sourcePxPerCssPx = Math.min(item.naturalWidth / item.width, item.naturalHeight / item.height);
         assert.ok(sourcePxPerCssPx >= 2,
-          `${browserName}/${label}: ${selector} has only ${sourcePxPerCssPx.toFixed(2)} source px/CSS px from ${source.file}`);
+          `${browserName}/${label}: ${selector} has only ${sourcePxPerCssPx.toFixed(2)} source px/CSS px from ${item.assetUrl}`);
       }
 
       if (browserName === 'chromium') {
