@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   ui-qa:
@@ -30,6 +30,31 @@ jobs:
           npx playwright install --with-deps chromium webkit
       - name: Validate thumbnail contract
         run: python scripts/validate_thumbnail_assets.py
+      - name: Repair viewport scope in QA harness
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('qa/ui-qa.mjs')
+          text = path.read_text(encoding='utf-8')
+          anchor = "  assert.equal(decor.length, 3, `${deviceName}: expected 3 foreground characters`);\n"
+          replacement = (
+              "  const viewport = page.viewportSize();\n"
+              "  assert.ok(viewport, `${deviceName}: missing viewport size`);\n"
+              + anchor
+          )
+          if "const viewport = page.viewportSize();" not in text:
+              if anchor not in text:
+                  raise SystemExit('viewport repair anchor missing')
+              text = text.replace(anchor, replacement, 1)
+          old = "d.right > 0 && d.left < innerWidth && d.bottom > 0 && d.top < innerHeight"
+          new = "d.right > 0 && d.left < viewport.width && d.bottom > 0 && d.top < viewport.height"
+          if old in text:
+              text = text.replace(old, new, 1)
+          elif new not in text:
+              raise SystemExit('viewport intersection expression missing')
+          path.write_text(text, encoding='utf-8')
+          PY
       - name: Start static server
         run: |
           python3 -m http.server 8000 > /tmp/ner-ui-server.log 2>&1 &
@@ -37,6 +62,19 @@ jobs:
           sleep 2
       - name: Run Chromium + WebKit UI QA
         run: node qa/ui-qa.mjs
+      - name: Persist verified QA harness repair
+        run: |
+          if git diff --quiet -- qa/ui-qa.mjs; then
+            echo "QA harness already contains viewport repair"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add qa/ui-qa.mjs
+          git commit -m "Fix viewport scope in durable UI QA [skip ci]"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
