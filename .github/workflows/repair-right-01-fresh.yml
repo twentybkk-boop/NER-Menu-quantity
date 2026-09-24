@@ -1,0 +1,53 @@
+name: Repair right-01 from fresh halves
+
+on:
+  push:
+    branches:
+      - repair/v3-2b2-exact-blobs-20260924
+    paths:
+      - repair-staging/right/RUN_RIGHT01_FRESH
+
+permissions:
+  contents: write
+
+jobs:
+  repair-right-01:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Assemble and verify corrected right-01
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cat \
+            repair-staging/right/right-01a-fresh.b64 \
+            repair-staging/right/right-01b-fresh.b64 \
+            > /tmp/right-01.b64
+
+          actual_len="$(wc -c < /tmp/right-01.b64 | tr -d ' ')"
+          test "$actual_len" = "12000"
+
+          actual_blob="$(git hash-object /tmp/right-01.b64)"
+          expected_blob="d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9"
+          echo "right-01 length=$actual_len blob=$actual_blob expected=$expected_blob"
+          test "$actual_blob" = "$expected_blob"
+
+          cp /tmp/right-01.b64 repair-staging/right/right-01.b64
+          test "$(wc -c < repair-staging/right/right-01.b64 | tr -d ' ')" = "12000"
+          test "$(git hash-object repair-staging/right/right-01.b64)" = "$expected_blob"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add repair-staging/right/right-01.b64
+
+          if git diff --cached --quiet; then
+            echo "right-01 already exact; no commit needed"
+            exit 0
+          fi
+
+          git commit -m "Repair exact right-01 from fresh halves"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
