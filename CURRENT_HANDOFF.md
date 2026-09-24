@@ -10,11 +10,10 @@
 - Branch: `main`
 - Authoritative feedback: `docs/UI_REAL_DEVICE_FEEDBACK_2026-09-24_V2.md`
 - Character source finding: `docs/UI_CHARACTER_SOURCE_FINDING_2026-09-24.md`
-- Latest verified implementation/QA HEAD before this handoff-only commit: `c08112dde5bfd9e178fedf3be626c98871d30ada`
-- Latest Pages deployment run: **35977648545 — SUCCESS**
-- Latest UI QA run: **35977648662 — SUCCESS**
-- Latest screenshot artifact: **10799435098** (`ui-qa-screenshots`)
-- Artifact digest: `sha256:8c5d12c3b417e45dd1c48ad1c876e7805468a4b927bbc4e64e4b214d993e5005`
+- Latest verified implementation/QA HEAD before this handoff-only commit: `04370f808ea78df2dbf7160cc07f1f6eba547bd9`
+- Latest UI QA run: **35980100012 — SUCCESS**
+- Latest screenshot artifact: **10800290439** (`ui-qa-screenshots`)
+- Artifact digest: `sha256:c8fcc0e1cd399ab108f67eaba1c8bc571c36cfd53932d7db84bbec4f92758be6`
 
 ---
 
@@ -27,9 +26,9 @@ Current P0 status:
 - **P0-A — correct approved 3-character source/composition: IMPLEMENTED + LOCAL/LIVE QA VERIFIED**
 - **P0-B — protected center-frame fidelity: IMPLEMENTED + LOCAL/LIVE QA VERIFIED**
 - **P0-C — simple infographic thumbnails: IMPLEMENTED + LOCAL/LIVE QA VERIFIED**
-- **P0-D — match approved illustrated/branded UI direction: OPEN**
+- **P0-D — approved illustrated/branded UI direction: TOP/FIRST-SCREEN PASS V1 IMPLEMENTED + LOCAL/LIVE QA VERIFIED; LONG-LIST/ENVIRONMENTAL RHYTHM STILL OPEN**
 
-Do not claim the full visual workstream is complete until P0-D is implemented and visually re-accepted.
+Do not claim the full visual workstream is complete until the remaining P0-D long-list/environmental rhythm pass is implemented and visually re-accepted.
 
 ---
 
@@ -39,7 +38,56 @@ Do not claim the full visual workstream is complete until P0-D is implemented an
 
 - 45 menus; semantic mapping 45/45.
 - Existing atlas remains provenance/mapping evidence only.
-- Live cards no longer use food-photo atlas crops.
+- Live cards use the accepted infographic/pictogram layer, not food-photo crops.
+
+---
+
+# P0-A — APPROVED CHARACTER COMPOSITION
+
+**DONE + VERIFIED ON LOCAL + DEPLOYED GITHUB PAGES — DO NOT REDO**
+
+Authoritative source family:
+
+- `assets/overlay-top-left.webp`
+- `assets/overlay-bottom-left.webp`
+- `assets/overlay-right.webp`
+
+Implementation / gates:
+
+- `assets/visual-character-composition-v2.css`
+- `qa/character-composition-v2-contract.mjs`
+- `qa/live-pages-acceptance-v2.mjs`
+
+Locked visual facts:
+
+- upper-left keeps glasses + drink + gesture + bubble;
+- lower-left remains **no-glasses** and keeps helmet + cat/table + bubble;
+- right keeps white backpack + clipboard/pen + food scene + bubble;
+- foreground art remains `pointer-events:none`.
+
+Relevant verified commits:
+
+- `609dd0b19dcef75af6ac3cd19dd1d3892ab773aa` — preserve top-left identity detail
+- `c08112dde5bfd9e178fedf3be626c98871d30ada` — align local/live character detail gate
+
+---
+
+# P0-B — PROTECTED CENTER FRAME
+
+**DONE + VERIFIED ON LOCAL + DEPLOYED GITHUB PAGES — DO NOT REDO**
+
+Implementation:
+
+- `assets/visual-center-frame-v2.css`
+- phone `#app-menus`: `width:min(300px,calc(100vw - 80px))`
+- at 390px viewport this yields ~300px center reading frame with ~45px illustration rails;
+- hero is aligned to the same frame;
+- lower illustration shelf keeps the lower-left/right approved compositions visually separate from the scrolling card stack.
+
+Corrected root cause already fixed:
+
+- old nested `%` geometry produced a rejected ~232px lane;
+- `22cf24509db87917cbdea0ee36049a744200b2c0` switched to viewport-relative geometry.
 
 ---
 
@@ -48,108 +96,81 @@ Do not claim the full visual workstream is complete until P0-D is implemented an
 **DONE + VERIFIED — DO NOT REDO**
 
 - `assets/visual-thumbnail-infographic.css`
-- live menu cards use simple semantic pictogram/infographic tiles;
-- old food-photo atlas is not painted in live cards;
+- live cards do not paint `semantic-atlas-v1.webp` food-photo crops;
 - signature sets remain distinct;
 - recipe/business behavior unchanged.
 
 ---
 
-# P0-A — APPROVED CHARACTER COMPOSITION
-
-**DONE + VERIFIED ON LOCAL + DEPLOYED GITHUB PAGES**
-
-Authoritative source family:
-
-- `assets/overlay-top-left.webp`
-- `assets/overlay-bottom-left.webp`
-- `assets/overlay-right.webp`
-- `assets/ner-team-bg.webp` remains durable source/reference context.
-
-Implementation:
-
-- `assets/visual-character-composition-v2.css`
-- synthetic `ner-character-*.png + accessory SVG` reconstruction is no longer the accepted normal-page painting strategy;
-- pseudo accessory reconstruction is suppressed for the approved composition;
-- lower-left remains **no-glasses**;
-- all artwork remains `pointer-events:none`.
-
-Durable QA:
-
-- `qa/character-composition-v2-contract.mjs`
-- `qa/live-pages-acceptance-v2.mjs`
-
-The local character contract and live Pages gate now use the same minimum identity-detail threshold for all three compositions (>=78×76 CSS px), preventing local QA from accepting a top-left composition too small to preserve the drink/glasses/gesture cues.
-
-Latest relevant commits:
-
-- `609dd0b19dcef75af6ac3cd19dd1d3892ab773aa` — `Preserve top-left character identity detail in center frame`
-- `c08112dde5bfd9e178fedf3be626c98871d30ada` — `Align local character detail gate with live acceptance`
-
-Manual inspection of final artifact `10799435098` confirms the approved story-complete source family is visible on the deployed page:
-
-- upper-left: glasses / drink / gesture / bubble composition;
-- lower-left: helmet / cat-table / bubble, no glasses;
-- right: backpack / clipboard / food-chalkboard / bubble composition.
-
----
-
-# P0-B — PROTECTED CENTER FRAME
-
-**DONE + VERIFIED ON LOCAL + DEPLOYED GITHUB PAGES**
-
-Implementation:
-
-- `assets/visual-center-frame-v2.css`
-- phone `#app-menus` uses viewport-relative `width:min(300px,calc(100vw - 80px))`;
-- at 390px viewport this resolves to a deliberate ~300px reading frame with ~45px illustration rails;
-- hero is aligned to the same center-frame width;
-- a non-interactive fixed lower illustration shelf separates the lower character scenes from the scrolling menu stack;
-- calculator/PIN/Matrix states suppress the normal-list shelf where appropriate.
-
-Important corrected root cause:
-
-- the first V2 rule used `calc(100% - 140px)` inside the already-inset `#app-shell`, producing a **232px** lane instead of the intended broad center frame;
-- commit `22cf24509db87917cbdea0ee36049a744200b2c0` changed the geometry to viewport-relative width and local P0-B then passed Chromium + WebKit.
-
-A first live-gate attempt for that commit failed while its Pages deployment was still in progress and observed the previous 68×74 top-left character size. The deployment later completed successfully. After the explicit P0-A size correction and threshold alignment, final Pages + UI QA both pass.
-
-Final evidence:
-
-- Pages deployment run **35977648545** — SUCCESS
-- UI QA run **35977648662** — SUCCESS
-- `Verify P0-A complete character composition` — PASS
-- `Verify P0-B protected center frame` — PASS
-- `Verify deployed GitHub Pages P0-A/P0-B acceptance` — PASS
-- Chromium + WebKit functional QA — PASS
-- calculator hierarchy — PASS
-- screenshot artifact **10799435098**
-
-Manually inspected:
-
-- `18-live-pages-character-v2@3x.png`
-- `20-center-frame-v2-top@3x.png`
-- `21-center-frame-v2-scroll@3x.png`
-- `22-live-pages-center-frame-v2-scroll@3x.png`
-
-Observed: center frame is materially broader than the rejected 232px state, infographic rows remain readable, and lower character compositions are visually separated onto the illustration shelf.
-
----
-
 # P0-D — APPROVED ILLUSTRATED / BRANDED UI DIRECTION
 
-**OPEN — THIS IS THE ONLY REMAINING P0 VISUAL WORKSTREAM ITEM**
+## Top / first-screen composition V1
 
-The user reference image #3 remains the target. P0-A/B/C correct the source/composition, frame, and thumbnail strategy, but the page still needs a bounded art-direction fidelity pass so the whole screen reads closer to the approved illustrated NER interface rather than a utility list.
+**DONE + VERIFIED ON LOCAL + DEPLOYED GITHUB PAGES**
 
-Key target traits from the authoritative feedback:
+Bounded implementation:
 
-- stronger branded / illustrated environment;
-- composition and visual hierarchy closer to reference #3;
-- soft editorial card treatment;
-- character storytelling feels intentional, not merely attached to viewport edges;
-- preserve the now-verified center frame and infographic scanability;
-- no business behavior changes.
+- `assets/visual-top-composition-v1.css`
+- imported last from `assets/visual-polish.css`
+- scope is phone masthead + utility hero + first category only;
+- long-list categories below the first block were intentionally not redesigned in this pass.
+
+What changed in this bounded pass:
+
+- masthead is now a ~300px soft editorial illustrated panel instead of a free-floating logo;
+- approved upper-left story character is enlarged/repositioned to participate in the masthead without covering the NER wordmark;
+- warm paper wash + sage/peach environmental shapes + hand-drawn accent line strengthen the branded first-screen moment without reintroducing duplicate background branding;
+- utility hero is now a compact supporting ribbon;
+- Matrix action remains fully functional but visually secondary;
+- first category gets a bounded editorial/environmental grouping and softer signature-card treatment;
+- P0-B center width, P0-C infographic tiles, and business behavior remain unchanged.
+
+Durable acceptance contract:
+
+- `qa/top-composition-v1-contract.mjs`
+- runs on Chromium + WebKit at 390×844;
+- local and deployed GitHub Pages use the same contract;
+- live gate waits for `visual-top-composition-v1.css` before evaluating to avoid deployment-lag false results.
+
+Latest P0-D commits:
+
+- `f5c8b5db7d5a0dc482a337f36cbfe721988c817c` — `Add bounded P0-D top composition layer [skip ci]`
+- `18655b5b720c8095bd097c36d401254d180992ce` — `Activate bounded P0-D top composition [skip ci]`
+- `df2570ef77db3cd09638f118a18a90b240b11362` — `Add P0-D top composition acceptance contract [skip ci]`
+- `04370f808ea78df2dbf7160cc07f1f6eba547bd9` — `Gate bounded P0-D top composition in UI QA`
+
+Final verification run `35980100012`:
+
+- base Chromium + WebKit UI QA — PASS
+- P0-A character composition — PASS
+- P0-B protected center frame — PASS
+- **P0-D top composition local — PASS**
+- calculator visual hierarchy — PASS
+- deployed Pages P0-A/P0-B — PASS
+- **deployed Pages P0-D top composition — PASS**
+- thumbnail/contact-sheet evidence — PASS
+- character asset inventory evidence — PASS
+
+Manual screenshot inspection from artifact `10800290439`:
+
+- `23-top-composition-v1-iphone@3x.png`
+- `24-live-top-composition-v1@3x.png`
+
+Observed local/live equivalence:
+
+- strong NER illustrated first-screen panel;
+- upper-left approved character participates in the masthead and does not obscure the wordmark;
+- Matrix utility is visibly secondary;
+- first category reads as a soft editorial section;
+- signature cards remain inside the protected ~300px frame;
+- infographic pictograms remain intact;
+- lower approved character compositions remain on the illustration shelf.
+
+## Remaining P0-D
+
+**OPEN: long-list / environmental rhythm only.**
+
+The page below the first category still transitions back to the older utility-list rhythm. The next bounded pass should extend the accepted art direction through later category breaks without making every section a heavy card and without increasing scan fatigue.
 
 ---
 
@@ -166,12 +187,14 @@ Do **not** intentionally change:
 
 Do not regress:
 
-- approved three-character overlay sources;
+- approved `overlay-*.webp` character sources;
 - lower-left no-glasses;
-- 300px-class protected phone center frame;
+- ~300px protected phone center frame;
 - infographic thumbnails;
 - calculator behavior;
-- `pointer-events:none` foreground art.
+- Matrix behavior;
+- `pointer-events:none` foreground art;
+- verified P0-D top/first-screen V1 composition.
 
 ---
 
@@ -185,7 +208,8 @@ Do not redo:
 - infographic-thumbnail conversion;
 - character asset inventory investigation;
 - P0-A source/composition implementation;
-- P0-B center-frame geometry investigation/fix;
+- P0-B geometry investigation/fix;
+- P0-D top/first-screen V1 pass;
 - Matrix/PIN functional investigation;
 - modal scroll restoration investigation.
 
@@ -204,17 +228,16 @@ Every continuation session must:
 
 # EXACT NEXT ACTION
 
-**Next short session: P0-D only — first bounded art-direction fidelity pass against reference image #3.**
+**Next short session: P0-D long-list / environmental rhythm only.**
 
-Start with the **top/first-screen composition only** (masthead + hero + first category, including how the approved upper-left character participates in that composition). Do not redesign the long list yet.
+Do not touch the already verified first-screen composition unless new user evidence shows a defect.
 
-Goals for that one pass:
+Bounded goals:
 
-1. make the top screen read materially closer to the approved illustrated/branded reference #3;
-2. preserve the verified ~300px phone center frame;
-3. preserve approved story-complete character sources and P0-C infographic tiles;
-4. keep Matrix behavior unchanged and visually secondary;
-5. add a bounded top-composition fidelity contract/screenshot evidence;
-6. run Chromium + WebKit + deployed Pages QA, inspect screenshots, checkpoint, then stop.
-
-Expected following NEXT ACTION after the top composition pass: continue P0-D with the long-list/environmental rhythm only if the top pass is accepted by evidence.
+1. keep all later menu cards inside the verified ~300px center frame;
+2. reduce the abrupt transition from the illustrated first category back to a generic utility list;
+3. improve category rest rhythm using lightweight editorial/environmental separators, not heavy card soup;
+4. preserve infographic scanability and keep repeated rows calm;
+5. keep all three approved character compositions and lower illustration shelf unchanged;
+6. do not modify recipe/Matrix/PIN/import-export behavior;
+7. add one long-list rhythm contract + screenshot state, run Chromium + WebKit + deployed Pages QA, manually inspect, checkpoint, then stop.
