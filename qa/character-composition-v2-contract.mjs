@@ -8,8 +8,10 @@ const recipeBody = fs.readFileSync('recipe_master.json', 'utf8');
 const shotDir = path.resolve('qa-artifacts');
 fs.mkdirSync(shotDir, { recursive: true });
 
+/* Keep local and live character-detail gates aligned. The upper-left story
+   composition must remain large enough to preserve glasses/drink/gesture cues. */
 const EXPECTED = [
-  ['.decor-a', 'overlay-top-left.webp', 64, 60],
+  ['.decor-a', 'overlay-top-left.webp', 78, 76],
   ['.decor-b', 'overlay-bottom-left.webp', 78, 76],
   ['.decor-c', 'overlay-right.webp', 78, 76],
 ];
