@@ -37,6 +37,14 @@
   .matrix-actions{width:100%!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;}
   .matrix-actions button,.upload-label{min-height:38px!important;padding:0 7px!important;justify-content:center!important;font-size:10px!important;}.matrix-close{grid-column:1/-1!important;}
   #tableContainer{--matrix-col-1:82px;--matrix-col-2:86px;--matrix-data-col:50px;padding:3px!important;}
+
+  /* Calculator reserves a top and bottom illustration rail so no team member disappears behind the card. */
+  body:has(#calculatorModal:not(.is-hidden)) #decor-layer{z-index:105!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:78px!important;height:72px!important;left:-8px!important;top:calc(env(safe-area-inset-top) + 2px)!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-b{width:92px!important;height:72px!important;left:-12px!important;bottom:calc(env(safe-area-inset-bottom) + 2px)!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-c{width:70px!important;height:102px!important;right:-8px!important;bottom:calc(env(safe-area-inset-bottom) + 1px)!important;}
+  #calculatorModal:not(.is-hidden){padding-top:calc(76px + env(safe-area-inset-top))!important;padding-bottom:calc(106px + env(safe-area-inset-bottom))!important;}
+  #calculatorModal:not(.is-hidden) .modal-card{max-height:calc(100dvh - 182px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;}
 }
 
 /* ---------- iPad portrait ---------- */
@@ -56,6 +64,13 @@
   #rightPanel{flex:0 0 auto!important;}
   .replacement-menu{max-height:260px!important;overflow-y:auto!important;}
   #tableContainer{--matrix-col-1:92px;--matrix-col-2:96px;--matrix-data-col:52px;}
+
+  body:has(#calculatorModal:not(.is-hidden)) #decor-layer{z-index:105!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:118px!important;height:108px!important;left:-12px!important;top:calc(env(safe-area-inset-top) + 4px)!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-b{width:136px!important;height:105px!important;left:-18px!important;bottom:calc(env(safe-area-inset-bottom) + 3px)!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-c{width:100px!important;height:146px!important;right:-10px!important;bottom:calc(env(safe-area-inset-bottom) + 2px)!important;}
+  #calculatorModal:not(.is-hidden){align-items:flex-start!important;padding-top:calc(114px + env(safe-area-inset-top))!important;padding-bottom:calc(150px + env(safe-area-inset-bottom))!important;}
+  #calculatorModal:not(.is-hidden) .modal-card{max-height:calc(100dvh - 264px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;}
 }
 
 /* ---------- iPad landscape / wide ---------- */
@@ -68,6 +83,13 @@
   .decor-b{width:220px!important;height:169px!important;left:max(-28px,calc(50vw - 630px))!important;top:auto!important;bottom:max(3px,calc(env(safe-area-inset-bottom) + 1px))!important;right:auto!important;}
   .decor-c{width:164px!important;height:240px!important;right:max(-20px,calc(50vw - 625px))!important;left:auto!important;top:auto!important;bottom:max(1px,env(safe-area-inset-bottom))!important;}
   .calculator-body{grid-template-columns:minmax(0,43%) minmax(0,57%)!important;}
+
+  body:has(#calculatorModal:not(.is-hidden)) #decor-layer{z-index:105!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:126px!important;height:116px!important;left:4px!important;top:calc(env(safe-area-inset-top) + 3px)!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-b{width:142px!important;height:109px!important;left:2px!important;bottom:calc(env(safe-area-inset-bottom) + 2px)!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-c{width:106px!important;height:154px!important;right:3px!important;bottom:calc(env(safe-area-inset-bottom) + 1px)!important;}
+  #calculatorModal:not(.is-hidden){align-items:flex-start!important;padding-top:calc(122px + env(safe-area-inset-top))!important;padding-bottom:calc(158px + env(safe-area-inset-bottom))!important;}
+  #calculatorModal:not(.is-hidden) .modal-card{max-height:calc(100dvh - 280px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;}
 }
 
 @media(min-width:1024px) and (max-height:860px){
