@@ -4,11 +4,12 @@
    Presentation only: no recipe, replacement, Matrix, PIN or import/export behavior. */
 
 @media(max-width:767px){
-  /* Leave a real ~70px left/right illustration rail around the long menu list.
-     This is intentionally narrower than the hero: the list is the scroll-critical
-     surface that must never collide with the fixed upper-left character. */
+  /* The user's red-box reference is a broad central reading frame, not a narrow
+     utility column. Use viewport-relative geometry so the frame does not shrink
+     again when nested inside the already-inset #app-shell. On a 390px phone this
+     resolves to 300px, leaving ~45px illustration rails on both sides. */
   #app-menus{
-    width:min(250px,calc(100% - 140px))!important;
+    width:min(300px,calc(100vw - 80px))!important;
     margin-left:auto!important;
     margin-right:auto!important;
   }
@@ -20,35 +21,34 @@
     box-shadow:0 0 28px rgba(255,249,240,.96),0 7px 24px rgba(87,56,40,.035)!important;
   }
 
-  /* Hero remains comfortably readable; it does not share vertical space with the
-     upper-left character after the initial masthead. */
+  /* Keep hero on the same deliberate visual axis as the menu frame. */
   .hero{
-    width:min(300px,calc(100% - 76px))!important;
+    width:min(300px,calc(100vw - 80px))!important;
   }
 
-  /* Preserve scanability inside the narrower list without changing menu semantics. */
+  /* Preserve scanability without changing menu semantics. */
   #app-menus .menu-card{
-    padding-left:6px!important;
-    padding-right:6px!important;
-    gap:6px!important;
+    padding-left:7px!important;
+    padding-right:7px!important;
+    gap:7px!important;
   }
   #app-menus .menu-card::before{
-    width:54px!important;
-    height:36px!important;
-    flex-basis:54px!important;
+    width:58px!important;
+    height:39px!important;
+    flex-basis:58px!important;
   }
   #app-menus .menu-card[data-menu="ชุดจุ่มหมูทะเล"]::before,
   #app-menus .menu-card[data-menu="ชุดจุ่มเนื้อ"]::before,
   #app-menus .menu-card[data-menu="ชุดจุ่มหมู"]::before,
   #app-menus .menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]::before{
-    width:60px!important;
-    height:40px!important;
-    flex-basis:60px!important;
+    width:64px!important;
+    height:43px!important;
+    flex-basis:64px!important;
   }
   #app-menus .menu-arrow{
-    width:25px!important;
-    height:25px!important;
-    flex-basis:25px!important;
+    width:27px!important;
+    height:27px!important;
+    flex-basis:27px!important;
   }
   #app-menus .menu-card-title{
     min-width:0!important;
@@ -79,8 +79,8 @@
 
   #decor-layer{z-index:39!important;}
 
-  /* Upper-left now fits completely inside the reserved left rail even after the
-     list scrolls behind it. 68 CSS px still renders at 204 device px in @3x QA. */
+  /* Upper-left stays wholly in the left illustration rail instead of crossing
+     the reading frame after scroll. */
   .decor-a{
     width:68px!important;
     height:74px!important;
