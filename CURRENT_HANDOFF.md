@@ -91,11 +91,13 @@ Target repo paths:
 - `assets/overlay-bottom-left-hires.webp`
 - `assets/overlay-right-hires.webp`
 
-Current short-session state:
+Durable binary Git blob SHAs already created:
 
-- binary Git blobs for all three high-res assets have been created;
-- the asset-only commit created from the prior checkpoint was `599b805785fd11009535a2066093500ed8ae6c99`, but branch state advanced afterward, so current `main` must be reconciled before treating those paths as durable;
-- **do not redo image derivation**; next session should reconcile the binary assets onto current `main`, then wire CSS and QA.
+- top-left: `35c12cd9b92594a1d80fbaeed6863ab42d0996fe`
+- bottom-left: `42c06cd201d1e34083d49b05620fe543f2822fc8`
+- right: `9af0dd1f9743d39c9c5701733814e7b4aece9b35`
+
+Important: two asset-only commits were created on a stale parent while reconciling (`599b8057…`, `9115f9fd…`) and are **not authoritative branch state**. Do not reset or force-push to them. Current `main` wins. Reuse the durable blob SHAs above and create a fresh tree on the current `main` tree.
 
 ---
 
@@ -130,14 +132,12 @@ Every continuation session must:
 
 # EXACT NEXT ACTION
 
-**V3 Session 2B.2 continuation — reconcile and wire high-res character assets only.**
+**V3 Session 2B.2 continuation — reconcile high-res blobs onto current `main`, then wire CSS.**
 
-1. Read current `main`; current branch wins over stale SHAs.
-2. Reconcile the already-created high-res binary blobs onto current `main` under:
-   - `assets/overlay-top-left-hires.webp`
-   - `assets/overlay-bottom-left-hires.webp`
-   - `assets/overlay-right-hires.webp`
-3. Update `assets/visual-character-sampling-v1.css` so `.decor-a/.decor-b/.decor-c` use those high-res paths, while preserving all Session 1 geometry/z-index and keeping `filter:none`.
-4. Update sharpness QA to require the high-res source paths and effective source density >= ~2 source px/CSS px for iPad states (phone 3× desirable where practical).
-5. Run Chromium + WebKit + deployed Pages QA and manually inspect @2x/@3x evidence.
-6. Update this handoff with implementation SHA / run / artifact / visual finding, then stop and report whether final real-device acceptance is ready.
+1. Fetch current `main` commit/tree first; do not reuse stale tree SHA.
+2. Create a new tree from that current tree and add the three existing high-res blob SHAs under the target asset paths.
+3. Commit that tree with the current `main` commit as parent, fast-forward `main`, then verify the three asset paths exist on `main`.
+4. Update `assets/visual-character-sampling-v1.css` so `.decor-a/.decor-b/.decor-c` use those high-res paths while preserving all Session 1 geometry/z-index and keeping `filter:none`.
+5. Update sharpness QA to require the high-res source paths and effective source density >= ~2 source px/CSS px for iPad states (phone 3× desirable where practical).
+6. Run Chromium + WebKit + deployed Pages QA and manually inspect @2x/@3x evidence.
+7. Update this handoff with implementation SHA / run / artifact / visual finding, then stop and report whether final real-device acceptance is ready.
