@@ -1,0 +1,137 @@
+/* REAL-DEVICE DEFECT PASS — layering/orientation/background V1, 2026-09-24.
+   Evidence: user iPhone Safari recording + approved illustrated mockup.
+   Scope only: stacking, landscape/tablet rails, ambient background placement.
+   Character source/sharpness is intentionally NOT changed in this session. */
+
+/* One explicit layer model for every normal-page viewport:
+   0 = backmost environmental artwork
+   30 = application/content surface
+   60 = approved character storytelling
+   100+ = modal UI (existing rules)
+   Foreground art remains non-interactive. */
+body{
+  isolation:isolate!important;
+}
+body::before{
+  z-index:0!important;
+  background-color:#fff9f0!important;
+  background-image:
+    radial-gradient(circle at 91% 9%,rgba(189,210,160,.28) 0 34px,transparent 35px),
+    radial-gradient(circle at 96% 17%,rgba(216,229,194,.22) 0 52px,transparent 53px),
+    radial-gradient(circle at 8% 33%,rgba(231,190,166,.15) 0 42px,transparent 43px),
+    linear-gradient(180deg,rgba(255,251,244,.72),rgba(255,253,249,.48) 44%,rgba(250,244,232,.68)),
+    url("background-master.webp")!important;
+  background-repeat:no-repeat,no-repeat,no-repeat,no-repeat,no-repeat!important;
+  background-position:center top,center top,center top,center top,center top!important;
+  background-size:auto,auto,auto,100% 100%,cover!important;
+  pointer-events:none!important;
+}
+
+#app-shell{
+  position:relative!important;
+  z-index:30!important;
+}
+#decor-layer{
+  z-index:60!important;
+  pointer-events:none!important;
+}
+.decor-person{
+  pointer-events:none!important;
+}
+
+/* Ambient circles no longer live inside cards/section plates. Keep the soft
+   paper/editorial wash, but move the round environmental shapes behind all UI. */
+@media(max-width:767px){
+  .brand-masthead{
+    background:linear-gradient(145deg,rgba(255,253,248,.975),rgba(255,247,238,.92) 62%,rgba(248,243,226,.84))!important;
+  }
+  .category-block:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"]){
+    background:linear-gradient(180deg,rgba(255,247,239,.74),rgba(255,253,249,.22))!important;
+  }
+  #app-menus .category-block:not(:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"])){
+    background:linear-gradient(180deg,rgba(255,252,247,.58),rgba(255,253,249,.16) 68%,transparent)!important;
+  }
+}
+
+/* Phone landscape used to fall into the tablet/wide rules and rotate into a
+   broken composition. It is not the primary product orientation, but it must
+   remain stable and layered correctly when Safari rotates. */
+@media (orientation:landscape) and (max-height:540px) and (max-width:950px){
+  #app-shell{
+    width:100%!important;
+    padding:max(6px,env(safe-area-inset-top)) 0 max(24px,calc(env(safe-area-inset-bottom) + 18px))!important;
+  }
+  .brand-masthead{
+    box-sizing:border-box!important;
+    width:min(620px,calc(100vw - 168px))!important;
+    min-height:104px!important;
+    margin:0 auto 5px!important;
+    padding:12px 22px 10px 68px!important;
+    border-radius:24px!important;
+    text-align:left!important;
+  }
+  .brand-mark{font-size:48px!important;line-height:.82!important;}
+  .brand-thai{font-size:19px!important;margin-top:5px!important;}
+  .brand-english{font-size:7.5px!important;margin-top:5px!important;}
+  .brand-note{font-size:8.5px!important;margin-top:6px!important;max-width:210px!important;}
+  .hero{
+    width:min(620px,calc(100vw - 168px))!important;
+    min-height:0!important;
+    padding:7px 10px!important;
+    margin:0 auto!important;
+  }
+  .hero-row{flex-direction:row!important;gap:8px!important;}
+  .brand-title{display:none!important;}
+  .brand-subtitle{font-size:9px!important;margin:0!important;max-width:260px!important;}
+  .manager-btn{width:auto!important;max-width:170px!important;min-height:31px!important;font-size:8.5px!important;padding:0 9px!important;}
+  #app-menus{
+    width:min(620px,calc(100vw - 168px))!important;
+    margin:10px auto 0!important;
+  }
+  .menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;}
+  .menu-card{min-height:58px!important;}
+  .category-block{margin-bottom:18px!important;}
+
+  /* Dedicated landscape rails; characters stay above content but outside the
+     reading frame instead of being hidden behind cards. */
+  .decor-a{width:112px!important;height:121px!important;left:6px!important;right:auto!important;top:8px!important;bottom:auto!important;}
+  .decor-b{width:132px!important;height:96px!important;left:5px!important;right:auto!important;top:auto!important;bottom:max(4px,env(safe-area-inset-bottom))!important;}
+  .decor-c{width:92px!important;height:143px!important;right:6px!important;left:auto!important;top:auto!important;bottom:max(3px,env(safe-area-inset-bottom))!important;}
+
+  /* The portrait-only fixed shelf is unnecessary in the low-height landscape
+     layout and can otherwise obscure content during rotation. */
+  body::after{display:none!important;}
+}
+
+/* iPad portrait: reserve actual illustration rails. Earlier rules allowed a
+   ~676px menu lane on a 768px screen, so large story assets could only survive
+   by sitting behind cards. The new lane leaves enough space for foreground art. */
+@media (min-width:768px) and (max-width:899px) and (orientation:portrait){
+  #app-shell{width:100%!important;}
+  .brand-masthead,
+  .hero,
+  #app-menus{
+    width:min(560px,calc(100vw - 190px))!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+  .decor-a{width:148px!important;height:162px!important;left:8px!important;right:auto!important;top:max(14px,calc(env(safe-area-inset-top) + 5px))!important;bottom:auto!important;}
+  .decor-b{width:168px!important;height:122px!important;left:7px!important;right:auto!important;top:auto!important;bottom:max(7px,calc(env(safe-area-inset-bottom) + 4px))!important;}
+  .decor-c{width:122px!important;height:190px!important;right:8px!important;left:auto!important;top:auto!important;bottom:max(5px,calc(env(safe-area-inset-bottom) + 3px))!important;}
+}
+
+/* iPad landscape / compact desktop: same principle, with wider reading surface
+   and much larger side rails than the previous almost-full-width grid. */
+@media (min-width:900px) and (max-width:1180px) and (min-height:541px){
+  .brand-masthead,
+  .hero,
+  #app-menus{
+    width:min(680px,calc(100vw - 300px))!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+  .menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  .decor-a{width:178px!important;height:195px!important;left:12px!important;right:auto!important;top:max(14px,calc(env(safe-area-inset-top) + 5px))!important;bottom:auto!important;}
+  .decor-b{width:205px!important;height:148px!important;left:11px!important;right:auto!important;top:auto!important;bottom:max(7px,calc(env(safe-area-inset-bottom) + 4px))!important;}
+  .decor-c{width:148px!important;height:230px!important;right:12px!important;left:auto!important;top:auto!important;bottom:max(5px,calc(env(safe-area-inset-bottom) + 3px))!important;}
+}
