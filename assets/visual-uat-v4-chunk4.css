@@ -11,7 +11,10 @@
 @media (max-width:767px) and (orientation:portrait){
   .decor-a{width:116px!important;height:127px!important;left:2px!important;top:max(10px,calc(env(safe-area-inset-top) + 4px))!important;}
   .decor-b{width:142px!important;height:105px!important;left:2px!important;bottom:max(3px,calc(env(safe-area-inset-bottom) + 2px))!important;}
-  .decor-c{width:104px!important;height:166px!important;right:2px!important;bottom:max(2px,calc(env(safe-area-inset-bottom) + 1px))!important;}
+  /* P0-B shelf is 122px tall with an 8px visual tolerance. The approved right
+     composition therefore grows from the verified 78x121 baseline to 82x127,
+     staying fully inside that shelf instead of extending upward into content. */
+  .decor-c{width:82px!important;height:127px!important;right:2px!important;bottom:max(2px,calc(env(safe-area-inset-bottom) + 1px))!important;}
 
   body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:92px!important;height:101px!important;left:2px!important;top:calc(env(safe-area-inset-top) + 2px)!important;}
   body:has(#calculatorModal:not(.is-hidden)) .decor-b{width:115px!important;height:85px!important;left:2px!important;bottom:calc(env(safe-area-inset-bottom) + 2px)!important;}
