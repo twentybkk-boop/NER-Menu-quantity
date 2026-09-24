@@ -1,0 +1,217 @@
+/* Real-device visual correction pass — 2026-09-24
+   Source: docs/UI_REAL_DEVICE_FEEDBACK_2026-09-24.md + approved generated UI targets.
+   Presentation only: do not change recipe / replacement / Matrix / PIN semantics. */
+
+/* ------------------------------------------------------------
+   1) Re-establish a protected central reading lane.
+   The three people remain present, but the menu lane sits above their
+   edge rails so cards never become a canvas behind character artwork.
+   ------------------------------------------------------------ */
+#app-menus{
+  position:relative!important;
+  z-index:36!important;
+}
+#app-menus::before{
+  content:"";
+  position:absolute;
+  inset:-8px -10px -12px;
+  z-index:-1;
+  pointer-events:none;
+  border-radius:24px;
+  background:linear-gradient(180deg,rgba(255,250,243,.90),rgba(255,253,249,.965) 18%,rgba(255,253,249,.965) 82%,rgba(255,250,243,.90));
+  box-shadow:0 0 34px rgba(255,249,240,.92);
+}
+.menu-card{
+  background:rgba(255,253,249,.995)!important;
+  box-shadow:0 5px 15px rgba(76,52,39,.055)!important;
+}
+
+/* ------------------------------------------------------------
+   2) Restore the higher-detail character masters already in repo.
+   The tiny overlay webp files are not used for the normal composition.
+   Restore the approved helmet and white-backpack identity details.
+   ------------------------------------------------------------ */
+#decor-layer{z-index:24!important;}
+.decor-person{
+  overflow:visible!important;
+  mix-blend-mode:normal!important;
+  background-repeat:no-repeat!important;
+  background-position:center!important;
+  background-size:contain!important;
+  filter:drop-shadow(0 7px 12px rgba(73,45,31,.09)) saturate(1.02) contrast(1.015)!important;
+  opacity:1!important;
+  pointer-events:none!important;
+}
+.decor-a{background-image:url("ner-character-top-left.png")!important;}
+.decor-b{background-image:url("ner-character-bottom-left.png")!important;}
+.decor-c{background-image:url("ner-character-right.png")!important;}
+
+.decor-person::before,.decor-person::after{
+  content:"";
+  position:absolute;
+  display:block;
+  pointer-events:none;
+  user-select:none;
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:contain;
+}
+/* Bottom-left remains no-glasses. The soft plate keeps the helmet legible
+   without painting over the character itself. */
+.decor-b::before{
+  width:64%;
+  height:48%;
+  left:43%;
+  top:55%;
+  border-radius:50%;
+  background:radial-gradient(ellipse,rgba(255,248,239,.98) 0 58%,rgba(255,248,239,.82) 70%,transparent 77%);
+}
+.decor-b::after{
+  width:64%;
+  height:52%;
+  left:43%;
+  top:52%;
+  background-image:url("accessory-gray-fullface-helmet.svg");
+  transform:rotate(-4deg);
+}
+.decor-c::after{
+  width:66%;
+  height:64%;
+  right:-10%;
+  top:25%;
+  background-image:url("accessory-white-backpack.svg");
+  transform:rotate(3deg);
+}
+
+/* ------------------------------------------------------------
+   3) Reduce duplicate hero/admin visual weight.
+   Brand masthead remains the primary identity; the second title and
+   Matrix action become supporting UI instead of competing CTAs.
+   ------------------------------------------------------------ */
+.hero{
+  box-shadow:0 8px 22px rgba(79,51,35,.075)!important;
+}
+.brand-title{
+  font-weight:750!important;
+  letter-spacing:-.018em!important;
+}
+.manager-btn{
+  background:rgba(111,72,53,.10)!important;
+  color:#674535!important;
+  border:1px solid rgba(111,72,53,.20)!important;
+  box-shadow:none!important;
+}
+.manager-btn::after{color:#7e5a47!important;}
+
+/* Repeated helper text should not compete with menu names. */
+.menu-card-subtitle{opacity:.64!important;font-weight:650!important;}
+
+/* ------------------------------------------------------------
+   4) Real-device / Retina thumbnail treatment.
+   The atlas cell is 120x80. The previous 108x72 CSS display consumed
+   almost the entire source cell on a 3x Retina screen and looked soft.
+   Keep the same semantic atlas but render substantially smaller and at
+   the native 3:2 aspect ratio; never stretch the cell to a square.
+   ------------------------------------------------------------ */
+.menu-card::before{
+  aspect-ratio:3/2!important;
+  background-color:#f7e9d9!important;
+  image-rendering:auto!important;
+}
+
+@media(max-width:767px){
+  /* Deliberate center lane with edge rails for the three-person frame. */
+  #app-menus{
+    width:min(326px,calc(100% - 56px))!important;
+    margin:18px auto 0!important;
+  }
+  #app-menus::before{inset:-7px -9px -10px!important;border-radius:22px!important;}
+
+  .category-block{margin-bottom:19px!important;}
+  .category-title{
+    min-height:37px!important;
+    margin-bottom:8px!important;
+    padding:3px 4px 6px 2px!important;
+    font-size:17px!important;
+  }
+  .category-block:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"]) .category-title{font-size:18px!important;}
+  .category-icon{width:28px!important;height:28px!important;flex-basis:28px!important;font-size:14px!important;}
+  .menu-grid{gap:7px!important;}
+  .menu-card{
+    min-height:66px!important;
+    padding:7px 8px!important;
+    gap:9px!important;
+    border-radius:15px!important;
+  }
+  .menu-card::before{
+    width:66px!important;
+    height:44px!important;
+    flex:0 0 66px!important;
+    border-radius:11px!important;
+  }
+  .menu-card[data-menu="ชุดจุ่มหมูทะเล"],
+  .menu-card[data-menu="ชุดจุ่มเนื้อ"],
+  .menu-card[data-menu="ชุดจุ่มหมู"],
+  .menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]{
+    min-height:70px!important;
+  }
+  .menu-card[data-menu="ชุดจุ่มหมูทะเล"]::before,
+  .menu-card[data-menu="ชุดจุ่มเนื้อ"]::before,
+  .menu-card[data-menu="ชุดจุ่มหมู"]::before,
+  .menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]::before{
+    width:72px!important;
+    height:48px!important;
+    flex:0 0 72px!important;
+    border-radius:12px!important;
+  }
+  .menu-card-title{font-size:12.8px!important;line-height:1.22!important;}
+  .menu-card-subtitle{display:none!important;}
+  .menu-arrow{width:29px!important;height:29px!important;flex-basis:29px!important;font-size:22px!important;}
+
+  /* Keep the team present but outside the protected center lane as much as
+     possible. Card surfaces paint above the small amount of rail overlap. */
+  .decor-a{width:132px!important;height:138px!important;left:-42px!important;top:max(18px,calc(env(safe-area-inset-top) + 7px))!important;}
+  .decor-b{width:152px!important;height:141px!important;left:-50px!important;bottom:max(2px,calc(env(safe-area-inset-bottom) + 1px))!important;}
+  .decor-c{width:118px!important;height:225px!important;right:-40px!important;bottom:max(1px,env(safe-area-inset-bottom))!important;}
+
+  .brand-masthead{margin-bottom:4px!important;}
+  .hero{width:min(326px,calc(100% - 56px))!important;padding:14px 14px!important;border-radius:20px!important;}
+  .brand-title{font-size:17px!important;}
+  .brand-subtitle{font-size:10.5px!important;margin-top:5px!important;}
+  .manager-btn{min-height:42px!important;font-size:11px!important;border-radius:13px!important;}
+
+  /* Modal keeps three people visible; reuse the detailed masters. */
+  body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:80px!important;height:84px!important;left:-10px!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-b{width:98px!important;height:91px!important;left:-14px!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-c{width:76px!important;height:145px!important;right:-10px!important;}
+}
+
+@media(min-width:768px) and (max-width:1023px){
+  #app-menus{width:min(720px,calc(100% - 92px))!important;}
+  #app-menus::before{inset:-9px -12px -14px!important;}
+  .menu-card::before{width:78px!important;height:52px!important;flex:0 0 78px!important;}
+  .menu-card[data-menu="ชุดจุ่มหมูทะเล"]::before,
+  .menu-card[data-menu="ชุดจุ่มเนื้อ"]::before,
+  .menu-card[data-menu="ชุดจุ่มหมู"]::before,
+  .menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]::before{
+    width:90px!important;height:60px!important;flex:0 0 90px!important;
+  }
+  .decor-a{width:184px!important;height:193px!important;left:-54px!important;}
+  .decor-b{width:208px!important;height:194px!important;left:-63px!important;}
+  .decor-c{width:154px!important;height:294px!important;right:-46px!important;}
+}
+
+@media(min-width:1024px){
+  #app-menus{width:min(860px,calc(100% - 220px))!important;}
+  #app-menus::before{inset:-10px -14px -16px!important;}
+  .menu-card::before{width:82px!important;height:55px!important;flex:0 0 82px!important;}
+  .menu-card[data-menu="ชุดจุ่มหมูทะเล"]::before,
+  .menu-card[data-menu="ชุดจุ่มเนื้อ"]::before,
+  .menu-card[data-menu="ชุดจุ่มหมู"]::before,
+  .menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"]::before{
+    width:96px!important;height:64px!important;flex:0 0 96px!important;
+  }
+  .decor-a{width:210px!important;height:220px!important;}
+  .decor-b{width:230px!important;height:214px!important;}
+  .decor-c{width:170px!important;height:324px!important;}
+}
