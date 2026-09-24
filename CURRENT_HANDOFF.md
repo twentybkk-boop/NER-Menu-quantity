@@ -38,43 +38,6 @@ Do not claim final visual acceptance until 2B.2 high-resolution source wiring is
 
 ---
 
-# V3 SESSION 2A — ROOT CAUSE — LOCKED
-
-Approved story-complete overlay sources were too small for Retina/iPad:
-
-- `overlay-top-left.webp` = 130×121 px
-- `overlay-bottom-left.webp` = 150×114 px
-- `overlay-right.webp` = 110×171 px
-
-This caused heavy undersampling on DPR 2–3 displays. A secondary blur contributor was the raster filter chain in `visual-character-composition-v2.css`.
-
-Do not repeat this investigation.
-
----
-
-# V3 SESSION 2B.1 — SAMPLING / COMPOSITING SAFETY — VERIFIED
-
-Implementation:
-
-- `assets/visual-character-sampling-v1.css`
-- imported last from `assets/visual-polish.css`
-- `.decor-person` uses `filter:none`, `will-change:auto`, normal image rendering;
-- tablet character boxes are capped so the old low-res sources are not CSS-upscaled beyond native dimensions before DPR sampling;
-- Session 1 geometry/z-index/backmost background intentionally unchanged;
-- business logic changed: **NO**.
-
-Relevant commits:
-
-- `ecc4181f950d8f1166072be02af3b839b15abf3f` — prevent secondary raster blur
-- `b0b2bdea366fd01a70cc6ad60b16b8f3f6ac22dc` — activate sampling layer
-- `2aed957442f7370f5cb140dccbc2e4db17ae6551` — add sampling safety contract
-- `b967cd132a0d6623b435b888693c15a7e4fdf17d` — gate sampling contract in UI QA
-- `8b7e5e66162c0fbf746d6e500bb8641ada04ebd1` — verified sampling-safety checkpoint
-
-QA run **35992246985 — SUCCESS**. All base regression, P0-A/B/D, orientation/layering, sampling-safety, calculator, deployed Pages regression gates, and evidence upload passed.
-
----
-
 # V3 SESSION 2B.2 — HIGH-RES SOURCE WIRING — IN PROGRESS
 
 Prepared high-resolution derivatives preserve the same approved story-complete compositions and were generated from the approved reference, not by upscaling the tiny production overlays.
@@ -97,7 +60,9 @@ Durable binary Git blob SHAs already created:
 - bottom-left: `42c06cd201d1e34083d49b05620fe543f2822fc8`
 - right: `9af0dd1f9743d39c9c5701733814e7b4aece9b35`
 
-Important: two asset-only commits were created on a stale parent while reconciling (`599b8057…`, `9115f9fd…`) and are **not authoritative branch state**. Do not reset or force-push to them. Current `main` wins. Reuse the durable blob SHAs above and create a fresh tree on the current `main` tree.
+Important: asset-only commits created on stale parents (`599b8057…`, `9115f9fd…`) are **not authoritative branch state**. Do not reset or force-push to them. Current `main` wins. Reuse only the durable blob SHAs above.
+
+Latest handoff checkpoint before this update: `e62c56d00c4ff37ac1cfeb24e77c0d113eb288da`.
 
 ---
 
@@ -132,12 +97,12 @@ Every continuation session must:
 
 # EXACT NEXT ACTION
 
-**V3 Session 2B.2 continuation — reconcile high-res blobs onto current `main`, then wire CSS.**
+**V3 Session 2B.2 continuation — first fetch current `main` commit/tree, then reconcile high-res blobs onto that exact tree.**
 
-1. Fetch current `main` commit/tree first; do not reuse stale tree SHA.
+1. Fetch current `main` commit + tree; do not reuse any stale tree SHA.
 2. Create a new tree from that current tree and add the three existing high-res blob SHAs under the target asset paths.
-3. Commit that tree with the current `main` commit as parent, fast-forward `main`, then verify the three asset paths exist on `main`.
-4. Update `assets/visual-character-sampling-v1.css` so `.decor-a/.decor-b/.decor-c` use those high-res paths while preserving all Session 1 geometry/z-index and keeping `filter:none`.
+3. Commit with the current `main` commit as parent, fast-forward `main`, and verify the three asset paths exist on branch.
+4. Update `assets/visual-character-sampling-v1.css` so `.decor-a/.decor-b/.decor-c` use those high-res paths, preserving all Session 1 geometry/z-index and `filter:none`.
 5. Update sharpness QA to require the high-res source paths and effective source density >= ~2 source px/CSS px for iPad states (phone 3× desirable where practical).
 6. Run Chromium + WebKit + deployed Pages QA and manually inspect @2x/@3x evidence.
 7. Update this handoff with implementation SHA / run / artifact / visual finding, then stop and report whether final real-device acceptance is ready.
