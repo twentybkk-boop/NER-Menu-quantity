@@ -11,24 +11,30 @@ Finish V3 Session 2B.2: restore the three exact browser-decodable approved high-
 - Exact top Git object VERIFIED present: `990c6b3523f79a483f41f17032f03f880f97f461`.
 - Exact bottom Git object VERIFIED present: `cf1f98efe9c9f67cb48e3bd80f512b0f9adece45`.
 - Exact right local candidate: 51,376 bytes, RIFF/WEBP, SHA256 `d94dffb06bf229f01cbed71f87133a18c8b80decabdcd32577bb7a1ff66958ed`, base64 length 68,504 chars, final Git blob target `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`.
+- Full exact right base64 chars `0–68,503` are durably staged on `repair/v3-2b2-exact-blobs-20260924`.
 - Production asset paths remain untouched.
-
-## RIGHT STAGING — FULL BASE64 VERIFIED EXACT
-Repair branch: `repair/v3-2b2-exact-blobs-20260924`.
-- Exact staged ranges cover all base64 chars `0–68,503` via `right-00`, `right-01`, `right-02`, assembled `right-03`, and `right-04a/b/c/d`.
-- No more chunk/source recovery is needed.
 
 ## FINAL-RIGHT ASSEMBLER
 - workflow `.github/workflows/repair-right-final.yml`
 - creation commit `b882cab89a6b2bcf87ada276b51a7f21ce108a30`
-- gates: assembled base64 length `68504`; decoded WebP size `51376`; SHA256 `d94dffb06bf229f01cbed71f87133a18c8b80decabdcd32577bb7a1ff66958ed`; Git blob `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`; only then commit repair-only proof `repair-staging/right/right-q70-a60.webp`.
+- trigger `repair-staging/right/RUN_RIGHT_FINAL`
+- trigger commit `0f70807c3c33e30335874c7337e4121572a036ad`
+- gates: base64 length `68504`; decoded size `51376`; SHA256 `d94dffb06bf229f01cbed71f87133a18c8b80decabdcd32577bb7a1ff66958ed`; Git blob `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`; commit repair-only binary proof only after all gates pass.
 
-## FINAL-RIGHT TRIGGER — DURABLE, RUN NOT YET INSPECTED
-- trigger file `repair-staging/right/RUN_RIGHT_FINAL` created on repair branch with deterministic marker `run-right-final-v1`.
-- trigger commit `0f70807c3c33e30335874c7337e4121572a036ad`.
-- This was the only write in the trigger work unit.
-- Actions run ID/status/conclusion have NOT yet been inspected at this checkpoint and must not be inferred.
-- Production asset paths remain untouched.
+## FINAL-RIGHT RUN — FAILURE EVIDENCE DURABLE
+- run ID `36032106873`
+- workflow name `Repair exact right binary`
+- event `push`
+- head branch `repair/v3-2b2-exact-blobs-20260924`
+- head SHA `0f70807c3c33e30335874c7337e4121572a036ad`
+- status `completed`
+- conclusion `failure`
+- run attempt `1`
+- created/started `2026-09-24T17:07:30Z`
+- completed `2026-09-24T17:07:39Z`
+- Job/step/log cause has NOT yet been inspected at this checkpoint.
+- No proof file is promoted to VERIFIED from this failed run.
+- Production paths remain untouched.
 
 ## REJECTED / DO NOT USE
 - top non-target `812e704774c25a1c2387e03e48a3d1eb27b9e672`
@@ -40,16 +46,16 @@ Repair branch: `repair/v3-2b2-exact-blobs-20260924`.
 
 ## DO NOT REPEAT
 - No repo-wide/source/Library audits or completed V2/Session1/2A/2B.1/layout/orientation/calculator/P0 work; no redraw/reconstruction.
-- Do not rewrite staged right chunks or create another final trigger.
-- Do not rerun old right-03 assembler workflow `36030835252`.
+- Do not rewrite exact right staging chunks.
+- Do not create another final trigger or rerun the failed workflow before its exact failure step is known and checkpointed.
 - Do not touch production paths before final right binary target `a4d051c5...` is VERIFIED durable.
 
 ## OPEN BLOCKERS
-1. Inspect ONLY Actions run caused by trigger commit `0f70807c3c33e30335874c7337e4121572a036ad`; persist run ID/status/conclusion before inspecting proof output.
-2. If successful, independently verify repair proof file blob exactly `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`; checkpoint immediately.
-3. Then map exact top/bottom/right blobs to production paths in one clean production commit.
-4. Cleanup repair-only artifacts/workflows/triggers.
-5. Run post-repair QA and manual `31-*sharpness-v2` screenshot acceptance.
+1. Inspect ONLY run `36032106873` jobs/steps/logs to identify the first failing gate/command; persist evidence before any workflow change/retry.
+2. Make the minimum repair-only workflow fix, checkpoint it, then trigger/retry in a new controlled work unit.
+3. Independently verify resulting proof file blob exactly `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`; checkpoint immediately.
+4. Then map exact top/bottom/right blobs to production paths in one clean production commit.
+5. Cleanup repair-only artifacts/workflows/triggers; run post-repair QA/manual screenshot acceptance.
 
 ## EXACT NEXT RECOVERY ACTION
-After confirming this checkpoint is durable, inspect ONLY GitHub Actions runs associated with repair trigger commit `0f70807c3c33e30335874c7337e4121572a036ad`. Record run ID/status/conclusion and immediately checkpoint that evidence before inspecting any assembler output commit/file.
+After confirming this checkpoint is durable, inspect ONLY jobs/steps/logs for Actions run `36032106873`. Record the exact failing step and the earliest gate value/output that explains the failure. Immediately persist that evidence before editing the workflow or rerunning anything.
