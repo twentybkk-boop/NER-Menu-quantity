@@ -153,8 +153,8 @@ function assertContract(c, browserName) {
       `${scope}/${section.firstMenu}: row height became visually heavy (${section.firstCard.height}px)`);
   }
 
-  assert.match(c.decor.b.bg, /overlay-bottom-left\.webp/, `${scope}: approved lower-left character source changed`);
-  assert.match(c.decor.c.bg, /overlay-right\.webp/, `${scope}: approved right character source changed`);
+  assert.match(c.decor.b.bg, /overlay-bottom-left-hires\.webp/, `${scope}: approved lower-left character source changed`);
+  assert.match(c.decor.c.bg, /overlay-right-hires\.webp/, `${scope}: approved right character source changed`);
   assert.equal(c.decor.b.pointer, 'none', `${scope}: lower-left art intercepts controls`);
   assert.equal(c.decor.c.pointer, 'none', `${scope}: right art intercepts controls`);
 }
