@@ -7,11 +7,14 @@
 Finish V3 Session 2B.2 by restoring browser-decodable high-resolution approved character overlays, preserving all verified production geometry/logic, then re-run only the existing sharpness/UI QA path and manually inspect the generated `31-*sharpness-v2` screenshots before closing the session.
 
 ## LATEST KNOWN STATE
-- Last durable milestone before this emergency save: `4cade999fffce3bdfe1ea56a1ccca10c8398530c`, which recorded that interrupted staging had been audited and cleaned.
+- Emergency checkpoint commit: `bb864091d874c66b0d8935eed95dffa57f34817c`.
+- Last durable milestone before emergency save: `4cade999fffce3bdfe1ea56a1ccca10c8398530c`, which recorded that interrupted staging had been audited and cleaned.
 - `tmp-binary-repair/*` temporary files were removed from `main`; cleanup ended at `3244e2d74476273def00af0b695b9cbbced9491a` before the handoff checkpoint commit.
-- Direct binary-safe Git object creation was then confirmed usable via `create_blob`.
+- Direct binary-safe Git object creation was confirmed usable via `create_blob`.
 - A browser-safe/recompressed top-left candidate was created as Git blob `812e704774c25a1c2387e03e48a3d1eb27b9e672` but is NOT yet wired into production `main`.
-- Visible local recovered candidates also exist for bottom-left and right overlays (`bottom-q70-a60.webp`, `right-q70-a60.webp`), and a top-left local candidate (`top-q70-a8.webp`), but their final Git blob SHAs / production wiring are NOT yet durably verified here.
+- Bottom-left candidate has been minimally revalidated locally as a decodable WebP at 655×524 RGBA; right candidate has been minimally revalidated locally as a decodable WebP at 556×851 RGBA.
+- Visual spot-check of q30 recovery candidates confirmed story content remains present: lower-left woman has NO GLASSES + helmet + cat/table + speech bubble; right woman has white backpack + clipboard/pen + food/chalkboard + speech bubble.
+- An accidental temporary `tmp.txt` was created during recovery at commit `bd46866d...` due to wrong action selection, then immediately deleted at `35ec4e1f56d9946c56aabd604feb8d70a87ffad1`. It is not production state and must not be restored.
 
 ## DONE / VERIFIED
 - V2 P0-A/B/C/D: VERIFIED — do not redo.
@@ -24,19 +27,23 @@ Finish V3 Session 2B.2 by restoring browser-decodable high-resolution approved c
 - Concrete failure was browser load/decode failure on `overlay-top-left-hires.webp` via `img.onerror`; geometry/layout was not the failing area.
 - Interrupted staging commits were audited and contained only `tmp-binary-repair/*`; those files were deleted from `main`.
 - Production geometry, z-index, center frame, environment background, recipe/business logic, Matrix, PIN, import/export remain outside the intended repair scope.
+- Accidental `tmp.txt` recovery file has been cleaned from `main`.
 
 ## WORK OBSERVED BUT NOT YET DURABLY VERIFIED
 - Top-left repaired candidate exists as Git blob `812e704774c25a1c2387e03e48a3d1eb27b9e672`; not yet connected to `assets/overlay-top-left-hires.webp` on `main`.
-- Bottom-left and right recovered candidates are visible in the current conversation/container, but final binary Git blobs have not yet been durably recorded in this handoff.
+- Bottom-left and right candidates are validated locally, but final Git blob SHAs have not yet been created/recorded in this handoff.
 - No final three-asset repair commit has been created yet.
 - No post-repair UI QA run has been verified yet.
 - No local/live `31-*sharpness-v2` manual visual acceptance has been completed yet.
 
 ## EVIDENCE CHECKED
-- Current `CURRENT_HANDOFF.md` as of this emergency recovery step.
+- Current `CURRENT_HANDOFF.md` as of emergency recovery.
 - Previously visible UI QA evidence: run `36012464625`, job `107676382757`, failure at `qa/character-sampling-v1-contract.mjs` on browser image load.
 - Previously visible staging audit and cleanup evidence.
 - Visible tool result confirming successful creation of top-left Git blob `812e704774c25a1c2387e03e48a3d1eb27b9e672`.
+- Local PIL decode checks for bottom-left and right candidate dimensions/mode.
+- Visual previews for q30 bottom-left/right candidates.
+- Accidental `tmp.txt` creation/deletion commits during this recovery chunk.
 
 ## VERIFIED FINDINGS
 1. The blocker is not layout/geometry/character presence/center frame/top composition/rhythm/layering; those checks passed in run `36012464625`.
@@ -74,6 +81,7 @@ Finish V3 Session 2B.2 by restoring browser-decodable high-resolution approved c
 - P0-A/P0-B/P0-D/orientation/calculator investigations.
 - Character redraw/reconstruction.
 - Re-audit of already-cleaned `tmp-binary-repair/*` staging commits/files.
+- Recreate `tmp.txt`.
 - Long recovery analysis before the next checkpoint.
 
 ## OPEN BLOCKERS
@@ -83,4 +91,4 @@ Finish V3 Session 2B.2 by restoring browser-decodable high-resolution approved c
 4. Manual local/live `31-*sharpness-v2` screenshot acceptance remains open.
 
 ## EXACT NEXT RECOVERY ACTION
-Small chunk only: validate the already-visible bottom-left and right local candidate files just enough to confirm expected WebP dimensions/content usability, create Git blobs for them with the binary-safe blob API, and immediately persist those two blob SHAs into this handoff BEFORE creating any production tree/commit. Do not re-investigate prior phases or layout. After that checkpoint, assemble a single production asset-only tree/commit that maps the three known blobs (top-left `812e7047...` + newly recorded bottom/right blobs) onto the three existing `assets/overlay-*-hires.webp` paths, then checkpoint again before running QA.
+Small chunk only: create a Git blob for the already-validated bottom-left candidate using the binary-safe blob API and immediately persist that SHA here. Then repeat as a separate checkpointed chunk for the right candidate. Do not modify production asset paths until all three blob SHAs are durably recorded.
