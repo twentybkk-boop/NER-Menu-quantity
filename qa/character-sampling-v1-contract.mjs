@@ -9,13 +9,10 @@ const shotDir = path.resolve('qa-artifacts');
 fs.mkdirSync(shotDir, { recursive: true });
 const isLive = !BASE.startsWith('http://127.0.0.1');
 
-/* Stable approved asset paths now contain the high-resolution derivatives
-   from the user's approved story-complete reference. The contract verifies
-   both the path and the natural dimensions actually loaded by the browser. */
 const SOURCES = {
-  '.decor-a': { file: 'overlay-top-left.webp', minW: 518, minH: 500 },
-  '.decor-b': { file: 'overlay-bottom-left.webp', minW: 655, minH: 524 },
-  '.decor-c': { file: 'overlay-right.webp', minW: 556, minH: 851 },
+  '.decor-a': { file: 'overlay-top-left-hires.webp', minW: 518, minH: 500 },
+  '.decor-b': { file: 'overlay-bottom-left-hires.webp', minW: 655, minH: 524 },
+  '.decor-c': { file: 'overlay-right-hires.webp', minW: 556, minH: 851 },
 };
 
 const CASES = [
@@ -78,7 +75,7 @@ async function run(browserType, browserName) {
         const item = sample[selector];
         assert.equal(item.filter, 'none', `${browserName}/${label}: ${selector} still uses raster filter ${item.filter}`);
         assert.equal(item.pointerEvents, 'none', `${browserName}/${label}: ${selector} must stay non-interactive`);
-        assert.ok(item.backgroundImage.includes(source.file), `${browserName}/${label}: ${selector} must use upgraded approved source: ${item.backgroundImage}`);
+        assert.ok(item.backgroundImage.includes(source.file), `${browserName}/${label}: ${selector} must use high-res approved source: ${item.backgroundImage}`);
         assert.ok(item.naturalWidth >= source.minW && item.naturalHeight >= source.minH,
           `${browserName}/${label}: ${selector} loaded ${item.naturalWidth}x${item.naturalHeight}, expected at least ${source.minW}x${source.minH}`);
 
