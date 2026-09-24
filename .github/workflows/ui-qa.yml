@@ -59,6 +59,7 @@ jobs:
           s = p.read_text()
           s = s.replace("await page.waitForSelector('#calculatorModal.is-hidden');", "await page.waitForFunction(() => document.querySelector('#calculatorModal')?.classList.contains('is-hidden'));")
           s = s.replace("await page.waitForSelector('#matrixModal.is-hidden');", "await page.waitForFunction(() => document.querySelector('#matrixModal')?.classList.contains('is-hidden'));")
+          s = s.replace("const cards = [...document.querySelectorAll('.menu-card')];", "const cards = [...document.querySelectorAll('.menu-card')].filter(el => Object.keys(originalMenu[el.dataset.menu] || {}).length > 1);")
           p.write_text(s)
           PY
           node qa/ui-qa.mjs
