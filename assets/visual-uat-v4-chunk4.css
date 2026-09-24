@@ -62,8 +62,8 @@
   #calculatorModal:not(.is-hidden) .modal-title{font-size:17.5px!important;line-height:1.2!important;}
   #calculatorModal:not(.is-hidden) .modal-subtitle{margin-top:2px!important;font-size:9.5px!important;line-height:1.25!important;}
   #calculatorModal:not(.is-hidden) .close-btn{width:34px!important;height:34px!important;flex-basis:34px!important;font-size:15px!important;}
-  #calculatorModal:not(.is-hidden) .calc-panel{padding:9px 11px 11px!important;}
-  #calculatorModal:not(.is-hidden) .panel-title{margin-bottom:6px!important;font-size:12.2px!important;line-height:1.25!important;}
+  #calculatorModal:not(.is-hidden) .calc-panel{padding:8px 11px 11px!important;}
+  #calculatorModal:not(.is-hidden) .panel-title{margin-bottom:5px!important;font-size:12.2px!important;line-height:1.25!important;}
 }
 
 @media (min-width:768px) and (orientation:portrait){
