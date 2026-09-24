@@ -95,7 +95,7 @@ body::before{
   /* Dedicated landscape rails; characters stay above content but outside the
      reading frame instead of being hidden behind cards. */
   .decor-a{width:112px!important;height:121px!important;left:6px!important;right:auto!important;top:8px!important;bottom:auto!important;}
-  .decor-b{width:132px!important;height:96px!important;left:5px!important;right:auto!important;top:auto!important;bottom:max(4px,env(safe-area-inset-bottom))!important;}
+  .decor-b{width:126px!important;height:92px!important;left:5px!important;right:auto!important;top:auto!important;bottom:max(4px,env(safe-area-inset-bottom))!important;}
   .decor-c{width:92px!important;height:143px!important;right:6px!important;left:auto!important;top:auto!important;bottom:max(3px,env(safe-area-inset-bottom))!important;}
 
   /* The portrait-only fixed shelf is unnecessary in the low-height landscape
@@ -115,9 +115,9 @@ body::before{
     margin-left:auto!important;
     margin-right:auto!important;
   }
-  .decor-a{width:148px!important;height:162px!important;left:8px!important;right:auto!important;top:max(14px,calc(env(safe-area-inset-top) + 5px))!important;bottom:auto!important;}
-  .decor-b{width:168px!important;height:122px!important;left:7px!important;right:auto!important;top:auto!important;bottom:max(7px,calc(env(safe-area-inset-bottom) + 4px))!important;}
-  .decor-c{width:122px!important;height:190px!important;right:8px!important;left:auto!important;top:auto!important;bottom:max(5px,calc(env(safe-area-inset-bottom) + 3px))!important;}
+  .decor-a{width:140px!important;height:154px!important;left:7px!important;right:auto!important;top:max(14px,calc(env(safe-area-inset-top) + 5px))!important;bottom:auto!important;}
+  .decor-b{width:150px!important;height:110px!important;left:7px!important;right:auto!important;top:auto!important;bottom:max(7px,calc(env(safe-area-inset-bottom) + 4px))!important;}
+  .decor-c{width:116px!important;height:182px!important;right:8px!important;left:auto!important;top:auto!important;bottom:max(5px,calc(env(safe-area-inset-bottom) + 3px))!important;}
 }
 
 /* iPad landscape / compact desktop: same principle, with wider reading surface
@@ -132,6 +132,6 @@ body::before{
   }
   .menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
   .decor-a{width:178px!important;height:195px!important;left:12px!important;right:auto!important;top:max(14px,calc(env(safe-area-inset-top) + 5px))!important;bottom:auto!important;}
-  .decor-b{width:205px!important;height:148px!important;left:11px!important;right:auto!important;top:auto!important;bottom:max(7px,calc(env(safe-area-inset-bottom) + 4px))!important;}
+  .decor-b{width:184px!important;height:136px!important;left:11px!important;right:auto!important;top:auto!important;bottom:max(7px,calc(env(safe-area-inset-bottom) + 4px))!important;}
   .decor-c{width:148px!important;height:230px!important;right:12px!important;left:auto!important;top:auto!important;bottom:max(5px,calc(env(safe-area-inset-bottom) + 3px))!important;}
 }
