@@ -18,7 +18,7 @@ Failed final assembler run `36032106873` decoded 51,376 bytes but produced SHA25
 Fresh one-pass range comparison proved the only mismatching staged file was:
 - stale `right-01.b64` blob `c4a33fd7e0ebf46121c8a2c7a7db397364b0be26`
 - canonical `[6000:18000]` target blob `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`
-All other seven staged ranges match fresh canonical expected values.
+All other seven staged ranges matched fresh canonical expected values at that checkpoint.
 
 ## RIGHT-01 FRESH SUBCHUNKS — BOTH VERIFIED EXACT
 Repair branch: `repair/v3-2b2-exact-blobs-20260924`.
@@ -35,11 +35,6 @@ Repair branch: `repair/v3-2b2-exact-blobs-20260924`.
    - expected/file blob `4c9767b0898fea0c847306c02863f57e92d24342`
    - commit `dbcf5caa6c9c227f3dbd948d189b89b10008b86f`
    - STATUS VERIFIED EXACT.
-
-Desired corrected combined `right-01.b64`:
-- length `12000`
-- deterministic canonical text-blob target `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`.
-- Corrected output has NOT yet been independently inspected at this checkpoint.
 
 ## RIGHT-01 REPAIR WORKFLOW — CREATED, VERIFIED
 Temporary repair-only workflow:
@@ -64,7 +59,15 @@ Temporary repair-only workflow:
   - event `push`
   - status `completed`
   - conclusion `success`
-- Corrected `right-01.b64` output has NOT yet been independently inspected at this checkpoint.
+
+## CORRECTED RIGHT-01 OUTPUT — INDEPENDENTLY VERIFIED EXACT
+- path `repair-staging/right/right-01.b64` on repair branch
+- latest path output commit `5d2164714cfc1e3dd010dd5509dc430fb883ed33` (`Repair exact right-01 from fresh halves`)
+- independently fetched file blob SHA: `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`
+- independent Git tree metadata for that output commit reports size exactly `12000`
+- required blob target `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`: MATCH
+- required length `12000`: MATCH
+- STATUS: VERIFIED EXACT; do not rewrite.
 
 ## FRESH CANONICAL EIGHT-RANGE TARGETS
 - `right-00` `4cfbab61acc0c0e6489b51da0bb423c2da1d5e50`
@@ -78,19 +81,18 @@ Temporary repair-only workflow:
 
 ## DO NOT REPEAT / REJECTED
 - Do not redo repo-wide/source/Library/V2/Session1/2A/2B.1/layout/orientation/calculator/P0 investigations or redraw/reconstruction.
-- Do not alter the seven already matching staged ranges.
-- Do not rewrite either fresh `right-01a-fresh` or `right-01b-fresh`.
+- Do not alter any staged range before the complete eight-range revalidation checkpoint requires it.
+- Do not rewrite corrected `right-01.b64` or either fresh half.
 - Do not recreate or rewrite `.github/workflows/repair-right-01-fresh.yml`.
 - Do not recreate or rewrite `RUN_RIGHT01_FRESH` unless current GitHub source of truth explicitly requires it.
 - Do not re-inspect/re-trigger run `36033565588`; its status/conclusion is checkpointed as completed/success.
-- Do not rerun final-right workflow before corrected `right-01.b64` itself is independently verified and checkpointed.
+- Do not rerun final-right workflow before the complete eight-range staged set is revalidated and checkpointed.
 - Do not touch production paths before final right binary target is VERIFIED durable.
 
 ## OPEN BLOCKERS
-1. Independently verify corrected `right-01.b64` length 12,000 and blob `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`; checkpoint immediately.
-2. Revalidate all eight staged range blobs against fresh canonical targets; checkpoint.
-3. Trigger final-right assembler once with a new deterministic trigger change; verify final binary Git blob `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`; checkpoint.
-4. Only then: production mapping → cleanup → QA/manual acceptance.
+1. Revalidate all eight staged range blobs against fresh canonical targets; checkpoint.
+2. Trigger final-right assembler once with a new deterministic trigger change; verify final binary Git blob `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`; checkpoint.
+3. Only then: production mapping → cleanup → QA/manual acceptance.
 
 ## EXACT NEXT RECOVERY ACTION
-After confirming this checkpoint is durable, inspect ONLY `repair-staging/right/right-01.b64` on repair branch. Require length exactly `12000` and Git blob SHA exactly `d7ea4dac7f9d38b0e0d80a1dd306f3d6b9549df9`. Immediately persist that verification checkpoint before revalidating any other staged range or rerunning any workflow. Do not make any other write in that work unit.
+After confirming this checkpoint is durable, inspect ONLY Git blob/tree metadata for the eight staged canonical files `right-00.b64`, corrected `right-01.b64`, `right-02.b64`, `right-03.b64`, `right-04a.b64`, `right-04b.b64`, `right-04c.b64`, `right-04d.b64` on the repair branch. Compare each current blob SHA to the fresh canonical target list above and immediately persist the complete eight-range revalidation result before rerunning or editing anything. Do not make any other write in that work unit.
