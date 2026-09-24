@@ -2,7 +2,7 @@
 
 > **Crash-safe continuation checkpoint — DO NOT RESTART.**
 >
-> Source of truth: current GitHub `main` + actual code + `recipe_master.json`. If any SHA/run below is stale, current `main` wins.
+> Source of truth: current GitHub `main` + actual code + `recipe_master.json`. If any SHA/run below becomes stale, current `main` wins.
 
 ## Repository
 
@@ -10,47 +10,44 @@
 - Branch: `main`
 - Authoritative feedback: `docs/UI_REAL_DEVICE_FEEDBACK_2026-09-24_V2.md`
 - Character source finding: `docs/UI_CHARACTER_SOURCE_FINDING_2026-09-24.md`
-- Latest verified implementation/QA HEAD before this handoff-only commit: `04370f808ea78df2dbf7160cc07f1f6eba547bd9`
-- Latest UI QA run: **35980100012 — SUCCESS**
-- Latest screenshot artifact: **10800290439** (`ui-qa-screenshots`)
-- Artifact digest: `sha256:c8fcc0e1cd399ab108f67eaba1c8bc571c36cfd53932d7db84bbec4f92758be6`
+- Latest verified implementation/QA HEAD before this handoff-only commit: `40f9992fdca1f66c9ca3ea0af29609d536182d68`
+- Latest UI QA run: **35981031355 — SUCCESS**
+- Latest screenshot artifact: **10800810003** (`ui-qa-screenshots`)
+- Artifact digest: `sha256:abc239ab22130ef17b03435e2b0612d775ebd26481846ca10bbe995ddb0784e9`
 
 ---
 
-# ACCEPTANCE STATUS — OPEN
+# ACCEPTANCE STATUS — READY FOR FINAL USER ACCEPTANCE
 
-The earlier `READY FOR USER ACCEPTANCE` conclusion remains superseded by the user's later iPhone recording + reference images.
+The user's V2 feedback is now implemented and verified in repository/local QA + deployed GitHub Pages QA.
 
 Current P0 status:
 
-- **P0-A — correct approved 3-character source/composition: IMPLEMENTED + LOCAL/LIVE QA VERIFIED**
-- **P0-B — protected center-frame fidelity: IMPLEMENTED + LOCAL/LIVE QA VERIFIED**
-- **P0-C — simple infographic thumbnails: IMPLEMENTED + LOCAL/LIVE QA VERIFIED**
-- **P0-D — approved illustrated/branded UI direction: TOP/FIRST-SCREEN PASS V1 IMPLEMENTED + LOCAL/LIVE QA VERIFIED; LONG-LIST/ENVIRONMENTAL RHYTHM STILL OPEN**
+- **P0-A — approved 3-character source/composition: DONE + LOCAL/LIVE VERIFIED**
+- **P0-B — protected center-frame fidelity: DONE + LOCAL/LIVE VERIFIED**
+- **P0-C — simple infographic thumbnails: DONE + LOCAL/LIVE VERIFIED**
+- **P0-D — approved illustrated/branded UI direction: DONE + LOCAL/LIVE VERIFIED**
+  - top/first-screen composition V1: DONE
+  - long-list/environmental rhythm V1: DONE
 
-Do not claim the full visual workstream is complete until the remaining P0-D long-list/environmental rhythm pass is implemented and visually re-accepted.
-
----
-
-# PHASE 1 DATA / MAPPING
-
-**COMPLETE — DO NOT REDO unless `recipe_master.json` changes.**
-
-- 45 menus; semantic mapping 45/45.
-- Existing atlas remains provenance/mapping evidence only.
-- Live cards use the accepted infographic/pictogram layer, not food-photo crops.
+Do not add more presentation layers unless the user provides new real-device defect evidence.
 
 ---
 
-# P0-A — APPROVED CHARACTER COMPOSITION
+# LOCKED VERIFIED VISUALS
 
-**DONE + VERIFIED ON LOCAL + DEPLOYED GITHUB PAGES — DO NOT REDO**
+## P0-A — approved character composition
 
-Authoritative source family:
+Do not redo.
 
 - `assets/overlay-top-left.webp`
 - `assets/overlay-bottom-left.webp`
 - `assets/overlay-right.webp`
+- lower-left remains **no-glasses**.
+- upper-left keeps glasses + drink + gesture + bubble.
+- lower-left keeps helmet + cat/table + bubble.
+- right keeps white backpack + clipboard/pen + food scene + bubble.
+- all foreground art remains `pointer-events:none`.
 
 Implementation / gates:
 
@@ -58,119 +55,103 @@ Implementation / gates:
 - `qa/character-composition-v2-contract.mjs`
 - `qa/live-pages-acceptance-v2.mjs`
 
-Locked visual facts:
+## P0-B — protected center frame
 
-- upper-left keeps glasses + drink + gesture + bubble;
-- lower-left remains **no-glasses** and keeps helmet + cat/table + bubble;
-- right keeps white backpack + clipboard/pen + food scene + bubble;
-- foreground art remains `pointer-events:none`.
+Do not redo.
 
-Relevant verified commits:
+- `assets/visual-center-frame-v2.css`
+- phone center frame: `width:min(300px,calc(100vw - 80px))`.
+- ~300px reading lane at 390px viewport, leaving illustration rails.
+- hero shares the same axis.
+- lower illustration shelf protects lower-left/right story compositions from the scrolling list.
 
-- `609dd0b19dcef75af6ac3cd19dd1d3892ab773aa` — preserve top-left identity detail
-- `c08112dde5bfd9e178fedf3be626c98871d30ada` — align local/live character detail gate
+## P0-C — infographic thumbnails
+
+Do not redo.
+
+- `assets/visual-thumbnail-infographic.css`
+- live menu cards do not paint food-photo atlas crops.
+- pictogram/infographic tiles remain the accepted scan language.
+- old atlas remains mapping/provenance evidence only.
 
 ---
 
-# P0-B — PROTECTED CENTER FRAME
+# P0-D — APPROVED ILLUSTRATED / BRANDED DIRECTION
 
-**DONE + VERIFIED ON LOCAL + DEPLOYED GITHUB PAGES — DO NOT REDO**
+## Top / first-screen composition V1 — DONE
 
 Implementation:
 
-- `assets/visual-center-frame-v2.css`
-- phone `#app-menus`: `width:min(300px,calc(100vw - 80px))`
-- at 390px viewport this yields ~300px center reading frame with ~45px illustration rails;
-- hero is aligned to the same frame;
-- lower illustration shelf keeps the lower-left/right approved compositions visually separate from the scrolling card stack.
-
-Corrected root cause already fixed:
-
-- old nested `%` geometry produced a rejected ~232px lane;
-- `22cf24509db87917cbdea0ee36049a744200b2c0` switched to viewport-relative geometry.
-
----
-
-# P0-C — INFOGRAPHIC THUMBNAILS
-
-**DONE + VERIFIED — DO NOT REDO**
-
-- `assets/visual-thumbnail-infographic.css`
-- live cards do not paint `semantic-atlas-v1.webp` food-photo crops;
-- signature sets remain distinct;
-- recipe/business behavior unchanged.
-
----
-
-# P0-D — APPROVED ILLUSTRATED / BRANDED UI DIRECTION
-
-## Top / first-screen composition V1
-
-**DONE + VERIFIED ON LOCAL + DEPLOYED GITHUB PAGES**
-
-Bounded implementation:
-
 - `assets/visual-top-composition-v1.css`
-- imported last from `assets/visual-polish.css`
-- scope is phone masthead + utility hero + first category only;
-- long-list categories below the first block were intentionally not redesigned in this pass.
+- masthead is a soft illustrated/editorial panel.
+- approved upper-left character participates in the brand moment without covering the NER wordmark.
+- Matrix remains functional but visually secondary.
+- first category has a bounded editorial/environmental treatment.
+- verified ~300px center frame and infographic tiles are preserved.
 
-What changed in this bounded pass:
-
-- masthead is now a ~300px soft editorial illustrated panel instead of a free-floating logo;
-- approved upper-left story character is enlarged/repositioned to participate in the masthead without covering the NER wordmark;
-- warm paper wash + sage/peach environmental shapes + hand-drawn accent line strengthen the branded first-screen moment without reintroducing duplicate background branding;
-- utility hero is now a compact supporting ribbon;
-- Matrix action remains fully functional but visually secondary;
-- first category gets a bounded editorial/environmental grouping and softer signature-card treatment;
-- P0-B center width, P0-C infographic tiles, and business behavior remain unchanged.
-
-Durable acceptance contract:
+Contract:
 
 - `qa/top-composition-v1-contract.mjs`
-- runs on Chromium + WebKit at 390×844;
-- local and deployed GitHub Pages use the same contract;
-- live gate waits for `visual-top-composition-v1.css` before evaluating to avoid deployment-lag false results.
+- Chromium + WebKit local + deployed Pages.
 
-Latest P0-D commits:
+## Long-list / environmental rhythm V1 — DONE
 
-- `f5c8b5db7d5a0dc482a337f36cbfe721988c817c` — `Add bounded P0-D top composition layer [skip ci]`
-- `18655b5b720c8095bd097c36d401254d180992ce` — `Activate bounded P0-D top composition [skip ci]`
-- `df2570ef77db3cd09638f118a18a90b240b11362` — `Add P0-D top composition acceptance contract [skip ci]`
-- `04370f808ea78df2dbf7160cc07f1f6eba547bd9` — `Gate bounded P0-D top composition in UI QA`
+Implementation:
 
-Final verification run `35980100012`:
+- `assets/visual-long-list-rhythm-v1.css`
+- imported last from `assets/visual-polish.css`.
+- applies only to categories after the verified first signature-set block.
+- later categories use lightweight editorial chapter treatment rather than heavy outer cards:
+  - subtle paper wash;
+  - category-specific environmental glow/accent;
+  - clearer rest interval between category chapters;
+  - soft category-title plate;
+  - calm 3px category accent on repeated rows;
+  - infographic tiles remain dominant for fast scanning.
+- cards remain inside the verified center frame.
+- approved character sources and lower illustration shelf remain unchanged.
+
+Relevant commits:
+
+- `91fe2607df4e0d44bb89d93fecac5aca17889483` — `Extend P0-D editorial rhythm through long list`
+- `56a21466e78869a8f6c09dd88f88c97350b38519` — `Activate P0-D long-list environmental rhythm`
+- `b0e5000b1edc61634a53a64bdb53cf80c81e9723` — `Add P0-D long-list rhythm acceptance contract`
+- `40f9992fdca1f66c9ca3ea0af29609d536182d68` — `Gate P0-D long-list rhythm in UI QA`
+
+Durable QA:
+
+- `qa/long-list-rhythm-v1-contract.mjs`
+- verifies all 6 later category chapters, expected ordering, section wash/separator/title treatment, compact repeated-row rhythm, card containment in the protected center frame, and approved lower character sources.
+- runs Chromium + WebKit locally and against deployed GitHub Pages.
+
+Latest verification run **35981031355** — SUCCESS:
 
 - base Chromium + WebKit UI QA — PASS
-- P0-A character composition — PASS
+- P0-A complete character composition — PASS
 - P0-B protected center frame — PASS
-- **P0-D top composition local — PASS**
+- P0-D top composition local — PASS
+- **P0-D long-list rhythm local — PASS**
 - calculator visual hierarchy — PASS
 - deployed Pages P0-A/P0-B — PASS
-- **deployed Pages P0-D top composition — PASS**
-- thumbnail/contact-sheet evidence — PASS
-- character asset inventory evidence — PASS
+- deployed Pages P0-D top composition — PASS
+- **deployed Pages P0-D long-list rhythm — PASS**
+- evidence uploads — PASS
 
-Manual screenshot inspection from artifact `10800290439`:
+Manual inspection from artifact **10800810003**:
 
-- `23-top-composition-v1-iphone@3x.png`
-- `24-live-top-composition-v1@3x.png`
+- `25-long-list-mid-v1@3x.png`
+- `26-long-list-lower-v1@3x.png`
+- `27-live-long-list-mid-v1@3x.png`
+- `28-live-long-list-lower-v1@3x.png`
 
-Observed local/live equivalence:
+Observed:
 
-- strong NER illustrated first-screen panel;
-- upper-left approved character participates in the masthead and does not obscure the wordmark;
-- Matrix utility is visibly secondary;
-- first category reads as a soft editorial section;
-- signature cards remain inside the protected ~300px frame;
-- infographic pictograms remain intact;
-- lower approved character compositions remain on the illustration shelf.
-
-## Remaining P0-D
-
-**OPEN: long-list / environmental rhythm only.**
-
-The page below the first category still transitions back to the older utility-list rhythm. The next bounded pass should extend the accepted art direction through later category breaks without making every section a heavy card and without increasing scan fatigue.
+- local/live presentation matches;
+- later categories read as chapters in the same illustrated NER environment rather than abruptly reverting to a generic utility list;
+- category changes create visible rest points without becoming card soup;
+- pictograms remain simple and scan-friendly;
+- long rows remain calm and within the protected frame;
+- lower-left/right approved character compositions remain on the illustration shelf.
 
 ---
 
@@ -180,38 +161,30 @@ Do **not** intentionally change:
 
 - recipe calculations or quantities;
 - canonical recipe meaning;
-- exclusion / replacement semantics;
+- exclusion/replacement semantics;
 - Matrix data logic;
 - PIN behavior;
-- unrelated import / export behavior.
+- unrelated import/export behavior.
 
-Do not regress:
-
-- approved `overlay-*.webp` character sources;
-- lower-left no-glasses;
-- ~300px protected phone center frame;
-- infographic thumbnails;
-- calculator behavior;
-- Matrix behavior;
-- `pointer-events:none` foreground art;
-- verified P0-D top/first-screen V1 composition.
+Business behavior changed by P0-A/B/C/D visual correction work: **NO**.
 
 ---
 
 # DO NOT REPEAT
 
-Do not redo:
+Do not redo without new evidence:
 
 - repo-wide investigation;
 - 45-menu inventory;
-- atlas architecture / semantic mapping;
-- infographic-thumbnail conversion;
-- character asset inventory investigation;
-- P0-A source/composition implementation;
-- P0-B geometry investigation/fix;
-- P0-D top/first-screen V1 pass;
+- semantic mapping / atlas architecture;
+- infographic conversion;
+- character asset inventory;
+- P0-A character source/composition;
+- P0-B center-frame geometry;
+- P0-D top composition V1;
+- P0-D long-list rhythm V1;
 - Matrix/PIN functional investigation;
-- modal scroll restoration investigation.
+- modal scroll-restoration investigation.
 
 ---
 
@@ -220,24 +193,22 @@ Do not redo:
 Every continuation session must:
 
 1. minimally read current `main` + this handoff;
-2. complete **one bounded task**;
+2. complete one bounded task only when new evidence requires it;
 3. persist code/evidence/checkpoint;
-4. report exact **NEXT ACTION** and stop.
+4. always report exact **NEXT ACTION** and stop.
 
 ---
 
 # EXACT NEXT ACTION
 
-**Next short session: P0-D long-list / environmental rhythm only.**
+**Final user acceptance / real-device spot check only.**
 
-Do not touch the already verified first-screen composition unless new user evidence shows a defect.
-
-Bounded goals:
-
-1. keep all later menu cards inside the verified ~300px center frame;
-2. reduce the abrupt transition from the illustrated first category back to a generic utility list;
-3. improve category rest rhythm using lightweight editorial/environmental separators, not heavy card soup;
-4. preserve infographic scanability and keep repeated rows calm;
-5. keep all three approved character compositions and lower illustration shelf unchanged;
-6. do not modify recipe/Matrix/PIN/import-export behavior;
-7. add one long-list rhythm contract + screenshot state, run Chromium + WebKit + deployed Pages QA, manually inspect, checkpoint, then stop.
+1. Open the deployed GitHub Pages site on the user's real iPhone/Safari.
+2. Compare against the latest approved references, especially:
+   - complete three-character story details;
+   - ~300px protected center frame;
+   - simple infographic thumbnails;
+   - illustrated first-screen composition;
+   - category rest rhythm through the long list.
+3. If the user supplies a new screenshot/video defect, reproduce and fix **only that exact presentation defect**.
+4. If no new defect is reported, there is **no pending repository implementation task** in this visual-correction workstream.
