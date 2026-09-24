@@ -66,9 +66,8 @@ async function inspect(browserType, browserName, c) {
       const first = document.querySelector('.category-block:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"])');
       const later = [...document.querySelectorAll('.category-block')].find(el => !el.matches(':has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"])'));
       return {
-        vw:innerWidth,vh:innerHeight,
         menus:{left:menus.left,right:menus.right,width:menus.width},
-        shell:{left:shell.left,right:shell.right,width:shell.width,z:parseInt(getComputedStyle(document.querySelector('#app-shell')).zIndex)||0},
+        shell:{z:parseInt(getComputedStyle(document.querySelector('#app-shell')).zIndex)||0},
         decorZ:parseInt(getComputedStyle(document.querySelector('#decor-layer')).zIndex)||0,
         decor,
         bodyBg:getComputedStyle(document.body,'::before').backgroundImage,
@@ -81,7 +80,6 @@ async function inspect(browserType, browserName, c) {
     });
 
     const scope = `${browserName}/${c.name}/${LIVE?'live':'local'}`;
-    assert.equal(document ? true : true, true);
     assert.equal(r.decor.length, 3, `${scope}: expected three character compositions`);
     assert.ok(r.decorZ > r.shell.z, `${scope}: characters are not above content (${r.decorZ} <= ${r.shell.z})`);
     assert.ok(r.bodyBgZ < r.shell.z && r.bodyBgZ < r.decorZ, `${scope}: environmental background is not backmost`);
