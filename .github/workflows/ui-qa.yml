@@ -75,6 +75,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # QA applies temporary runtime edits to the tracked harness. Restore those before
+          # rebasing the verified asset commit, otherwise git correctly refuses the rebase.
+          git restore --worktree qa/ui-qa.mjs
           git add index.html assets/menu-thumbnails/semantic-atlas-v1.webp
           git rm -f tmp/ui-atlas/part-*.b64
           if ! git diff --cached --quiet; then
