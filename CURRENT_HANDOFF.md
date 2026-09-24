@@ -74,3 +74,31 @@ Finish V3 Session 2B.2: restore the three exact browser-decodable approved high-
 
 ## EXACT NEXT RECOVERY ACTION
 Right ONLY. Resume staging from exact base64 character offset 18,000 on `repair/v3-2b2-exact-blobs-20260924`; do not rewrite `right-00` or `right-01`. After the full 68,504-character payload is durably staged, assemble/decode deterministically, verify local SHA256 and Git blob SHA, require Git target exactly `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`, then immediately checkpoint success before any production mapping or cleanup.
+
+## DELTA CHECKPOINT — STOP-ANALYSIS PERSIST
+Persisted immediately on user instruction before any further investigation.
+
+### Tools/actions completed since the preceding durable checkpoint
+- Queried available GitHub connector capabilities relevant to file/workflow/binary-safe continuation only; no repository mutation resulted from those capability checks.
+- Re-confirmed current `main` remained on the emergency recovery lineage and re-read `CURRENT_HANDOFF.md` only to persist this delta.
+- No additional transport, reconstruction, production mapping, cleanup, QA, or investigation was performed after the stop instruction and before this checkpoint.
+
+### Files/chunks created or reconstructed since the preceding checkpoint
+- Durable right staging already present and preserved exactly as source of truth:
+  - `repair-staging/right/right-00.b64` at commit `9f24a61cc3145279f3005235048938948c344b0e`
+  - `repair-staging/right/right-01.b64` at commit `f6993bad59ca903bfc814e9f3c2bd995b7de81ac`
+- No new chunk beyond `right-01` was created in this delta.
+- No binary was reconstructed in this delta.
+
+### Verified findings obtained since then
+- No new product/asset conclusion beyond the already durable findings above.
+- Current recoverable boundary remains exact right base64 offset `18,000`; chars `0–17,999` are already durable and MUST NOT be restaged.
+- Production asset paths remain untouched.
+
+### Unresolved state
+- Right exact Git target `a4d051c52a4b0f5191ad2770c3eee416fa01aba4` is not yet verified present.
+- Remaining right base64 chars `18,000–68,503` are not yet durably staged.
+- Production mapping, staging cleanup, post-repair QA, and manual screenshot acceptance remain pending.
+
+### Exact next action after this checkpoint is confirmed durable
+Resume RIGHT ONLY at exact base64 offset `18,000` on `repair/v3-2b2-exact-blobs-20260924`; stage one small recoverable chunk, verify it, persist a new checkpoint, then continue. Do not rewrite `right-00` or `right-01`, do not touch production mapping, and do not start another investigation pass before that next chunk is durably checkpointed.
