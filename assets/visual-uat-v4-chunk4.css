@@ -32,6 +32,12 @@
   body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:80px!important;height:87px!important;left:0!important;top:max(5px,env(safe-area-inset-top))!important;}
   body:has(#calculatorModal:not(.is-hidden)) .decor-b{width:80px!important;height:75px!important;left:0!important;bottom:max(5px,env(safe-area-inset-bottom))!important;}
   body:has(#calculatorModal:not(.is-hidden)) .decor-c{width:80px!important;height:124px!important;right:0!important;bottom:max(5px,env(safe-area-inset-bottom))!important;}
+
+  /* Preserve Chunk 2's two-column/scroll geometry while removing 5px of chrome
+     before the first actionable exclusion: 4px from header vertical padding +
+     1px from panel top padding. Tap targets and panel widths remain unchanged. */
+  #calculatorModal:not(.is-hidden) .modal-header{padding:5px 10px!important;}
+  #calculatorModal:not(.is-hidden) .calc-panel{padding:8px 10px 9px!important;}
 }
 
 @media (min-width:768px) and (max-width:899px) and (orientation:portrait){
