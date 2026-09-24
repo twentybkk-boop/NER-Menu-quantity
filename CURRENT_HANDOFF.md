@@ -17,16 +17,22 @@ Finish V3 Session 2B.2: restore the three exact browser-decodable approved high-
 - Exact top Git object is VERIFIED present: `990c6b3523f79a483f41f17032f03f880f97f461`; not yet wired to production.
 - Exact bottom Git object is VERIFIED present: `cf1f98efe9c9f67cb48e3bd80f512b0f9adece45`; not yet wired to production.
 - Exact right local candidate `right-q70-a60.webp` is VERIFIED: 51,376 bytes, RIFF/WEBP, SHA256 `d94dffb06bf229f01cbed71f87133a18c8b80decabdcd32577bb7a1ff66958ed`, deterministic Git blob SHA `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`.
-- Git object lookup for exact right target returned 404 immediately before transport.
+- Git object lookup for exact right target still returns 404.
 - No production asset path has been changed in this exact-target flow.
 
 ## RIGHT TRANSPORT — FAILED EXACT-HASH GATE
-- A binary-safe `create_blob(base64)` transport attempt was made for the verified 51,376-byte right payload.
-- GitHub returned blob SHA `06e26ae2448ecc5383a452760f6f21f58daea62e`.
-- This does NOT equal exact target `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`.
-- `06e26ae2448ecc5383a452760f6f21f58daea62e` is REJECTED and MUST NOT be wired to any production path.
-- The failed transport changed no production asset path.
-- Do not trust another single oversized one-shot payload unless the exact returned SHA passes the target gate.
+- One-shot `create_blob(base64)` returned `06e26ae2448ecc5383a452760f6f21f58daea62e`, NOT exact target `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`.
+- `06e26ae...` is REJECTED and MUST NOT be wired.
+- Failed attempt changed no production path.
+
+## RIGHT TRANSPORT — RECOVERABLE CHUNK STAGING
+- Exact right base64 payload is 68,504 characters, derived directly from the verified local 51,376-byte candidate.
+- Staging is on `repair/v3-2b2-exact-blobs-20260924`; production paths remain untouched.
+- Durably staged:
+  - `repair-staging/right/right-00.b64` — first 6,000 chars — commit `9f24a61cc3145279f3005235048938948c344b0e`
+  - `repair-staging/right/right-01.b64` — next 12,000 chars — commit `f6993bad59ca903bfc814e9f3c2bd995b7de81ac`
+- Staged prefix length is exactly 18,000 characters. Remaining exact payload length is 50,504 characters.
+- Right exact target object is still absent (404) after these staging commits.
 
 ## VERIFIED FINDINGS
 1. Known blocker is binary browser decode/load, not layout/geometry/business logic.
@@ -38,6 +44,7 @@ Finish V3 Session 2B.2: restore the three exact browser-decodable approved high-
 
 ## WORK OBSERVED BUT NOT YET DURABLY VERIFIED
 - Exact right target object `a4d051c5...` is still not verified present in Git.
+- Right payload after character 18,000 is not staged at this checkpoint.
 - No clean production tree/commit mapping the three exact target blobs to `assets/overlay-*-hires.webp` exists yet.
 - Temporary repair staging artifacts remain repair-only and are not production.
 - Post-repair QA/sharpness PASS and manual local/live screenshot acceptance remain open.
@@ -50,19 +57,20 @@ Finish V3 Session 2B.2: restore the three exact browser-decodable approved high-
 - Invalid orphan blobs `35c12cd9...`, `42c06cd2...`, `9af0dd1f...` and prior blank replacements.
 
 ## DO NOT REPEAT
-- Repo-wide/source/Library audits or prior completed V2/Session1/2A/2B.1 investigations.
+- Repo-wide/source/Library audits or completed V2/Session1/2A/2B.1 investigations.
 - Layout/orientation/calculator/P0 investigations.
 - Character redraw/reconstruction.
 - Re-verify/retransport top or bottom unless Git object state unexpectedly changes.
 - Re-investigate right image content; exact right bytes already hash to target.
+- Re-stage right payload characters 0–17,999 (`right-00`, `right-01`); already durable.
 - Wire production paths before right target object is verified present.
-- Wire or reuse failed right blob `06e26ae...`.
+- Wire/reuse failed right blob `06e26ae...`.
 
 ## OPEN BLOCKERS
-1. Transport the exact right payload without mutation/truncation and verify Git object SHA exactly `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`.
+1. Stage remaining exact right payload chars 18,000–68,503 without mutation, deterministically assemble/decode, and verify Git SHA exactly `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`.
 2. Production mapping of all three exact targets not yet done.
-3. Temporary repair staging artifacts need cleanup after exact-object recovery is complete.
+3. Temporary repair staging artifacts need cleanup after exact-object recovery.
 4. QA/manual screenshot acceptance remain open.
 
 ## EXACT NEXT RECOVERY ACTION
-Right ONLY. Use the already-verified local right bytes and a recoverable non-truncating transport path (prefer deterministic chunk assembly or another file-aware binary path), create the Git object, and require returned/resolved SHA exactly `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`. Immediately persist success before any production path mapping or staging cleanup.
+Right ONLY. Resume staging from exact base64 character offset 18,000 on `repair/v3-2b2-exact-blobs-20260924`; do not rewrite `right-00` or `right-01`. After the full 68,504-character payload is durably staged, assemble/decode deterministically, verify local SHA256 and Git blob SHA, require Git target exactly `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`, then immediately checkpoint success before any production mapping or cleanup.
