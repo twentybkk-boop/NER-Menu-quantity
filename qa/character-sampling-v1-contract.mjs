@@ -7,11 +7,12 @@ const BASE = process.env.SHARPNESS_BASE || 'http://127.0.0.1:8000/index.html';
 const recipeBody = fs.readFileSync('recipe_master.json', 'utf8');
 const shotDir = path.resolve('qa-artifacts');
 fs.mkdirSync(shotDir, { recursive: true });
+const isLive = !BASE.startsWith('http://127.0.0.1');
 
 const SOURCES = {
-  '.decor-a': { file: 'overlay-top-left.webp', w: 130, h: 121 },
-  '.decor-b': { file: 'overlay-bottom-left.webp', w: 150, h: 114 },
-  '.decor-c': { file: 'overlay-right.webp', w: 110, h: 171 },
+  '.decor-a': { file: 'overlay-top-left-hires.webp', w: 518, h: 500 },
+  '.decor-b': { file: 'overlay-bottom-left-hires.webp', w: 655, h: 524 },
+  '.decor-c': { file: 'overlay-right-hires.webp', w: 556, h: 851 },
 };
 
 const CASES = [
@@ -32,7 +33,7 @@ async function run(browserType, browserName) {
         hasTouch: true,
       });
       const page = await context.newPage();
-      if (BASE.startsWith('http://127.0.0.1')) {
+      if (!isLive) {
         await page.route('**/recipe_master.json*', route => route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -63,16 +64,16 @@ async function run(browserType, browserName) {
         const item = sample[selector];
         assert.equal(item.filter, 'none', `${browserName}/${label}: ${selector} still uses raster filter ${item.filter}`);
         assert.equal(item.pointerEvents, 'none', `${browserName}/${label}: ${selector} must stay non-interactive`);
-        assert.ok(item.backgroundImage.includes(source.file), `${browserName}/${label}: ${selector} source changed unexpectedly: ${item.backgroundImage}`);
+        assert.ok(item.backgroundImage.includes(source.file), `${browserName}/${label}: ${selector} must use high-res approved source: ${item.backgroundImage}`);
 
-        const fitScale = Math.min(item.width / source.w, item.height / source.h);
-        assert.ok(fitScale <= 1.005,
-          `${browserName}/${label}: ${selector} CSS-upscales ${source.file} by ${fitScale.toFixed(3)}x before DPR sampling`);
+        const sourcePxPerCssPx = Math.min(source.w / item.width, source.h / item.height);
+        assert.ok(sourcePxPerCssPx >= 2,
+          `${browserName}/${label}: ${selector} has only ${sourcePxPerCssPx.toFixed(2)} source px/CSS px from ${source.file}`);
       }
 
       if (browserName === 'chromium') {
         await page.screenshot({
-          path: path.join(shotDir, `30-${label}-sampling-v1@${dpr}x.png`),
+          path: path.join(shotDir, `${isLive ? 'live-' : ''}31-${label}-sharpness-v2@${dpr}x.png`),
           fullPage: false,
         });
       }
@@ -81,9 +82,9 @@ async function run(browserType, browserName) {
   } finally {
     await browser.close();
   }
-  console.log(`PASS ${browserName} character sampling safety`);
+  console.log(`PASS ${browserName} character high-res sharpness contract (${isLive ? 'live' : 'local'})`);
 }
 
 await run(chromium, 'chromium');
 await run(webkit, 'webkit');
-console.log('CHARACTER SAMPLING V1 CONTRACT PASS');
+console.log('CHARACTER HIGH-RES SHARPNESS CONTRACT PASS');
