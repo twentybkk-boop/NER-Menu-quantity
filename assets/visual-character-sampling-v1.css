@@ -13,11 +13,11 @@
    reference composition. Geometry is intentionally unchanged; only the raster
    source changes so Retina/iPad rendering has enough source pixels. */
 .decor-a{
-  background-image:url("overlay-top-left-hires.webp?v=20260924-v3-hires2")!important;
+  background-image:url("overlay-top-left-hires.webp?v=20260924-v3-recovered1")!important;
 }
 .decor-b{
-  background-image:url("overlay-bottom-left-hires.webp?v=20260924-v3-hires2")!important;
+  background-image:url("overlay-bottom-left-hires.webp?v=20260924-v3-recovered1")!important;
 }
 .decor-c{
-  background-image:url("overlay-right-hires.webp?v=20260924-v3-hires2")!important;
+  background-image:url("overlay-right-hires.webp?v=20260924-v3-recovered1")!important;
 }
