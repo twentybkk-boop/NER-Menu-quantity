@@ -4,101 +4,70 @@
 > Source of truth: current GitHub `main` + actual code + `recipe_master.json`; current `main` wins if any status below becomes stale.
 
 ## CURRENT OBJECTIVE
-Finish V3 Session 2B.2: restore the three exact browser-decodable approved high-resolution character overlays without changing verified layout/business logic; then run existing sharpness/UI QA and manually inspect `31-*sharpness-v2` screenshots.
+Finish V3 Session 2B.2 by restoring the three exact browser-decodable approved high-resolution character overlays without changing verified layout/business logic; then run existing sharpness/UI QA and manually inspect `31-*sharpness-v2` screenshots.
 
 ## LATEST VERIFIED CHECKPOINT
-- V2 P0-A/B/C/D: VERIFIED — do not redo.
-- V3 Session 1 layering/orientation/background: VERIFIED — do not redo.
-- V3 Session 2A root-cause audit: DONE — do not redo.
-- V3 Session 2B.1 sampling/compositing safety: VERIFIED — do not redo.
-- Recovered approved source `image-gen-2(7).png`: VERIFIED as intended story-complete source.
-- UI QA run `36012464625`, job `107676382757`: layout/geometry/character presence/center frame/top composition/rhythm/orientation/layering passed; V3 high-res sharpness failed on browser image load/decode (`img.onerror`) for top-left WebP.
-- Temporary repair branch `repair/v3-2b2-exact-blobs-20260924` exists.
-- Exact top Git object is VERIFIED present: `990c6b3523f79a483f41f17032f03f880f97f461`; not yet wired to production.
-- Exact bottom Git object is VERIFIED present: `cf1f98efe9c9f67cb48e3bd80f512b0f9adece45`; not yet wired to production.
-- Exact right local candidate `right-q70-a60.webp` is VERIFIED: 51,376 bytes, RIFF/WEBP, SHA256 `d94dffb06bf229f01cbed71f87133a18c8b80decabdcd32577bb7a1ff66958ed`, deterministic Git blob SHA `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`.
-- Git object lookup for exact right target still returns 404.
-- No production asset path has been changed in this exact-target flow.
+- V2 P0-A/B/C/D VERIFIED; V3 Session 1 VERIFIED; Session 2A DONE; Session 2B.1 VERIFIED — do not redo.
+- Recovered approved source `image-gen-2(7).png` VERIFIED.
+- UI QA run `36012464625`, job `107676382757`: layout/geometry/character presence/center frame/top composition/rhythm/orientation/layering PASSED; V3 high-res sharpness failed on browser image load/decode (`img.onerror`) for top-left WebP.
+- Exact top Git object VERIFIED present: `990c6b3523f79a483f41f17032f03f880f97f461`.
+- Exact bottom Git object VERIFIED present: `cf1f98efe9c9f67cb48e3bd80f512b0f9adece45`.
+- Exact right local candidate `right-q70-a60.webp` VERIFIED locally: 51,376 bytes, RIFF/WEBP, deterministic Git blob SHA exactly `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`.
+- Prior lookup of right target `a4d051c52a4b0f5191ad2770c3eee416fa01aba4` returned 404, so right exact object was not yet VERIFIED present at that checkpoint.
+- No production asset path has been changed by the exact-target recovery flow.
 
-## RIGHT TRANSPORT — FAILED EXACT-HASH GATE
-- One-shot `create_blob(base64)` returned `06e26ae2448ecc5383a452760f6f21f58daea62e`, NOT exact target `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`.
-- `06e26ae...` is REJECTED and MUST NOT be wired.
-- Failed attempt changed no production path.
-
-## RIGHT TRANSPORT — RECOVERABLE CHUNK STAGING
-- Exact right base64 payload is 68,504 characters, derived directly from the verified local 51,376-byte candidate.
-- Staging is on `repair/v3-2b2-exact-blobs-20260924`; production paths remain untouched.
-- Durably staged:
-  - `repair-staging/right/right-00.b64` — first 6,000 chars — commit `9f24a61cc3145279f3005235048938948c344b0e`
-  - `repair-staging/right/right-01.b64` — next 12,000 chars — commit `f6993bad59ca903bfc814e9f3c2bd995b7de81ac`
-- Staged prefix length is exactly 18,000 characters. Remaining exact payload length is 50,504 characters.
-- Right exact target object is still absent (404) after these staging commits.
+## EVIDENCE CHECKED
+- Current handoff only as needed for crash-safe continuation.
+- Exact deterministic targets:
+  - top `990c6b3523f79a483f41f17032f03f880f97f461`
+  - bottom `cf1f98efe9c9f67cb48e3bd80f512b0f9adece45`
+  - right `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`
+- Temporary repair branch exists: `repair/v3-2b2-exact-blobs-20260924`.
+- During right transport recovery, an attempted `create_file` for `repair-staging/right/right-00.b64` returned GitHub `422 Invalid request: sha wasn't supplied`, which indicates that exact staging path already exists on the repair branch. No new write from that failed call was accepted.
 
 ## VERIFIED FINDINGS
-1. Known blocker is binary browser decode/load, not layout/geometry/business logic.
+1. Known blocker remains binary browser decode/load, not layout/geometry/business logic.
 2. Intended dimensions remain top 518×500, bottom 655×524, right 556×851.
-3. Story acceptance remains top glasses/drink/gesture/bubble; bottom NO GLASSES/helmet/cat-table/bubble; right white backpack/clipboard-pen/food-chalkboard/bubble.
-4. Exact top and bottom Git objects are VERIFIED present.
-5. Exact right local bytes are VERIFIED; remaining right work is transport only.
-6. Repair scope remains binary asset bytes only unless concrete post-repair QA proves otherwise.
+3. Story acceptance remains:
+   - top: glasses + drink + gesture + speech bubble
+   - bottom: NO GLASSES + helmet + cat/table + speech bubble
+   - right: white backpack + clipboard/pen + food/chalkboard + speech bubble
+4. Top and bottom exact objects are already durable in Git object storage.
+5. Right exact local bytes are already verified; remaining right work is transport/reconciliation only.
+6. The `right-00.b64` staging-path collision is a repository-state observation, not evidence that the right exact object is already present.
 
 ## WORK OBSERVED BUT NOT YET DURABLY VERIFIED
-- Exact right target object `a4d051c5...` is still not verified present in Git.
-- Right payload after character 18,000 is not staged at this checkpoint.
-- No clean production tree/commit mapping the three exact target blobs to `assets/overlay-*-hires.webp` exists yet.
-- Temporary repair staging artifacts remain repair-only and are not production.
-- Post-repair QA/sharpness PASS and manual local/live screenshot acceptance remain open.
+- Exact right target object is not yet VERIFIED present in Git.
+- Existing `repair-staging/right/right-00.b64` content/size/role has not yet been checked in this recovery chunk.
+- No clean production tree/commit mapping exactly the three target blobs to `assets/overlay-*-hires.webp` is VERIFIED yet.
+- Temporary repair staging artifacts still need cleanup after exact-object recovery.
+- Post-repair QA/sharpness PASS and manual screenshot acceptance remain open.
+
+## POSSIBLE LOST ANALYSIS
+- Some interrupted right-transport staging details may have existed only in transient tool/chat state.
+- Do not reconstruct them wholesale. Re-check only the existing `right-00.b64` path and any directly adjacent right-staging state required to continue.
 
 ## REJECTED / DO NOT USE
 - Top non-target `812e704774c25a1c2387e03e48a3d1eb27b9e672`.
 - Bottom q30/non-target `65c0568c8b4895ead37932fa6c7f2814ec4c90a1`.
 - Failed/truncated top `b728455af0996ff48b21e49e1fd2b3c05e5fb4ea`.
-- Failed right transport `06e26ae2448ecc5383a452760f6f21f58daea62e`.
 - Invalid orphan blobs `35c12cd9...`, `42c06cd2...`, `9af0dd1f...` and prior blank replacements.
 
 ## DO NOT REPEAT
-- Repo-wide/source/Library audits or completed V2/Session1/2A/2B.1 investigations.
+- Repo-wide/source/Library audits or prior completed V2/Session1/2A/2B.1 investigations.
 - Layout/orientation/calculator/P0 investigations.
 - Character redraw/reconstruction.
 - Re-verify/retransport top or bottom unless Git object state unexpectedly changes.
 - Re-investigate right image content; exact right bytes already hash to target.
-- Re-stage right payload characters 0–17,999 (`right-00`, `right-01`); already durable.
-- Wire production paths before right target object is verified present.
-- Wire/reuse failed right blob `06e26ae...`.
+- Retry creating `repair-staging/right/right-00.b64` blindly.
+- Modify production paths before right target object is VERIFIED present.
 
 ## OPEN BLOCKERS
-1. Stage remaining exact right payload chars 18,000–68,503 without mutation, deterministically assemble/decode, and verify Git SHA exactly `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`.
-2. Production mapping of all three exact targets not yet done.
-3. Temporary repair staging artifacts need cleanup after exact-object recovery.
-4. QA/manual screenshot acceptance remain open.
+1. Reconcile existing right staging path(s) on repair branch with the exact local right payload.
+2. Transport/verify exact right Git object `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`.
+3. Map all three exact blobs to production paths only after step 2 is durably verified.
+4. Clean temporary repair staging artifacts.
+5. Run post-repair QA and manual screenshot acceptance.
 
 ## EXACT NEXT RECOVERY ACTION
-Right ONLY. Resume staging from exact base64 character offset 18,000 on `repair/v3-2b2-exact-blobs-20260924`; do not rewrite `right-00` or `right-01`. After the full 68,504-character payload is durably staged, assemble/decode deterministically, verify local SHA256 and Git blob SHA, require Git target exactly `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`, then immediately checkpoint success before any production mapping or cleanup.
-
-## DELTA CHECKPOINT — STOP-ANALYSIS PERSIST
-Persisted immediately on user instruction before any further investigation.
-
-### Tools/actions completed since the preceding durable checkpoint
-- Queried available GitHub connector capabilities relevant to file/workflow/binary-safe continuation only; no repository mutation resulted from those capability checks.
-- Re-confirmed current `main` remained on the emergency recovery lineage and re-read `CURRENT_HANDOFF.md` only to persist this delta.
-- No additional transport, reconstruction, production mapping, cleanup, QA, or investigation was performed after the stop instruction and before this checkpoint.
-
-### Files/chunks created or reconstructed since the preceding checkpoint
-- Durable right staging already present and preserved exactly as source of truth:
-  - `repair-staging/right/right-00.b64` at commit `9f24a61cc3145279f3005235048938948c344b0e`
-  - `repair-staging/right/right-01.b64` at commit `f6993bad59ca903bfc814e9f3c2bd995b7de81ac`
-- No new chunk beyond `right-01` was created in this delta.
-- No binary was reconstructed in this delta.
-
-### Verified findings obtained since then
-- No new product/asset conclusion beyond the already durable findings above.
-- Current recoverable boundary remains exact right base64 offset `18,000`; chars `0–17,999` are already durable and MUST NOT be restaged.
-- Production asset paths remain untouched.
-
-### Unresolved state
-- Right exact Git target `a4d051c52a4b0f5191ad2770c3eee416fa01aba4` is not yet verified present.
-- Remaining right base64 chars `18,000–68,503` are not yet durably staged.
-- Production mapping, staging cleanup, post-repair QA, and manual screenshot acceptance remain pending.
-
-### Exact next action after this checkpoint is confirmed durable
-Resume RIGHT ONLY at exact base64 offset `18,000` on `repair/v3-2b2-exact-blobs-20260924`; stage one small recoverable chunk, verify it, persist a new checkpoint, then continue. Do not rewrite `right-00` or `right-01`, do not touch production mapping, and do not start another investigation pass before that next chunk is durably checkpointed.
+Small chunk only: fetch `repair-staging/right/right-00.b64` from branch `repair/v3-2b2-exact-blobs-20260924` and inspect only its metadata/content length against the first exact right base64 segment. If it matches, discover only directly adjacent `repair-staging/right/right-*.b64` files needed to determine how much exact payload is already durably staged; then persist that finding before any further right transport. If it does not match, persist the mismatch and replace only that path with the exact segment. Do not inspect unrelated repo state and do not touch production paths.
