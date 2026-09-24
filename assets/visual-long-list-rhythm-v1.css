@@ -1,0 +1,107 @@
+/* P0-D LONG-LIST RHYTHM V1 — bounded environmental/editorial continuation.
+   Scope: phone categories AFTER the verified first signature-set block only.
+   Preserve the verified top composition, ~300px center frame, approved character
+   overlays, infographic tiles, calculator, Matrix/PIN, and all recipe behavior. */
+
+@media(max-width:767px){
+  /* Later sections should feel like chapters in the same illustrated page, not
+     a stack of unrelated utility lists. Keep the treatment intentionally light:
+     no heavy outer card, just a soft paper wash, a small environmental glow and
+     a clearer rest interval between categories. */
+  #app-menus .category-block:not(:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"])){
+    --section-accent:rgba(194,128,96,.50);
+    --section-wash:rgba(239,219,199,.24);
+    position:relative!important;
+    margin:0 -2px 27px!important;
+    padding:8px 4px 11px!important;
+    border:0!important;
+    border-radius:20px!important;
+    background:
+      radial-gradient(circle at 94% 8%,var(--section-wash) 0 22px,transparent 23px),
+      linear-gradient(180deg,rgba(255,252,247,.58),rgba(255,253,249,.16) 68%,transparent)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.72)!important;
+  }
+
+  /* Category-specific editorial accents. These selectors only identify the
+     existing rendered groups; they do not change grouping or menu semantics. */
+  #app-menus .category-block:has(.menu-card[data-menu="หมูล้วน (ไม่มีเครื่องใน)"]){
+    --section-accent:rgba(183,111,99,.52);
+    --section-wash:rgba(235,203,199,.27);
+  }
+  #app-menus .category-block:has(.menu-card[data-menu="ชุดผักรวม"]){
+    --section-accent:rgba(118,146,93,.52);
+    --section-wash:rgba(205,222,187,.31);
+  }
+  #app-menus .category-block:has(.menu-card[data-menu="วุ้นเส้น"]){
+    --section-accent:rgba(187,147,83,.48);
+    --section-wash:rgba(238,221,181,.28);
+  }
+  #app-menus .category-block:has(.menu-card[data-menu="ไข่ไก่สด"]){
+    --section-accent:rgba(194,159,86,.48);
+    --section-wash:rgba(242,226,184,.28);
+  }
+  #app-menus .category-block:has(.menu-card[data-menu="ไก่ป๊อป"]){
+    --section-accent:rgba(194,126,82,.50);
+    --section-wash:rgba(239,208,176,.28);
+  }
+  #app-menus .category-block:has(.menu-card[data-menu="ซาโมซ่ากล้วย"]){
+    --section-accent:rgba(178,119,135,.48);
+    --section-wash:rgba(235,205,215,.27);
+  }
+
+  #app-menus .category-block:not(:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"]))::before{
+    content:"";
+    position:absolute;
+    left:5px;
+    right:52%;
+    top:0;
+    height:1px;
+    pointer-events:none;
+    background:linear-gradient(90deg,var(--section-accent),rgba(255,255,255,0))!important;
+  }
+
+  #app-menus .category-block:not(:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"])) .category-title{
+    width:fit-content!important;
+    max-width:calc(100% - 10px)!important;
+    min-height:30px!important;
+    margin:0 3px 9px!important;
+    padding:4px 9px 5px 4px!important;
+    gap:7px!important;
+    border:0!important;
+    border-radius:12px!important;
+    background:rgba(255,253,249,.70)!important;
+    box-shadow:0 3px 10px rgba(76,52,39,.022)!important;
+    color:#5f4033!important;
+    font-size:15.3px!important;
+    line-height:1.15!important;
+  }
+
+  #app-menus .category-block:not(:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"])) .category-title::after{
+    left:4px!important;
+    right:18%!important;
+    bottom:1px!important;
+    height:1.5px!important;
+    background:linear-gradient(90deg,var(--section-accent),rgba(255,255,255,0))!important;
+  }
+
+  /* Keep repeated rows calm. A narrow category tint replaces extra imagery and
+     gives the eye a stable vertical rhythm while preserving pictogram scanability. */
+  #app-menus .category-block:not(:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"])) .menu-grid{
+    gap:6px!important;
+  }
+  #app-menus .category-block:not(:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"])) .menu-card{
+    min-height:61px!important;
+    border-color:rgba(205,181,162,.32)!important;
+    background:linear-gradient(90deg,var(--section-accent) 0 3px,rgba(255,253,249,.988) 3px 100%)!important;
+    box-shadow:0 3px 9px rgba(76,52,39,.032)!important;
+  }
+  #app-menus .category-block:not(:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"])) .menu-card:active{
+    background:linear-gradient(90deg,var(--section-accent) 0 3px,rgba(255,249,243,.995) 3px 100%)!important;
+  }
+
+  /* Slightly larger breathing room before the final dessert chapter so the end
+     of the long list feels intentional rather than abruptly appended. */
+  #app-menus .category-block:has(.menu-card[data-menu="ซาโมซ่ากล้วย"]){
+    margin-bottom:34px!important;
+  }
+}
