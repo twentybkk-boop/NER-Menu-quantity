@@ -8,116 +8,149 @@
 
 - Repository: `twentybkk-boop/NER-Menu-quantity`
 - Branch: `main`
-- Original real-device feedback: `docs/UI_REAL_DEVICE_FEEDBACK_2026-09-24.md`
-- Final live acceptance evidence: `docs/UI_LIVE_ACCEPTANCE_2026-09-24.md`
-- Latest verified live UI / QA code SHA: `1f3e6eb2a3cb6be20986bc67ee117c585b3d8c72`
-- Final Pages deployment run for that SHA: **35968350715** — SUCCESS
-- Final UI QA + live deployed-page acceptance run: **35968351126** — SUCCESS
-- Final screenshot artifact: **10794069988** (`ui-qa-screenshots`)
-- Artifact digest: `sha256:66f34250429a835481cc4cd20a5631914cde9ea9aafb7091aa26d50b849f9823`
+- Latest authoritative real-device feedback: `docs/UI_REAL_DEVICE_FEEDBACK_2026-09-24_V2.md`
+- V2 feedback commit: `52ed0e0d71e68cd9ad3e946aceae6d44a390b32c`
+- Latest verified implementation / QA HEAD before this handoff-only update: `08fb5933110e9d03982c1ee4d4cb4de6861edbc6`
+- Latest UI QA run: **35970824863 — SUCCESS**
+- Latest screenshot artifact: **10795248940** (`ui-qa-screenshots`)
+- Artifact digest: `sha256:c3fc2835bc567fd6dd36e507f8e34dc19043e669e5d8777ea49d076ff7f9218f`
 
 ---
 
-# WORKSTREAM STATUS
+# ACCEPTANCE STATUS — REOPENED
 
-## Phase 1 — menu inventory / semantic thumbnail mapping
+The previous `READY FOR USER ACCEPTANCE` conclusion is **superseded** by the user's later iPhone screen recording + three reference images reviewed on 2026-09-24.
 
-**COMPLETE. DO NOT REDO unless `recipe_master.json` changes.**
+Do not claim the visual workstream is complete until the new P0 items below are implemented and re-accepted.
 
-- 45 menus, mapping 45/45.
-- Atlas 6×5, 27 illustrated semantic regions, 3 unused.
-- Four signature sets remain distinct.
-- Semantic guards remain active.
-- Production atlas: `assets/menu-thumbnails/semantic-atlas-v1.webp`.
-- Integrity gate locks 59,500 bytes and SHA-256 `1976697397b1581091dc3936412ac9789256b6bd0210ef8afdeac6ac375cd9b4`.
+Reference intent preserved in `docs/UI_REAL_DEVICE_FEEDBACK_2026-09-24_V2.md`:
 
-## Real-device feedback corrections
-
-### F1 — central card containment
-
-**LIVE ACCEPTED**
-
-- cards stay inside protected center lane;
-- both character rails remain reserved;
-- character artwork no longer owns card space.
-
-### F2 — thumbnail sharpness
-
-**LIVE ACCEPTED WITH @3x AUTOMATED EVIDENCE; PHYSICAL SAFARI SUBJECTIVE CHECK REMAINS USEFUL**
-
-- normal thumbnails <= 67×45 CSS px;
-- signature thumbnails <= 73×49 CSS px;
-- 3:2 source ratio preserved;
-- production semantic atlas active on deployed page.
-
-### F3 — character identity details
-
-**LIVE ACCEPTED AT DEPLOYED ASSET / CSS CONTRACT LEVEL**
-
-- all 3 characters present;
-- high-detail character masters active;
-- gray full-face helmet asset active;
-- white backpack asset active;
-- bottom-left remains no-glasses;
-- decoration remains non-interactive.
-
-### F4 — live UI fidelity to approved generated direction
-
-**ALL BOUNDED REPOSITORY PASSES COMPLETE + LIVE ACCEPTED**
-
-Completed presentation passes:
-
-1. phone masthead / hero / Matrix hierarchy;
-2. semantic category headers + menu-card rhythm;
-3. character edge framing + background softness;
-4. calculator visual hierarchy.
-
-No recipe/business behavior was changed by these passes.
+1. use the **correct approved three-character composition with full identity/story details** rather than clipped/incomplete substitutes;
+2. cards must visually stay inside the protected center frame indicated by the user's red-box reference, not merely satisfy a loose numeric lane assertion;
+3. imagery must not look blurred/weak on real device;
+4. live UI should materially resemble the approved illustrated/branded reference direction;
+5. live menu thumbnails should use **simple infographic/pictogram visuals**, not visually noisy food-photo crops.
 
 ---
 
-# FINAL LIVE / DEPLOY ACCEPTANCE
+# PHASE 1 DATA / SEMANTIC MAPPING
 
-A durable deployed-page gate now exists:
+**COMPLETE — DO NOT REDO unless `recipe_master.json` changes.**
 
-- script: `qa/live-pages-acceptance.mjs`
-- workflow step: `Verify deployed GitHub Pages acceptance`
-- target: `https://twentybkk-boop.github.io/NER-Menu-quantity/`
-- browsers: Chromium + WebKit
-- phone viewport: 390×844 @3x
-
-The gate polls deployed `assets/visual-polish.css` until the current fidelity layers are visible, then verifies the actual GitHub Pages DOM/computed styles against the four original feedback items.
-
-Final verified evidence:
-
-- Pages run **35968350715** deployed SHA `1f3e6eb2a3cb6be20986bc67ee117c585b3d8c72` successfully.
-- UI QA run **35968351126** passed every step, including `Verify deployed GitHub Pages acceptance`.
-- `13-live-pages-iphone@3x.png` is a screenshot from the real deployed GitHub Pages URL.
-- `14-live-pages-calculator@3x.png` is the real deployed calculator state.
-
-Manual inspection of those live screenshots found no new repository visual defect requiring another CSS pass.
-
-**Visual correction workstream: READY FOR USER ACCEPTANCE.**
+- 45 menus; semantic mapping 45/45.
+- Existing atlas: `assets/menu-thumbnails/semantic-atlas-v1.webp`.
+- Atlas remains durable semantic/provenance evidence: 6×5, 27 illustrated semantic regions, 3 unused.
+- Integrity gate remains 59,500 bytes / SHA-256 `1976697397b1581091dc3936412ac9789256b6bd0210ef8afdeac6ac375cd9b4`.
+- **Important:** the atlas is no longer the approved live-card painting strategy. It remains provenance/mapping data only.
 
 ---
 
-# DURABLE QA NOW RUNS
+# NEW P0 ACCEPTANCE WORKSTREAM
 
-`.github/workflows/ui-qa.yml` includes:
+## P0-A — correct approved 3-character source/composition
 
-- thumbnail / atlas integrity validation;
-- Chromium + WebKit functional UI QA;
+**OPEN**
+
+The current repo still paints these assets:
+
+- `assets/ner-character-top-left.png`
+- `assets/ner-character-bottom-left.png`
+- `assets/ner-character-right.png`
+- accessory overlays for gray full-face helmet / white backpack.
+
+Earlier QA proved that three DOM roles and accessory assets exist, but the user's latest reference shows that this is **not sufficient**. On the real device the characters read as clipped fragments and do not preserve the complete approved composition/story.
+
+Acceptance target from reference image 1:
+
+- upper-left: glasses + drink + pose/gesture + speech-bubble/story detail;
+- lower-left: **no glasses** + helmet + cat/table scene + speech-bubble/story detail;
+- right: white backpack + clipboard/pen + pot/scene + speech-bubble/story detail.
+
+Do not fake acceptance by merely increasing crop size or checking three DOM nodes.
+
+## P0-B — protected center-frame fidelity
+
+**OPEN**
+
+Existing numeric center-lane protection remains useful but is no longer final acceptance. The user's red-box reference requires a visibly deliberate central reading frame while scrolling, with left/right illustration rails clearly separate from card content.
+
+Do not mark complete until screenshot comparison against that visual intent is satisfactory.
+
+## P0-C — simple infographic thumbnails
+
+**IMPLEMENTED + LOCAL QA + LIVE GITHUB PAGES QA VERIFIED**
+
+Implementation:
+
+- `assets/visual-thumbnail-infographic.css`
+- activated through `assets/visual-polish.css`
+
+Behavior:
+
+- live menu cards no longer paint `semantic-atlas-v1.webp` food-photo crops;
+- cards use soft semantic infographic/pictogram tiles instead;
+- signature sets remain distinct;
+- pork / beef / seafood / vegetables / noodles / tofu / egg / rice / snacks / desserts use simple semantic visual language;
+- old atlas mapping stays in repo only for provenance/semantic mapping.
+
+Relevant commits:
+
+- `3ffd1a94d348ee491ecbae9b45a205de4bf4b4c2` — replace noisy food thumbnails with simple infographic tiles
+- `a8aa98bb7b330bcb893124bc041ab578a311db93` — activate infographic layer
+- `28e0307b8543212cba25ae73b2d582b55dd829c1` — update real-device visual contract
+- `d8312401af056cb007ff5f599ccdcf34f873a86d` — update live Pages acceptance
+- `9b31ae31018800e9762dded159a600457a20925b` — compatibility runner for legacy functional QA without rewriting the PIN-bearing harness
+- `ce436dd9e9ea9d33d1d057dc6392dd4e84050e47` — route workflow through compatibility runner
+- `08fb5933110e9d03982c1ee4d4cb4de6861edbc6` — ensure exact signature pictograms win over generic fallbacks
+
+Durable QA now explicitly rejects reintroducing the photo atlas into live cards.
+
+Latest run **35970824863** passed all steps:
+
+- atlas/provenance integrity validator — PASS
+- Chromium + WebKit functional UI QA — PASS
+- real-device visual contract — PASS
+- calculator hierarchy contract — PASS
+- deployed GitHub Pages acceptance — PASS
+- contact sheet evidence — PASS
+- screenshot upload — PASS
+
+Manual inspection of artifact **10795248940**:
+
+- `01-iphone-top.png`: signature sets now use calm simple pictograms rather than food photos;
+- `02-iphone-mid.png`: long meat list is materially less visually noisy;
+- `03-iphone-lower.png`: seafood/vegetable/noodle sections use clear semantic tile families;
+- `13-live-pages-iphone@3x.png`: deployed GitHub Pages is actually serving the infographic treatment.
+
+Business / recipe behavior changed by P0-C: **NO**.
+
+## P0-D — match approved illustrated/branded UI direction
+
+**OPEN**
+
+The current live page remains structurally more utility/list-like than the approved reference image 3. Do not declare this complete based only on compact hierarchy/card rhythm checks. Future passes must use the approved art direction as the comparison target while preserving business behavior.
+
+---
+
+# QA / SAFETY NOTES
+
+`.github/workflows/ui-qa.yml` currently runs:
+
+- atlas/provenance integrity validation;
+- `qa/ui-qa-runner.mjs`, which applies only an ephemeral thumbnail-assertion compatibility patch to the legacy functional harness;
 - `qa/real-device-visual-contract.mjs`;
 - `qa/calculator-visual-contract.mjs`;
-- `qa/live-pages-acceptance.mjs` against the deployed GitHub Pages URL;
+- `qa/live-pages-acceptance.mjs`;
 - contact-sheet evidence;
 - screenshot artifact upload.
 
+`qa/ui-qa.mjs` still contains the legacy manager/PIN regression path. Do not wholesale rewrite/transmit that file merely to change presentation assertions; use narrow, intentional compatibility changes unless a real functional bug requires otherwise.
+
 ---
 
-# LOCKED CONSTRAINTS
+# LOCKED BUSINESS CONSTRAINTS
 
-Do **not** intentionally change without new bug evidence:
+Do **not** intentionally change:
 
 - recipe calculations or quantities;
 - canonical recipe meaning;
@@ -126,12 +159,12 @@ Do **not** intentionally change without new bug evidence:
 - PIN behavior;
 - unrelated import / export behavior.
 
-Character requirements remain locked:
+Character constraints remain:
 
-- all 3 characters together in relevant states;
-- bottom-left no-glasses;
-- helmet / white-backpack identity details remain available;
-- foreground `pointer-events:none` and never blocks controls.
+- all three roles together in relevant states;
+- lower-left remains **no-glasses**;
+- foreground remains non-interactive / `pointer-events:none`;
+- presentation must not obstruct controls.
 
 ---
 
@@ -141,34 +174,33 @@ Do not redo:
 
 - repo-wide investigation;
 - 45-menu inventory;
-- semantic atlas architecture;
-- F1 center-lane correction;
-- F2 thumbnail sizing correction;
-- F3 high-detail character/accessory restoration;
-- F4 masthead/hero/Matrix hierarchy;
-- F4 category/card rhythm;
-- F4 character framing/background softness;
-- F4 calculator hierarchy;
-- Matrix/PIN validation;
-- modal scroll-restoration investigation;
-- QA harness scope repair;
-- final live/deploy acceptance unless a new deploy or new real-device defect requires it.
+- semantic mapping architecture;
+- atlas generation/integrity work;
+- P0-C infographic-thumbnail conversion;
+- previous calculator/Matrix/PIN behavior validation;
+- modal scroll-restoration investigation.
+
+Earlier claims that F1/F3/F4 were fully accepted are stale where they conflict with V2 real-device/reference evidence.
 
 ---
 
 # SHORT-SESSION RULE
 
-Each future session:
+Each session:
 
 1. minimally recover current `main`;
-2. address one concrete issue only;
-3. persist code/evidence/checkpoint;
+2. complete one bounded task;
+3. persist code + QA evidence + checkpoint;
 4. report exact **NEXT ACTION** and stop.
 
 ---
 
 # EXACT NEXT ACTION
 
-**No pending repository implementation task in this visual correction workstream.**
+**Next short session: P0-A only — correct approved 3-character source/composition.**
 
-Next action is **user acceptance on physical iPhone/Safari**. If the user supplies a new screenshot or concrete defect, reproduce only that exact state and fix the owning presentation layer; do not begin another general redesign pass. If no new defect evidence is supplied, leave the verified repository implementation unchanged.
+1. Inspect the actual repo character/background asset inventory and compare what is currently painted to the user's approved reference image 1.
+2. Determine whether the complete approved character/story artwork already exists in the repository; reuse it if present.
+3. If current assets are only incomplete crops/substitutes, do not pretend they are correct. Replace/recompose the presentation using the closest authoritative existing artwork available, preserving upper-left glasses/drink/gesture, lower-left no-glasses + helmet + cat/table scene, and right white-backpack + clipboard/food-scene details.
+4. Keep the newly verified infographic thumbnails unchanged.
+5. Add a bounded character-composition acceptance check, run Chromium + WebKit + live Pages QA, manually inspect screenshots, persist checkpoint, then stop and report the following NEXT ACTION (expected P0-B center-frame fidelity unless new evidence changes priority).
