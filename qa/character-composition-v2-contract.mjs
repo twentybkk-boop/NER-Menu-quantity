@@ -10,12 +10,11 @@ fs.mkdirSync(shotDir, { recursive: true });
 
 /* Keep local and live character-detail gates aligned. The upper-left story
    composition must remain large enough to preserve glasses/drink/gesture cues.
-   V3 Session 2B.2 keeps the same approved story compositions but upgrades
-   their raster sources to Retina-capable high-resolution derivatives. */
+   The stable approved asset paths now contain Retina-capable raster content. */
 const EXPECTED = [
-  ['.decor-a', 'overlay-top-left-hires.webp', 78, 76],
-  ['.decor-b', 'overlay-bottom-left-hires.webp', 78, 76],
-  ['.decor-c', 'overlay-right-hires.webp', 78, 76],
+  ['.decor-a', 'overlay-top-left.webp', 78, 76],
+  ['.decor-b', 'overlay-bottom-left.webp', 78, 76],
+  ['.decor-c', 'overlay-right.webp', 78, 76],
 ];
 
 function assertDecor(items, browserName, state) {
