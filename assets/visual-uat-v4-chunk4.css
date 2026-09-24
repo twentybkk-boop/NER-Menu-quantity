@@ -1,0 +1,84 @@
+/* V4 HANDS-ON UAT — Chunk 4: character scale + detail density, 2026-09-25.
+   Scope: UAT-008 / UAT-009 + final UAT-010 safety recheck.
+   Presentation only: approved high-resolution character binaries, recipe/business,
+   exclusion/replacement/quantity, Matrix and PIN semantics remain unchanged. */
+
+/* ---------- UAT-008: moderately larger approved story compositions ----------
+   Keep the complete high-resolution compositions and the verified responsive rails.
+   Growth is intentionally modest (roughly 6–10%) so the characters read more
+   confidently without returning to the earlier content-overlap state. */
+
+@media (max-width:767px) and (orientation:portrait){
+  .decor-a{width:116px!important;height:127px!important;left:2px!important;top:max(10px,calc(env(safe-area-inset-top) + 4px))!important;}
+  .decor-b{width:142px!important;height:105px!important;left:2px!important;bottom:max(3px,calc(env(safe-area-inset-bottom) + 2px))!important;}
+  .decor-c{width:104px!important;height:166px!important;right:2px!important;bottom:max(2px,calc(env(safe-area-inset-bottom) + 1px))!important;}
+
+  body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:92px!important;height:101px!important;left:2px!important;top:calc(env(safe-area-inset-top) + 2px)!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-b{width:115px!important;height:85px!important;left:2px!important;bottom:calc(env(safe-area-inset-bottom) + 2px)!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-c{width:86px!important;height:139px!important;right:2px!important;bottom:calc(env(safe-area-inset-bottom) + 2px)!important;}
+}
+
+/* Low-height phone landscape keeps Chunk 2's 76px side rails. 80px artwork
+   creates at most a 4px box overlap into the card boundary, still inside the
+   durable <=6px safety tolerance, while making all three figures less timid. */
+@media (orientation:landscape) and (max-height:540px) and (max-width:950px){
+  .decor-a{width:120px!important;height:130px!important;left:2px!important;top:6px!important;}
+  .decor-b{width:134px!important;height:98px!important;left:2px!important;bottom:max(4px,env(safe-area-inset-bottom))!important;}
+  .decor-c{width:100px!important;height:155px!important;right:2px!important;bottom:max(3px,env(safe-area-inset-bottom))!important;}
+
+  body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:80px!important;height:87px!important;left:0!important;top:max(5px,env(safe-area-inset-top))!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-b{width:80px!important;height:75px!important;left:0!important;bottom:max(5px,env(safe-area-inset-bottom))!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-c{width:80px!important;height:124px!important;right:0!important;bottom:max(5px,env(safe-area-inset-bottom))!important;}
+}
+
+@media (min-width:768px) and (max-width:899px) and (orientation:portrait){
+  .decor-a{width:152px!important;height:167px!important;left:7px!important;top:max(14px,calc(env(safe-area-inset-top) + 5px))!important;}
+  .decor-b{width:162px!important;height:119px!important;left:7px!important;bottom:max(7px,calc(env(safe-area-inset-bottom) + 4px))!important;}
+  .decor-c{width:126px!important;height:198px!important;right:8px!important;bottom:max(5px,calc(env(safe-area-inset-bottom) + 3px))!important;}
+
+  body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:128px!important;height:141px!important;left:8px!important;top:calc(env(safe-area-inset-top) + 4px)!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-b{width:160px!important;height:115px!important;left:8px!important;bottom:calc(env(safe-area-inset-bottom) + 3px)!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-c{width:116px!important;height:180px!important;right:8px!important;bottom:calc(env(safe-area-inset-bottom) + 2px)!important;}
+}
+
+@media (min-width:900px) and (max-width:1180px) and (min-height:541px){
+  .decor-a{width:192px!important;height:210px!important;left:10px!important;top:max(14px,calc(env(safe-area-inset-top) + 5px))!important;}
+  .decor-b{width:198px!important;height:146px!important;left:10px!important;bottom:max(7px,calc(env(safe-area-inset-bottom) + 4px))!important;}
+  .decor-c{width:160px!important;height:248px!important;right:10px!important;bottom:max(5px,calc(env(safe-area-inset-bottom) + 3px))!important;}
+
+  body:has(#calculatorModal:not(.is-hidden)) .decor-a{width:142px!important;height:156px!important;left:10px!important;top:calc(env(safe-area-inset-top) + 3px)!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-b{width:174px!important;height:124px!important;left:10px!important;bottom:calc(env(safe-area-inset-bottom) + 2px)!important;}
+  body:has(#calculatorModal:not(.is-hidden)) .decor-c{width:124px!important;height:192px!important;right:10px!important;bottom:calc(env(safe-area-inset-bottom) + 1px)!important;}
+}
+
+/* ---------- UAT-009: actionable content appears earlier ----------
+   The modal DOM is already semantically lean. Reduce only header/panel chrome;
+   keep exclusion and replacement tap targets at their verified sizes. */
+@media (max-width:767px) and (orientation:portrait){
+  #calculatorModal:not(.is-hidden) .modal-header{padding:9px 11px!important;gap:8px!important;}
+  #calculatorModal:not(.is-hidden) .modal-title{font-size:17.5px!important;line-height:1.2!important;}
+  #calculatorModal:not(.is-hidden) .modal-subtitle{margin-top:2px!important;font-size:9.5px!important;line-height:1.25!important;}
+  #calculatorModal:not(.is-hidden) .close-btn{width:34px!important;height:34px!important;flex-basis:34px!important;font-size:15px!important;}
+  #calculatorModal:not(.is-hidden) .calc-panel{padding:9px 11px 11px!important;}
+  #calculatorModal:not(.is-hidden) .panel-title{margin-bottom:6px!important;font-size:12.2px!important;line-height:1.25!important;}
+}
+
+@media (min-width:768px) and (orientation:portrait){
+  #calculatorModal:not(.is-hidden) .modal-header{padding:10px 13px!important;gap:9px!important;}
+  #calculatorModal:not(.is-hidden) .modal-title{font-size:18.5px!important;line-height:1.2!important;}
+  #calculatorModal:not(.is-hidden) .modal-subtitle{margin-top:2px!important;font-size:10px!important;line-height:1.3!important;}
+  #calculatorModal:not(.is-hidden) .close-btn{width:36px!important;height:36px!important;flex-basis:36px!important;font-size:16px!important;}
+  #calculatorModal:not(.is-hidden) .calc-panel{padding-top:10px!important;}
+  #calculatorModal:not(.is-hidden) .panel-title{margin-bottom:7px!important;font-size:12.5px!important;line-height:1.3!important;}
+}
+
+/* Wide landscape was not broken like phone landscape, so compact its chrome
+   without touching the Chunk 2 low-height rules. */
+@media (orientation:landscape) and (min-height:541px){
+  #calculatorModal:not(.is-hidden) .modal-header{padding:10px 14px!important;gap:10px!important;}
+  #calculatorModal:not(.is-hidden) .modal-title{font-size:19px!important;line-height:1.2!important;}
+  #calculatorModal:not(.is-hidden) .modal-subtitle{margin-top:2px!important;font-size:10px!important;line-height:1.3!important;}
+  #calculatorModal:not(.is-hidden) .close-btn{width:36px!important;height:36px!important;flex-basis:36px!important;font-size:16px!important;}
+  #calculatorModal:not(.is-hidden) .calc-panel{padding:12px!important;}
+  #calculatorModal:not(.is-hidden) .panel-title{margin-bottom:8px!important;font-size:12.5px!important;line-height:1.3!important;}
+}
