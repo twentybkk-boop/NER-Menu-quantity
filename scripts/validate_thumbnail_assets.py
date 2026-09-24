@@ -9,54 +9,70 @@ ROOT = Path(__file__).resolve().parents[1]
 recipe = json.loads((ROOT / "recipe_master.json").read_text(encoding="utf-8"))
 css = (ROOT / "assets" / "menu-thumbnail-map.css").read_text(encoding="utf-8")
 menus = set(recipe.get("categories", {}))
+atlas = ROOT / "assets" / "menu-thumbnails" / "semantic-atlas-v1.webp"
 
-pattern = re.compile(
-    r'\.menu-card\[data-menu="([^"]+)"\]\{'
-    r'--menu-art:url\("menu-thumbnails/([^"]+)"\) !important;'
+block_re = re.compile(
+    r'((?:\.menu-card\[data-menu="[^"]+"\],?)+)\{'
+    r'--menu-art:url\("menu-thumbnails/semantic-atlas-v1\.webp"\) !important;'
     r'--menu-art-x:([^;]+) !important;'
     r'--menu-art-y:([^;]+) !important;\}'
 )
-rows = pattern.findall(css)
-mapped = {name: {"asset": asset, "x": x.strip(), "y": y.strip()} for name, asset, x, y in rows}
+name_re = re.compile(r'data-menu="([^"]+)"')
+mapped = {}
+for selectors, x, y in block_re.findall(css):
+    for name in name_re.findall(selectors):
+        mapped[name] = (x.strip(), y.strip())
+
+errors = []
 missing = sorted(menus - set(mapped))
 stale = sorted(set(mapped) - menus)
-errors: list[str] = []
-
 if missing:
     errors.append("missing menu mappings: " + ", ".join(missing))
 if stale:
     errors.append("stale menu mappings: " + ", ".join(stale))
-
-atlas = ROOT / "assets" / "menu-thumbnails" / "semantic-atlas-v1.webp"
 if not atlas.is_file():
     errors.append("missing atlas: assets/menu-thumbnails/semantic-atlas-v1.webp")
 
-unexpected_assets = sorted({m["asset"] for m in mapped.values()} - {"semantic-atlas-v1.webp"})
-if unexpected_assets:
-    errors.append("exact mappings reference unexpected assets: " + ", ".join(unexpected_assets))
+valid_x = {"0%", "20%", "40%", "60%", "80%", "100%"}
+valid_y = {"0%", "25%", "50%", "75%", "100%"}
+invalid = sorted(name for name, (x, y) in mapped.items() if x not in valid_x or y not in valid_y)
+if invalid:
+    errors.append("invalid 6x5 atlas region: " + ", ".join(invalid))
 
 signature = ["ชุดจุ่มหมูทะเล", "ชุดจุ่มเนื้อ", "ชุดจุ่มหมู", "ชุดจุ่มเดี่ยวหมู"]
-signature_regions = [(mapped.get(n, {}).get("x"), mapped.get(n, {}).get("y")) for n in signature]
-if any(x is None or y is None for x, y in signature_regions) or len(set(signature_regions)) != 4:
-    errors.append("signature sets must use 4 distinct atlas regions: " + repr(signature_regions))
+signature_regions = [mapped.get(name) for name in signature]
+if None in signature_regions or len(set(signature_regions)) != 4:
+    errors.append("signature sets must use 4 distinct regions: " + repr(signature_regions))
 
-reserved = ("80%", "66.667%")  # mushroom cell, no current menu
-reserved_users = sorted(name for name, m in mapped.items() if (m["x"], m["y"]) == reserved)
-if reserved_users:
-    errors.append("reserved mushroom region is mapped by current menus: " + ", ".join(reserved_users))
-
-# Semantic guardrails: these families must never fall through to ready-to-eat.
-ready_region = ("100%", "100%")
+ready = ("40%", "100%")
 for name, category in recipe.get("categories", {}).items():
-    region = (mapped.get(name, {}).get("x"), mapped.get(name, {}).get("y"))
-    if category in {"เนื้อสัตว์เพิ่มเติม", "ผักเพิ่มเติม", "เส้นเพิ่มเติม"} and region == ready_region:
-        errors.append(f"semantic mismatch: {name} ({category}) -> ready-to-eat region")
+    if category in {"เนื้อสัตว์เพิ่มเติม", "ผักเพิ่มเติม", "เส้นเพิ่มเติม"} and mapped.get(name) == ready:
+        errors.append(f"semantic mismatch: {name} ({category}) -> ready-to-eat")
+
+expected = {
+    "กะหล่ำปลี": ("60%", "50%"),
+    "คาลามารี": ("80%", "75%"),
+    "ซาโมซ่ากล้วย": ("100%", "75%"),
+    "สละลอยแก้ว": ("0%", "100%"),
+    "ลูกตาลลอยแก้ว": ("0%", "100%"),
+    "โมจิไอศครีม": ("20%", "100%"),
+    "อิ่มเดี่ยว ต้มพร้อมทาน": ready,
+    "อิ่มเดี่ยว หมูจุกจุก": ready,
+    "ฟองเต้าหู้แท่ง": ("0%", "75%"),
+    "ฟองเต้าหู้ทอด": ("0%", "75%"),
+}
+for name, region in expected.items():
+    if mapped.get(name) != region:
+        errors.append(f"semantic correction mismatch: {name} -> {mapped.get(name)}, expected {region}")
+
+if "background-size:var(--menu-art-size,600% 500%)!important" not in css:
+    errors.append("6x5 atlas geometry override missing")
 
 if errors:
     raise SystemExit("\n".join(errors))
 
 print(f"thumbnail coverage: {len(mapped)}/{len(menus)} (100%)")
-print("atlas: assets/menu-thumbnails/semantic-atlas-v1.webp")
+print("atlas: assets/menu-thumbnails/semantic-atlas-v1.webp (6x5)")
 print("signature set regions: 4/4 unique")
-print("reserved region misuse: 0")
+print("semantic correction gates: pass")
 print("semantic mismatch guards: pass")
