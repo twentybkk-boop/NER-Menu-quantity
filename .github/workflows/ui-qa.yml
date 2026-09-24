@@ -1,0 +1,43 @@
+name: Temporary UI QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ui-qa.yml'
+      - 'qa/**'
+      - 'assets/**'
+      - 'index.html'
+      - 'recipe_master.json'
+  workflow_dispatch:
+
+jobs:
+  ui-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install --save-dev playwright@1.55.0
+          npx playwright install --with-deps chromium webkit
+      - name: Validate thumbnail contract
+        run: python scripts/validate_thumbnail_assets.py
+      - name: Start static server
+        run: |
+          python3 -m http.server 8000 > /tmp/ner-ui-server.log 2>&1 &
+          echo $! > /tmp/ner-ui-server.pid
+          sleep 2
+      - name: Run Chromium + WebKit UI QA
+        run: node qa/ui-qa.mjs
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-qa-screenshots
+          path: qa-artifacts/
+          if-no-files-found: warn
