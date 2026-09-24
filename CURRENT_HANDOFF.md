@@ -10,10 +10,10 @@
 - Branch: `main`
 - Real-device feedback source: `docs/UI_REAL_DEVICE_FEEDBACK_2026-09-24.md`
 - Feedback commit: `3125910ec11fffbacb357c718647ada983836ae0`
-- Latest verified implementation / QA HEAD before this handoff-only update: `5a88fa2ba389773b4797fd30ab97fdca4ff56e88`
-- Latest verified UI QA run: **35966666854** — SUCCESS
-- Latest screenshot artifact: **10794522584** (`ui-qa-screenshots`)
-- Artifact digest: `sha256:b80dce6c0bf317518eb29edf983ddb04845f4f94f88fdb05820493e2127b0ae3`
+- Latest verified implementation / QA HEAD before this handoff-only update: `e7112a526988f9da67598d167a664dbc31de55b5`
+- Latest verified UI QA run: **35967748900** — SUCCESS
+- Latest screenshot artifact: **10794772946** (`ui-qa-screenshots`)
+- Artifact digest: `sha256:8dcd9d61ab484802b52b1f526b7d937fad088274f927006b401f68de8ca17d1c`
 
 ---
 
@@ -38,7 +38,7 @@ Do not redo unless `recipe_master.json` changes:
 
 **IMPLEMENTED + QA VERIFIED**
 
-- phone menu content is constrained to the protected center lane;
+- phone menu content stays inside the protected center lane;
 - cards do not use character rails as content space;
 - all three character roles remain present.
 
@@ -55,18 +55,18 @@ Do not redo unless `recipe_master.json` changes:
 
 **IMPLEMENTED + QA VERIFIED**
 
-High-detail masters:
+High-detail masters remain active:
 
 - `assets/ner-character-top-left.png`
 - `assets/ner-character-bottom-left.png`
 - `assets/ner-character-right.png`
 
-Identity assets:
+Identity assets remain active:
 
 - `assets/accessory-gray-fullface-helmet.svg`
 - `assets/accessory-white-backpack.svg`
 
-Locked requirements:
+Locked requirements remain:
 
 - all **3 characters** present together in relevant states;
 - bottom-left **does not wear glasses**;
@@ -78,117 +78,109 @@ Locked requirements:
 
 # P0-F4 — LIVE UI FIDELITY
 
-**IN PROGRESS — THREE BOUNDED PHONE PASSES COMPLETE**
+**ALL BOUNDED REPOSITORY PASSES COMPLETE + QA VERIFIED**
 
-## Pass A — top-of-page hierarchy — COMPLETE
+## Pass A — phone top-of-page hierarchy — COMPLETE
+
+- duplicate phone hero brand title removed presentation-only;
+- masthead is the single brand anchor;
+- hero compacted and aligned to protected lane;
+- Matrix action visually secondary; behavior unchanged.
 
 Commits:
 
-- `00b2c26cc9e2fb5d87f7e0fbcc14ec2eb53c7608` — Tighten mobile top-page visual hierarchy
-- `b36aee192eea2ffdb0f9d4f5cab1205a40c6cf70` — Gate compact mobile hero hierarchy
-
-Verified:
-
-- masthead is the single phone brand anchor;
-- duplicate hero title hidden presentation-only;
-- compact hero aligned to protected lane;
-- Matrix action visually secondary, behavior unchanged.
+- `00b2c26cc9e2fb5d87f7e0fbcc14ec2eb53c7608`
+- `b36aee192eea2ffdb0f9d4f5cab1205a40c6cf70`
 
 ## Pass B — category headers + menu-card rhythm — COMPLETE
 
+Presentation layer: `assets/visual-menu-rhythm.css`
+
+- semantic category tokens: `🍲 / 🥩 / 🥬 / 🍜 / 🥚 / 🍟 / 🍨`;
+- normal card rhythm ~**62px**;
+- signature card rhythm ~**74px**;
+- central lane and thumbnail dimensions preserved.
+
 Commits:
 
-- `5c2fd4d20ae7b01bad02c4fb68937538c447d34f` — Refine phone category scan hierarchy and card rhythm
-- `043d3252832f1695e7a7616463eee9ebc6a2bb25` — Activate phone menu rhythm fidelity layer
-- `1fff42614b8c9c5b9f248a284d1cbd502d563d59` — Gate phone category hierarchy and card rhythm
-
-Presentation layer:
-
-- `assets/visual-menu-rhythm.css`
-
-Verified:
-
-- category tokens distinct: `🍲 / 🥩 / 🥬 / 🍜 / 🥚 / 🍟 / 🍨`;
-- legacy repeated bowl visually suppressed;
-- normal card rhythm ~**62px**;
-- signature set rhythm ~**74px**;
-- title scale/gap/radius bounded by QA;
-- F1/F2/F3 remain intact.
+- `5c2fd4d20ae7b01bad02c4fb68937538c447d34f`
+- `043d3252832f1695e7a7616463eee9ebc6a2bb25`
+- `1fff42614b8c9c5b9f248a284d1cbd502d563d59`
 
 ## Pass C — character framing + background softness — COMPLETE
 
+Presentation layer: `assets/visual-character-frame.css`
+
+- high-detail character masters retained;
+- characters pushed farther into edge rails / reduced in scale so content owns the center;
+- mobile background-master veil softened edge decoration without removing illustrated direction;
+- helmet / backpack / no-glasses constraints preserved.
+
 Commits:
 
-- `0164cf5588f1d3a7df353bdcada08dd890b55aca` — Tune phone character framing and background softness
-- `a02b68af5ccdef715b8676859112aaf9c2859125` — Activate phone character framing fidelity layer
-- `5a88fa2ba389773b4797fd30ab97fdca4ff56e88` — Gate phone character framing and background softness
+- `0164cf5588f1d3a7df353bdcada08dd890b55aca`
+- `a02b68af5ccdef715b8676859112aaf9c2859125`
+- `5a88fa2ba389773b4797fd30ab97fdca4ff56e88`
 
-Presentation layer:
+## Pass D — calculator visual hierarchy — COMPLETE
 
-- `assets/visual-character-frame.css`
+Presentation layer: `assets/visual-calculator-hierarchy.css`
 
-Phone framing now uses the same high-detail character masters but smaller / further outside the viewport rails:
+Commits:
 
-- top-left bounded at **118×123px**, `left:-52px`;
-- bottom-left bounded at **136×126px**, `left:-58px`;
-- right bounded at **104×198px**, `right:-46px`;
-- character opacity stays **0.97** so identity detail is not lost;
-- shadows reduced so characters read as framing rather than floating foreground cards.
+- `1f5619d14b682ccfedabbf2b0fd3b8c65132c13d` — refine phone calculator visual hierarchy
+- `c3626cd1debbe68d4969ccead230b6a2e295730c` — activate calculator hierarchy layer
+- `c1840963a68ca36622ee3263d2cde204b0a9e19b` — add calculator visual contract
+- `e7112a526988f9da67598d167a664dbc31de55b5` — gate calculator visual contract in UI QA
 
-Background:
+Verified presentation behavior:
 
-- `background-master.webp` remains the source;
-- phone-only warm veil was strengthened;
-- center reading lane remains near-opaque ivory;
-- edge artwork / top decorative circles are softer without removing the illustrated direction.
+- modal header is compact with reduced title/subtitle/close-button footprint;
+- exclusion/action zone uses warm/rose-neutral treatment and lower visual weight;
+- net-result zone uses sage/ivory treatment and stronger numeric hierarchy;
+- exclusion rows are compact (~42px bounded contract);
+- result rows remain clearly readable (~48px bounded contract);
+- net quantity type is materially larger than ingredient-name type;
+- left/right zones are semantically distinct without changing data or behavior;
+- `.calculator-body` remains `overflow-y:auto` on phone;
+- all three modal-frame characters remain present and non-interactive;
+- helmet / backpack remain present; bottom-left remains no-glasses.
 
-New durable contract verifies in Chromium + WebKit:
+New durable QA:
 
-- character high-detail masters remain active;
-- helmet / backpack remain active;
-- bottom-left still no-glasses;
-- all three are visible and non-interactive;
-- character scale is bounded;
-- horizontal intrusion into the protected lane is bounded;
-- `background-master.webp` remains active;
-- mobile softness veil and geometry remain active;
-- all prior lane / thumbnail / compact-hero / category / card-rhythm contracts remain active.
+- `qa/calculator-visual-contract.mjs`
+- runs in **Chromium + WebKit** at phone viewport / @3x;
+- verifies compact header, zone separation, section-label treatment, exclusion/result row rhythm, numeric emphasis, scrolling behavior, and three-character identity constraints;
+- produces `12-calculator-hierarchy-iphone@3x.png`.
 
-Latest manual screenshot inspection from artifact **10794522584**:
+Latest manual screenshot inspection from artifact **10794772946**:
 
-- `01-iphone-top.png`: top-left now behaves as an edge frame instead of competing with masthead/cards; lower left/right are less intrusive.
-- `02-iphone-mid.png`: center list is visually dominant; three-person frame remains visible at edges.
-- `03-iphone-lower.png`: vegetable/noodle hierarchy stays clear with softer edge decoration.
-- `10-real-device-fidelity-iphone@3x.png`: protected reading lane is cleaner; high-resolution food thumbnails remain sharp.
-- `04-iphone-calculator.png`: all three characters still present around modal; helmet/backpack identity details remain available and controls remain unobstructed.
+- `04-iphone-calculator.png`: compact phone-scale view shows clearer action/result separation and significantly less visual noise.
+- `12-calculator-hierarchy-iphone@3x.png`: action-zone pill, result-zone pill, compact exclusion rows and emphasized quantities are clearly visible; controls remain unobstructed.
 
-### P0-F4 remaining bounded section
-
-- **calculator visual hierarchy**.
-
-Do not solve fidelity by changing recipe/business behavior.
+Business / recipe / exclusion / replacement logic changed by Pass D: **NO**.
 
 ---
 
 # DURABLE QA
 
-`.github/workflows/ui-qa.yml` runs:
+`.github/workflows/ui-qa.yml` now runs:
 
 - atlas integrity validator;
-- Chromium + WebKit UI QA;
+- Chromium + WebKit functional UI QA;
 - `qa/real-device-visual-contract.mjs`;
+- `qa/calculator-visual-contract.mjs`;
 - contact-sheet evidence;
 - screenshot artifact upload.
 
-Latest run **35966666854** passed:
+Latest run **35967748900** passed every step, including:
 
 - `Validate thumbnail contract and atlas integrity` — PASS
 - `Run Chromium + WebKit UI QA` — PASS
 - `Verify real-device visual fidelity contract` — PASS
+- `Verify calculator visual hierarchy contract` — PASS
 - `Render thumbnail contact sheet evidence` — PASS
 - `Upload screenshots` — PASS
-
-Business / recipe logic changed by F1–F4 presentation work: **NO**.
 
 ---
 
@@ -218,6 +210,7 @@ Do not redo:
 - F4 phone masthead/hero/Matrix hierarchy;
 - F4 phone category/card rhythm;
 - F4 phone character framing/background softness;
+- F4 phone calculator hierarchy;
 - prior Matrix/PIN validation;
 - modal scroll-restoration investigation;
 - QA harness scope repair.
@@ -229,7 +222,7 @@ Do not redo:
 Each session:
 
 1. minimally recover current `main`;
-2. complete one bounded presentation task;
+2. complete one bounded task;
 3. persist code + QA evidence + checkpoint;
 4. report exact **NEXT ACTION** and stop.
 
@@ -237,4 +230,4 @@ Each session:
 
 # EXACT NEXT ACTION
 
-**Next short session:** continue only **P0-F4 calculator visual hierarchy on phone**. Use `04-iphone-calculator.png` from artifact `10794522584` as the starting evidence. Improve separation between exclusion choices and net-result output, tighten modal header/body rhythm, and reduce visual competition while preserving all calculator behavior, exclusion/replacement semantics, scrolling/restoration, and the three-character modal composition. Do not change recipe quantities or calculation logic. Add a bounded calculator visual contract if useful, run UI QA, manually inspect the calculator screenshot, persist the checkpoint, then stop and report the next action.
+**Next short session:** perform a **final live/deploy acceptance check against the four original real-device feedback items**, using current GitHub `main` and the deployed GitHub Pages state once it reflects the verified implementation. Re-check only: (1) cards stay inside the protected center frame, (2) thumbnails are acceptably sharp on real Safari/Retina evidence, (3) all three character identity details remain visible including helmet/white backpack and bottom-left no-glasses, and (4) live UI fidelity matches the approved generated direction materially better. Do not add more CSS without concrete live/real-device defect evidence. If no new defect evidence exists, mark this visual correction workstream ready for user acceptance rather than starting another redesign pass.
