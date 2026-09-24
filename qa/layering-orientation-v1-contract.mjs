@@ -1,3 +1,4 @@
+// V3 Session 1 final gate: layering/orientation/background depth across phone + iPad states.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
