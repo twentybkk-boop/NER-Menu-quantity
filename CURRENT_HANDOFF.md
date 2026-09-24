@@ -7,42 +7,60 @@
 - Repo: `twentybkk-boop/NER-Menu-quantity`
 - Branch: `main`
 - V3 Session 2B.1 QA: **35992246985 — SUCCESS**
-- Artifact: **10805171648**
+- V3 Session 2B.1 artifact: **10805171648**
+- Latest V3 Session 2B.2 implementation HEAD before this handoff-only commit: `a50cb51d58a511702e9d881569a5b14f37c57499`
+- Current V3 Session 2B.2 UI QA run: **35998894151 — QUEUED at checkpoint time**
 
 ## Current status
 - V2 P0-A/B/C/D: VERIFIED — do not redo.
 - V3 Session 1 layering/orientation/background: VERIFIED — do not redo.
 - V3 Session 2A root-cause audit: DONE — do not redo.
 - V3 Session 2B.1 sampling/compositing safety: VERIFIED — do not redo.
-- **V3 Session 2B.2 high-res source wiring: IN PROGRESS.**
+- **V3 Session 2B.2 high-res source wiring: IMPLEMENTED, QA PENDING.**
 
-## High-res assets prepared
-- top-left ≈ 518×500
-- bottom-left ≈ 655×524
-- right ≈ 556×851
+## V3 Session 2B.2 implementation
+High-resolution approved story-complete assets are now durably on `main`:
+- `assets/overlay-top-left-hires.webp` ≈ 518×500
+- `assets/overlay-bottom-left-hires.webp` ≈ 655×524
+- `assets/overlay-right-hires.webp` ≈ 556×851
 
-Durable Git blob SHAs:
-- top-left `35c12cd9b92594a1d80fbaeed6863ab42d0996fe`
-- bottom-left `42c06cd201d1e34083d49b05620fe543f2822fc8`
-- right `9af0dd1f9743d39c9c5701733814e7b4aece9b35`
+Asset commit:
+- `56c178daeebc684f1e92adad93cea9b0a77115b9` — add high-resolution approved character assets.
 
-Target paths:
-- `assets/overlay-top-left-hires.webp`
-- `assets/overlay-bottom-left-hires.webp`
-- `assets/overlay-right-hires.webp`
+Production wiring:
+- `assets/visual-character-sampling-v1.css` now paints the `*-hires.webp` sources for `.decor-a/.decor-b/.decor-c`;
+- `filter:none`, `will-change:auto`, normal image rendering remain locked;
+- Session 1 geometry/z-index/background intentionally unchanged.
 
-Stale asset-only commits `599b8057…` and `9115f9fd…` are orphan/non-authoritative. Never reset to them. Reuse only the blob SHAs on current `main`.
+QA compatibility updates:
+- `qa/character-sampling-v1-contract.mjs` now requires the `*-hires.webp` paths, minimum natural dimensions, and >= 2 source px/CSS px in every covered viewport;
+- `qa/character-composition-v2-contract.mjs` now accepts the same high-res approved paths while preserving all existing story-detail/size/pointer/accessory assertions;
+- `qa/live-pages-acceptance-v2.mjs` now requires the high-res paths on deployed Pages.
+
+Relevant implementation commits:
+- `6eca23dd26b6a4eb59ca7e639e8b5df274f0d397` — wire high-resolution character sources;
+- `a85349a1654ff5fc50d1b1c435e9bee79e031adc` — require high-resolution assets in sharpness QA;
+- `aa7c8a9e38d27d7e0f80edcf0add53873e5b9263` — align P0-A contract with high-res paths;
+- `a50cb51d58a511702e9d881569a5b14f37c57499` — align deployed P0-A/P0-B acceptance with high-res paths.
+
+Business logic changed: **NO**.
 
 ## Locked constraints
 Do not change approved story details, lower-left no-glasses, Session 1 geometry/z-index/background, ~300px phone center frame, infographic thumbnails, recipe/calculation quantities, exclusion/replacement semantics, Matrix, PIN, or unrelated import/export behavior.
+
+## Do not repeat
+- source-resolution/root-cause investigation;
+- high-res image derivation;
+- binary asset upload/reconciliation;
+- V3 Session 2B.1 sampling/compositing work.
 
 ## Short-session rule
 Every short session must update this file before stopping.
 
 ## EXACT NEXT ACTION
-1. Fetch current `main` commit + tree.
-2. Build a fresh tree from that exact tree with the three blob SHAs at target paths.
-3. Commit on current `main`, fast-forward branch, verify paths.
-4. Wire `visual-character-sampling-v1.css` to the new paths without changing geometry/z-index and keep `filter:none`.
-5. Upgrade sharpness QA, run local + deployed Pages, inspect @2x/@3x screenshots.
-6. Update this handoff with SHA/run/artifact/manual finding and stop.
+**Next short session: verification only.**
+1. Check UI QA run **35998894151** for implementation HEAD `a50cb51d…`.
+2. If it fails, fix only the failing high-res/compatibility gate; do not redesign.
+3. If it passes, fetch artifact and manually inspect `31-*sharpness-v2` local/live evidence at phone portrait/landscape and iPad portrait/landscape.
+4. Confirm characters are materially sharper while P0-A story details, center frame, layering, background and calculator remain intact.
+5. Update this handoff with final run/artifact/manual finding, then report whether V3 sharpness defect is ready for real-device user acceptance.
