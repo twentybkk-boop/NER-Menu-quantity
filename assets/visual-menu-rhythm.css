@@ -1,0 +1,152 @@
+/* P0-F4 bounded fidelity pass: phone category scan hierarchy + card rhythm.
+   Presentation only. Menu grouping/data/recipe/Matrix/PIN behavior is untouched. */
+
+@media (max-width: 767px) {
+  /* Make each category read as an editorial section marker rather than
+     another large card. Keep the title compact so the food list owns space. */
+  .category-block {
+    margin-bottom: 22px !important;
+  }
+
+  .category-title {
+    width: 100% !important;
+    min-height: 32px !important;
+    margin: 0 0 7px !important;
+    padding: 0 2px 7px !important;
+    gap: 8px !important;
+    color: #624234 !important;
+    font-size: 15.5px !important;
+    font-weight: 800 !important;
+    line-height: 1.15 !important;
+    letter-spacing: -.012em !important;
+  }
+
+  .category-title::after {
+    left: 0 !important;
+    right: 48% !important;
+    bottom: 0 !important;
+    height: 2px !important;
+    transform: none !important;
+    background: linear-gradient(90deg, #d58b70 0%, rgba(213,139,112,.18) 72%, transparent 100%) !important;
+  }
+
+  .category-block:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"]) .category-title {
+    margin-bottom: 8px !important;
+    color: #53362c !important;
+    font-size: 16.5px !important;
+  }
+
+  .category-block:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"]) .category-title::after {
+    right: 28% !important;
+    height: 2.5px !important;
+  }
+
+  /* The DOM keeps its original decorative bowl emoji, but the visible token
+     is semantic per category. No category/data logic is changed. */
+  .category-icon {
+    width: 26px !important;
+    height: 26px !important;
+    flex: 0 0 26px !important;
+    border-radius: 9px !important;
+    display: grid !important;
+    place-items: center !important;
+    font-size: 0 !important;
+    background: rgba(244,225,210,.88) !important;
+    box-shadow: inset 0 0 0 1px rgba(112,74,56,.07), 0 2px 5px rgba(73,49,38,.045) !important;
+  }
+
+  .category-icon::before {
+    content: "🍲";
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .category-block:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"]) .category-icon {
+    background: rgba(244,223,207,.92) !important;
+  }
+  .category-block:has(.menu-card[data-menu="ชุดจุ่มหมูทะเล"]) .category-icon::before { content: "🍲"; }
+
+  .category-block:has(.menu-card[data-menu="หมูล้วน (ไม่มีเครื่องใน)"]) .category-icon {
+    background: rgba(245,224,220,.90) !important;
+  }
+  .category-block:has(.menu-card[data-menu="หมูล้วน (ไม่มีเครื่องใน)"]) .category-icon::before { content: "🥩"; }
+
+  .category-block:has(.menu-card[data-menu="ชุดผักรวม"]) .category-icon {
+    background: rgba(229,239,218,.94) !important;
+  }
+  .category-block:has(.menu-card[data-menu="ชุดผักรวม"]) .category-icon::before { content: "🥬"; }
+
+  .category-block:has(.menu-card[data-menu="วุ้นเส้น"]) .category-icon {
+    background: rgba(247,233,205,.94) !important;
+  }
+  .category-block:has(.menu-card[data-menu="วุ้นเส้น"]) .category-icon::before { content: "🍜"; }
+
+  .category-block:has(.menu-card[data-menu="ไข่ไก่สด"]) .category-icon {
+    background: rgba(246,237,208,.94) !important;
+  }
+  .category-block:has(.menu-card[data-menu="ไข่ไก่สด"]) .category-icon::before { content: "🥚"; }
+
+  .category-block:has(.menu-card[data-menu="ไก่ป๊อป"]) .category-icon {
+    background: rgba(247,228,205,.94) !important;
+  }
+  .category-block:has(.menu-card[data-menu="ไก่ป๊อป"]) .category-icon::before { content: "🍟"; }
+
+  .category-block:has(.menu-card[data-menu="ซาโมซ่ากล้วย"]) .category-icon {
+    background: rgba(244,226,232,.94) !important;
+  }
+  .category-block:has(.menu-card[data-menu="ซาโมซ่ากล้วย"]) .category-icon::before { content: "🍨"; }
+
+  /* Card rhythm: normal rows stay efficient; signature sets get one extra
+     beat of air so the important set imagery reads first without returning
+     to the oversized cards from the rejected real-device state. */
+  .menu-grid {
+    gap: 6px !important;
+  }
+
+  .menu-card {
+    min-height: 62px !important;
+    padding: 6px 7px !important;
+    gap: 8px !important;
+    border-radius: 14px !important;
+    border-color: rgba(207,179,159,.42) !important;
+    box-shadow: 0 3px 10px rgba(76,52,39,.04) !important;
+  }
+
+  .menu-card::before {
+    border-radius: 10px !important;
+    box-shadow: inset 0 0 0 1px rgba(108,70,53,.075), 0 2px 7px rgba(79,54,41,.045) !important;
+  }
+
+  .menu-card-title {
+    font-size: 12.6px !important;
+    line-height: 1.2 !important;
+    letter-spacing: -.008em !important;
+  }
+
+  .menu-arrow {
+    width: 27px !important;
+    height: 27px !important;
+    flex-basis: 27px !important;
+    font-size: 20px !important;
+    background: rgba(248,233,220,.72) !important;
+    box-shadow: inset 0 0 0 1px rgba(123,82,60,.055) !important;
+  }
+
+  .menu-card[data-menu="ชุดจุ่มหมูทะเล"],
+  .menu-card[data-menu="ชุดจุ่มเนื้อ"],
+  .menu-card[data-menu="ชุดจุ่มหมู"],
+  .menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"] {
+    min-height: 74px !important;
+    padding-top: 7px !important;
+    padding-bottom: 7px !important;
+    border-color: rgba(198,151,118,.48) !important;
+    background: linear-gradient(135deg, rgba(255,253,249,.995), rgba(255,247,238,.985)) !important;
+  }
+
+  .menu-card[data-menu="ชุดจุ่มหมูทะเล"] .menu-card-title,
+  .menu-card[data-menu="ชุดจุ่มเนื้อ"] .menu-card-title,
+  .menu-card[data-menu="ชุดจุ่มหมู"] .menu-card-title,
+  .menu-card[data-menu="ชุดจุ่มเดี่ยวหมู"] .menu-card-title {
+    font-size: 13.2px !important;
+  }
+}
