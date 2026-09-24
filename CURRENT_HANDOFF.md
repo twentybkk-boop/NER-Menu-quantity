@@ -4,7 +4,7 @@
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json`. Current GitHub state wins if stale.
 
 ## CURRENT OBJECTIVE
-Finish V3 Session 2B.2 exact high-resolution character overlay recovery without changing verified layout/business logic; final UI/sharpness QA and manual visual acceptance are now VERIFIED PASS. Only temporary QA trigger cleanup remains.
+V3 Session 2B.2 exact high-resolution character overlay recovery, automated UI/sharpness QA, manual `31-*sharpness-v2` visual acceptance, and temporary QA-trigger cleanup are all VERIFIED COMPLETE. Next goal is only to confirm the clean `main` deployment/live web app is ready for hands-on testing.
 
 ## VERIFIED BASELINE — DO NOT REDO
 - V2 P0-A/B/C/D VERIFIED; V3 Session 1 VERIFIED; Session 2A DONE; Session 2B.1 VERIFIED.
@@ -35,20 +35,11 @@ Clean production-only mapping commit on `main`:
 - existing `.github/workflows/ui-qa.yml` remains present and unchanged.
 - production high-resolution overlay blobs remain mapped exactly as verified above.
 
-## UI QA TRIGGER — DURABLE
-- existing `.github/workflows/ui-qa.yml` supports `workflow_dispatch` and `push` on `qa/**`.
-- connector exposed no direct workflow-dispatch action, so QA was triggered through the existing `qa/**` push path without touching production/runtime/UI logic.
-- temporary trigger marker: `qa/RUN_UI_QA_V3`.
-- marker content: `run-ui-qa-v3-production-overlays-v1`.
-- trigger commit: `f7748a65231282df621d2ba52ab10f355ee027ad`.
-- commit verification: changed ONLY `qa/RUN_UI_QA_V3`.
-
 ## UI QA RUN — VERIFIED SUCCESS
 - workflow: `UI QA` (`.github/workflows/ui-qa.yml`).
+- trigger commit: `f7748a65231282df621d2ba52ab10f355ee027ad`.
 - run ID: `36035600267`; run number `110`.
-- head SHA: `f7748a65231282df621d2ba52ab10f355ee027ad`; event `push`.
 - status `completed`; conclusion `success`.
-- job ID `107754792684` (`ui-qa`).
 - successful gates include Chromium + WebKit UI QA, P0-A/B/D local contracts, local orientation/layering, local V3 high-res sharpness, calculator hierarchy, deployed P0-A/B/D, deployed orientation/layering, deployed V3 high-res sharpness, evidence rendering, and screenshot upload.
 
 ## MANUAL `31-*sharpness-v2` VISUAL ACCEPTANCE — VERIFIED PASS
@@ -67,21 +58,28 @@ Manual findings across all four screenshots:
 - right character retains white backpack/straps + clipboard/pen + food/chalkboard + speech bubble — PASS.
 - no visible stacking/layering regression against the content frame in phone/iPad portrait/landscape — PASS.
 - character edges/facial details/accessories are visually crisp and acceptably sharp in every generated viewport/orientation; no obvious blur/softness regression remains — PASS.
-- automated local and deployed V3 high-res sharpness gates in the same run also passed.
 - STATUS: V3 SESSION 2B.2 VISUAL ACCEPTANCE = VERIFIED PASS.
+
+## TEMPORARY UI QA TRIGGER CLEANUP — VERIFIED COMPLETE
+- temporary marker was `qa/RUN_UI_QA_V3`, content `run-ui-qa-v3-production-overlays-v1`.
+- deletion commit: `d19461bea755a9cd20989c7a841b7fc73921f9bb` (`Remove temporary UI QA trigger marker`).
+- deletion commit verification: changed ONLY `qa/RUN_UI_QA_V3` and removed exactly the one marker line.
+- no production asset, runtime, layout/business-logic, QA workflow, or other path changed in the cleanup commit.
+- STATUS: FINAL CLEAN MAIN STATE VERIFIED AFTER V3 ACCEPTANCE.
 
 ## DO NOT REPEAT / REJECTED
 - Do not redo repo-wide/source/Library/V2/Session1/2A/2B.1/layout/orientation/calculator/P0 investigations or redraw/reconstruction.
-- Do not alter the verified staged right ranges on the repair branch.
+- Do not alter verified repair proof/staged ranges.
 - Do not re-trigger/re-inspect repair runs `36033565588` or `36034559407`.
 - Do not rebuild final right proof binary.
 - Do not remap the three production high-resolution assets unless a later verified failure proves mapping wrong.
 - Do not rerun `36035600267`; QA and manual visual acceptance are VERIFIED PASS.
 - Do not re-inspect the `31-*sharpness-v2` screenshots unless a later change invalidates this checkpoint.
+- Do not recreate `qa/RUN_UI_QA_V3`; it is deleted and cleanup is VERIFIED.
 
 ## OPEN BLOCKERS
-1. Remove the temporary QA trigger marker `qa/RUN_UI_QA_V3` only; verify deletion commit/path set; immediately checkpoint final clean state.
-2. After marker cleanup checkpoint, V3 Session 2B.2 has no remaining blocker in the current acceptance plan.
+1. Confirm the current clean `main` commit has a successful GitHub Pages deployment (or equivalent current live deployment state) and that the public app endpoint responds from the clean post-cleanup state.
+2. Once live deployment is confirmed, hands-on web-app testing may begin. No V3 Session 2B.2 implementation blocker remains.
 
 ## EXACT NEXT RECOVERY ACTION
-After confirming this visual-acceptance checkpoint is durable, delete ONLY the temporary QA trigger marker `qa/RUN_UI_QA_V3` from current `main`. Do not touch production assets, layout/business logic, QA workflow, or any other file. Verify the deletion commit changes only that marker path and immediately persist the final clean-state checkpoint. Do not perform any additional work before that checkpoint.
+After confirming this clean-state checkpoint is durable, inspect ONLY the GitHub Actions / Pages deployment associated with cleanup commit `d19461bea755a9cd20989c7a841b7fc73921f9bb` and current `main`. Confirm deployment reaches a successful terminal state and the existing public GitHub Pages app endpoint is available. Do not change production/runtime/UI code. Persist a deployment-readiness checkpoint immediately after verification; then the web app is ready for hands-on testing.
