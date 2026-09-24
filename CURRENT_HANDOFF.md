@@ -13,7 +13,7 @@ Finish V3 Session 2B.2: restore the three exact browser-decodable approved high-
 - Exact right local candidate: 51,376 bytes, SHA256 `d94dffb06bf229f01cbed71f87133a18c8b80decabdcd32577bb7a1ff66958ed`, final target Git blob `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`.
 - Production asset paths remain untouched.
 
-## RIGHT STAGING — VERIFIED
+## RIGHT STAGING — VERIFIED INPUTS
 Repair branch: `repair/v3-2b2-exact-blobs-20260924`.
 - offsets `0–29,999` exact via `right-00/01/02`.
 - desired `right-03` range `[30000:48000]`: 18,000 chars; target text blob `654a08614380f215c9b3c785bf6945add55b897f`.
@@ -25,34 +25,36 @@ Repair branch: `repair/v3-2b2-exact-blobs-20260924`.
 
 ## TEMPORARY RIGHT-03 ASSEMBLER
 - workflow: `.github/workflows/repair-right-03.yml`
-- workflow creation commit: `d9f9c37d6956cd362fda686289c302bdad76eb3f`
-- workflow concatenates exact `03a+03b+03c`, requires length 18,000 and `git hash-object` exactly `654a08614380f215c9b3c785bf6945add55b897f`, then commits only corrected `right-03.b64` on success.
+- creation commit: `d9f9c37d6956cd362fda686289c302bdad76eb3f`
+- trigger file: `repair-staging/right/RUN_RIGHT03`
+- trigger commit: `7b0a7e74decdcdbb38d92c0a3922fe66753a7dd5`
+- assembler gates: concatenate `03a+03b+03c`, require length 18,000, require `git hash-object` exactly `654a08614380f215c9b3c785bf6945add55b897f`, then commit corrected `right-03.b64` only on success.
 
-## TRIGGER STATE — DURABLE
-- trigger file `repair-staging/right/RUN_RIGHT03` was created on the repair branch with deterministic marker `run-right03-v1`.
-- trigger commit: `7b0a7e74decdcdbb38d92c0a3922fe66753a7dd5`.
-- This is the only write made in the trigger chunk.
-- Workflow run has NOT yet been inspected at this checkpoint; run ID/status/conclusion are unresolved, not inferred.
+## WORKFLOW RUN — VERIFIED SUCCESS
+- workflow run ID: `36030835252`
+- workflow name: `Repair right-03 exact staging`
+- event: `push`
+- head branch: `repair/v3-2b2-exact-blobs-20260924`
+- head SHA: `7b0a7e74decdcdbb38d92c0a3922fe66753a7dd5`
+- status: `completed`
+- conclusion: `success`
+- run attempt: `1`
+- created/start: `2026-09-24T16:56:30Z`
+- updated/completed: `2026-09-24T16:56:38Z`
+- Assembler commit/tree output has NOT yet been independently inspected at this checkpoint; success is durable run evidence, not yet promotion of `right-03.b64` blob to VERIFIED.
 - Production paths remain untouched.
-
-## VERIFIED FINDINGS
-- Top/bottom exact objects are durable in Git.
-- Right exact local bytes are verified; remaining right work is transport only.
-- Right prefix and all `03a/03b/03c` subchunks are exact.
-- Assembler and trigger are durable on the repair branch.
 
 ## DO NOT REPEAT / REJECTED
 - No repo-wide/source/Library audits or prior completed V2/Session1/2A/2B.1/layout/orientation/calculator/P0 work.
-- Do not rewrite verified right chunks/subchunks or create another trigger.
+- Do not rewrite verified right chunks/subchunks or create another trigger/re-run the successful workflow.
 - Do not reuse rejected right blobs `86f52cd5...`, `a41faed8...`, or failed final blob `06e26ae2...`.
-- Do not stage chars `48,000+`, assemble full right payload, or touch production paths before `right-03.b64` itself is exact and checkpointed.
+- Do not stage chars `48,000+`, assemble full right payload, or touch production paths before assembled `right-03.b64` tree blob is independently verified and checkpointed.
 
 ## OPEN BLOCKERS
-1. Inspect only the workflow run caused by trigger commit `7b0a7e74...`.
-2. If successful, verify repair-branch `right-03.b64` blob exactly `654a08614380f215c9b3c785bf6945add55b897f`; immediately checkpoint.
-3. If failed, persist run/job/log evidence before any fix.
-4. Then stage right chars `48,000–68,503`, assemble/decode full payload, verify final right target `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`.
-5. Only after all three exact asset targets exist: production mapping → repair-artifact cleanup → QA/manual acceptance.
+1. Inspect repair-branch head/assembler commit produced after run `36030835252`.
+2. Require `repair-staging/right/right-03.b64` blob exactly `654a08614380f215c9b3c785bf6945add55b897f`; checkpoint immediately.
+3. Then stage right chars `48,000–68,503`, assemble/decode full payload, verify final right target `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`.
+4. Only after all three exact asset targets exist: production mapping → repair-artifact cleanup → QA/manual acceptance.
 
 ## EXACT NEXT RECOVERY ACTION
-Confirm this checkpoint is durable. Then inspect ONLY GitHub Actions runs associated with repair branch/trigger commit `7b0a7e74decdcdbb38d92c0a3922fe66753a7dd5`. Record run ID/status/conclusion and whether it produced an assembler commit. Immediately persist that evidence before any additional action.
+Confirm this checkpoint is durable. Then inspect ONLY the repair branch head/commit created after workflow run `36030835252`; verify the changed file is only `repair-staging/right/right-03.b64` and its Git blob SHA exactly `654a08614380f215c9b3c785bf6945add55b897f`. Immediately persist that verification before any further staging.
