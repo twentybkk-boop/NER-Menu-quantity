@@ -8,6 +8,7 @@ on:
       - 'qa/**'
       - 'scripts/validate_thumbnail_assets.py'
       - 'docs/UI_THUMBNAIL_CONTACT_SHEET.html'
+      - 'docs/UI_CHARACTER_ASSET_CONTACT_SHEET.html'
       - 'assets/**'
       - 'index.html'
       - 'recipe_master.json'
@@ -56,6 +57,24 @@ jobs:
             await page.goto('http://127.0.0.1:8000/docs/UI_THUMBNAIL_CONTACT_SHEET.html', { waitUntil: 'networkidle' });
             assert.equal(await page.locator('.card').count(), 27, 'contact sheet must contain 27 illustrated semantic regions');
             await page.screenshot({ path: 'qa-artifacts/09-thumbnail-contact-sheet.png', fullPage: true });
+          } finally {
+            await browser.close();
+          }
+          NODE
+      - name: Render character asset inventory evidence
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { chromium } from 'playwright';
+          const browser = await chromium.launch();
+          try {
+            const page = await browser.newPage({ viewport: { width: 1500, height: 1100 } });
+            await page.goto('http://127.0.0.1:8000/docs/UI_CHARACTER_ASSET_CONTACT_SHEET.html', { waitUntil: 'networkidle' });
+            const images = page.locator('img');
+            assert.equal(await images.count(), 11, 'character asset contact sheet inventory changed unexpectedly');
+            const natural = await images.evaluateAll(nodes => nodes.map(img => ({src:img.getAttribute('src'), w:img.naturalWidth, h:img.naturalHeight, complete:img.complete})));
+            assert.ok(natural.every(item => item.complete && item.w > 0 && item.h > 0), `character asset failed to load: ${JSON.stringify(natural)}`);
+            await page.screenshot({ path: 'qa-artifacts/10-character-asset-contact-sheet.png', fullPage: true });
           } finally {
             await browser.close();
           }
