@@ -79,19 +79,21 @@ async function inspect(browserType, browserName) {
         };
       });
 
-      const thumbSize = s => ({
+      const thumbInfo = s => ({
         width: parseFloat(s.width),
         height: parseFloat(s.height),
         bg: s.backgroundImage,
         bgSize: s.backgroundSize,
+        content: s.content,
+        display: s.display,
       });
 
       return {
         viewport: { width: innerWidth, height: innerHeight },
         menus: { left: menuRect.left, right: menuRect.right, width: menuRect.width },
         normalCard: { left: normalRect.left, right: normalRect.right, width: normalRect.width, menu: normal.dataset.menu },
-        thumb: thumbSize(normalThumb),
-        signatureThumb: thumbSize(sigThumb),
+        thumb: thumbInfo(normalThumb),
+        signatureThumb: thumbInfo(sigThumb),
         decor,
         background: {
           image: bodyBefore.backgroundImage,
@@ -126,16 +128,22 @@ async function inspect(browserType, browserName) {
     assert.ok(contract.normalCard.left >= contract.menus.left - 1 && contract.normalCard.right <= contract.menus.right + 1,
       `${browserName}: card escapes protected menu lane`);
 
+    // Updated user acceptance: live cards must use simple infographic tiles, not noisy food-photo atlas crops.
     assert.ok(contract.thumb.width <= 67 && contract.thumb.height <= 45,
-      `${browserName}: normal atlas crop (${contract.normalCard.menu}) renders ${contract.thumb.width}x${contract.thumb.height}, too large for its 120x80 source cell`);
+      `${browserName}: normal infographic tile (${contract.normalCard.menu}) is oversized at ${contract.thumb.width}x${contract.thumb.height}`);
     assert.ok(contract.signatureThumb.width <= 73 && contract.signatureThumb.height <= 49,
-      `${browserName}: signature atlas crop renders ${contract.signatureThumb.width}x${contract.signatureThumb.height}, too large for its 120x80 source cell`);
+      `${browserName}: signature infographic tile is oversized at ${contract.signatureThumb.width}x${contract.signatureThumb.height}`);
     assert.ok(Math.abs(contract.thumb.width / contract.thumb.height - 1.5) < 0.04,
-      `${browserName}: normal thumbnail distorts source aspect ratio (${contract.thumb.width}x${contract.thumb.height})`);
+      `${browserName}: normal infographic tile geometry drifted (${contract.thumb.width}x${contract.thumb.height})`);
     assert.ok(Math.abs(contract.signatureThumb.width / contract.signatureThumb.height - 1.5) < 0.04,
-      `${browserName}: signature thumbnail distorts source aspect ratio (${contract.signatureThumb.width}x${contract.signatureThumb.height})`);
-    assert.match(contract.thumb.bg, /semantic-atlas-v1\.webp/, `${browserName}: semantic atlas not active`);
-    assert.equal(contract.thumb.bgSize, '600% 500%', `${browserName}: semantic atlas crop geometry changed`);
+      `${browserName}: signature infographic tile geometry drifted (${contract.signatureThumb.width}x${contract.signatureThumb.height})`);
+    assert.doesNotMatch(contract.thumb.bg, /semantic-atlas-v1\.webp/, `${browserName}: rejected photo atlas is still painted in normal cards`);
+    assert.doesNotMatch(contract.signatureThumb.bg, /semantic-atlas-v1\.webp/, `${browserName}: rejected photo atlas is still painted in signature cards`);
+    assert.match(contract.thumb.bg, /gradient/, `${browserName}: normal infographic tile lost its simple graphic treatment`);
+    assert.match(contract.signatureThumb.bg, /gradient/, `${browserName}: signature infographic tile lost its simple graphic treatment`);
+    assert.notEqual(contract.thumb.content, '""', `${browserName}: normal infographic pictogram is empty`);
+    assert.notEqual(contract.signatureThumb.content, '""', `${browserName}: signature infographic pictogram is empty`);
+    assert.equal(contract.thumb.display, 'grid', `${browserName}: infographic pictogram is not centered as a simple tile`);
 
     assert.equal(contract.decor.length, 3, `${browserName}: expected all three characters`);
     for (const item of contract.decor) {
