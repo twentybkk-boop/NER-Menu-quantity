@@ -1,84 +1,110 @@
 # CURRENT HANDOFF — NER Menu Quantity
 
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
-> Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
+> Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + durable artifacts.
 
-## CURRENT WORK HEAD — SHRIMP POOLING CALCULATION ACCEPTED / RAW-CREDIT SOURCE BLOCKED / CLEANUP COMPLETE
+## SHORT-CHUNK EXECUTION POLICY
+From this checkpoint onward, use short recoverable sessions:
+- ONE chunk = ONE milestone only.
+- Re-read current `main` + this handoff at the start of every chunk.
+- Do not reopen DONE / ACCEPTED work.
+- Persist a checkpoint at the end of each chunk.
+- STOP after checkpoint; do not chain the next major milestone in the same session.
+- If CI is still running, record run ID/status and STOP instead of waiting through multiple stages.
 
-Phase 1 visual/UAT work remains ACCEPTED / COMPLETE and frozen.
+## RECOVERED VERIFIED STATE
+Current `main` before this recovery checkpoint:
+- `eb809c690352ab65a98f2888e5bf15bb36cafc96` — `Checkpoint shrimp pooling cleanup complete`
 
-## PRODUCT REQUIREMENT / ACCEPTANCE CONTRACT
-For several excluded items replaced by shrimp, aggregate RAW decimal shrimp credits first and floor exactly once at the end.
-- `0.4 + 0.7 = 1.1` => add `1` shrimp
-- `0.8 + 0.8 = 1.6` => add `1` shrimp, not `2`
-- do not round source rows before pooling
-- do not invent replacement quantities
-- existing bundled integer replacement behavior must stay unchanged
+### Phase 1 visual/UAT — ACCEPTED / FROZEN
+- V4 UAT-001–UAT-014 accepted.
+- UAT-013 portrait and UAT-014 landscape are accepted.
+- All accepted character/layout/orientation/calculator/thumbnail behavior remains frozen.
+- UI QA run 153 was accepted before later business work.
 
-## CALCULATION FIX — ACCEPTED / VERIFIED
-Production commit:
+### Multi-item shrimp pooling calculation — ACCEPTED / VERIFIED
+Requirement:
+- aggregate RAW shrimp replacement credits first
+- floor pooled shrimp credit exactly once at the end
+- examples: `0.4 + 0.7 -> 1`, `0.8 + 0.8 -> 1`
+
+Production fix:
 - `e3ef7945de8a4d6e708e215a65e144a2fb8aa863` — `Fix multi-item shrimp pooling calculation`
-- changed exactly one file: `index.html`
+- changed only `index.html`
+- shrimp replacement contribution is accumulated separately from base shrimp
+- pooled contribution uses `Math.floor()` once before adding to base shrimp
+- non-shrimp replacement accumulation remains unchanged
 
-Implementation:
-- `floorPooledShrimpCredit(rawTotal)`
-- separate `pooledShrimpCredit` accumulator
-- raw shrimp contributions aggregate before floor
-- `Math.floor()` applied once to pooled shrimp contribution
-- floored contribution added to base shrimp afterward
-- non-shrimp accumulation unchanged
-- current bundled integer shrimp credits retain identical results
-
-Regression contract:
+Permanent regression protection:
 - `qa/replacement-pooling-contract.mjs`
-- commit `486540b159195612a708f37dc1adbc7f0d75c022`
-- covers `0.4+0.7 -> 1`, `0.8+0.8 -> 1`, invalid/negative handling, separate shrimp pool, unchanged non-shrimp accumulation
+- added at `486540b159195612a708f37dc1adbc7f0d75c022`
+- permanently wired into UI QA at `182af74d424c98ab2bc356a5aeb0b6cb88f3d2c4`
 
 Verification:
-- successful repair run `36124335016`: completed/success
-- production patch, regression contract, one-file diff gate, and commit steps all succeeded
-- permanent UI QA integration commit `182af74d424c98ab2bc356a5aeb0b6cb88f3d2c4`
-- fresh UI QA run `36124443879` / run 155: completed/success
-- pooling contract and every existing local/deployed visual/interaction gate passed
+- repair verification run `36124335016`: success
+- UI QA run `36124443879` / run 155: completed/success
+- pooling contract passed
+- every existing local/deployed visual + interaction gate passed
 
-## TEMPORARY REPAIR CLEANUP — COMPLETE
-Permanent production fix and permanent regression QA are retained.
-Temporary repair-only artifacts removed after verification:
-- `.github/workflows/repair-shrimp-pooling-calculation.yml` removed at `6ed60495eff8f6367b2435c4d2822ab682e88856`
-- `repair-staging/shrimp-pooling/RUN_CALC_FIX` removed at `af28ead10b6e460e0333498cf6fbcecb95ff7aac`
+Temporary repair artifacts were cleaned up:
+- workflow removed at `6ed60495eff8f6367b2435c4d2822ab682e88856`
+- repair trigger removed at `af28ead10b6e460e0333498cf6fbcecb95ff7aac`
 
-The workflow was deleted before the trigger so deleting the trigger could not launch an unnecessary repair run.
+### Raw-current shrimp credits — BLOCKED / DO NOT GUESS
+The calculation engine is ready for decimal raw credits, but current bundled `recipe_master.json` contains many shrimp replacement values already stored as rounded integer `0`/`1`.
 
-## RAW-CREDIT PROVENANCE — BLOCKED, DO NOT GUESS
-The calculation engine can consume raw decimal shrimp credits correctly, but current bundled `recipe_master.json` stores many shrimp replacement cells as integer `0`/`1`.
-
-Authoritative current raw source was not found after checking:
+Authoritative current raw source was NOT found after checking:
 - Git history
-- Project/Library files
+- Project / Library files
 - connected Google Drive
 - Gmail
 - prior project/chat context
 
-Important provenance findings:
-- historical decimal snapshot `f9dad2255a32514d3e19a8cd482756cbdfbd8d45` is a materially different business matrix; do NOT migrate it wholesale.
-- current-style integer matrix was uploaded as a whole file at `24771d0e28577ed0f4fb386f055bde437d422b18`; no workbook/CSV/generator was committed with it.
-- Drive candidates `NER pre order.xlsx`, `NER pre order`, and `Copy of NER pre order` are menu/category/price lists, not replacement matrices.
+Important evidence:
+- old decimal snapshot `f9dad2255a32514d3e19a8cd482756cbdfbd8d45` is a materially different business matrix; DO NOT migrate it wholesale.
+- current-style integer matrix was uploaded wholesale at `24771d0e28577ed0f4fb386f055bde437d422b18` with no committed workbook/CSV/generator.
+- Drive candidates `NER pre order.xlsx`, `NER pre order`, `Copy of NER pre order` are price/menu lists, NOT replacement matrices.
 
 Status: **RAW-CURRENT SHRIMP CREDIT SOURCE UNAVAILABLE**.
 
-Hard rule: do NOT populate or infer missing raw shrimp credits from rounded `0`/`1`, from the old matrix, or from guessed cost formulas. Data activation waits for an authoritative original/current Matrix source.
+Hard rule:
+- DO NOT infer missing decimal credits from rounded `0`/`1`.
+- DO NOT derive them from the old matrix.
+- DO NOT invent cost formulas.
+- DO NOT reopen Drive/Gmail/source searches unless new source evidence appears.
 
-## PHASE 1 ACCEPTED / DO NOT REOPEN
-- V4 UAT-001–UAT-010 / Chunk 1–4
-- UAT-011 / UAT-012 checkpoint `c8da0558949193de8b8915ef1d106c2269b68154`
-- UAT-013 / UAT-014 accepted visual work
-- run 155 confirms no visual/interaction regression from pooling calculation fix
-
-## LOCKED BUSINESS INVARIANTS
-- do not change recipe/base quantities
-- do not invent replacement Matrix values
+## LOCKED / DO NOT REPEAT
+- do not reopen Phase 1/UAT visual work
+- do not regenerate accepted portrait/landscape/character assets
+- do not rerun old repair workflows/runs merely to reconfirm accepted work
+- do not recreate deleted shrimp repair staging/workflow
+- do not modify recipe/base quantities without explicit new source evidence
 - qty=0 remains disabled / `แทนไม่ได้`
-- do not alter unrelated Matrix/PIN/import-export semantics
+- do not change unrelated Matrix/PIN/import-export semantics
+
+## SHORT RECOVERY CHUNKS
+### CHUNK S1 — NEXT BACKLOG DISCOVERY ONLY
+1. Re-read current `main` + this handoff.
+2. Search only durable repo/project context for the next independent NER Menu Quantity backlog/product item that is NOT the blocked raw-credit task and NOT Phase 1 visual work.
+3. Do not modify production in this chunk.
+4. Persist the identified next item, evidence, scope boundary, and exact next action.
+5. STOP.
+
+### CHUNK S2 — IMPLEMENT ONE VERIFIED ITEM ONLY
+Start only after S1 identifies a concrete backlog item.
+1. Re-read current `main` + handoff.
+2. Inspect only code/data directly relevant to that item.
+3. Implement the smallest complete milestone.
+4. Run targeted regression/QA.
+5. Persist checkpoint.
+6. STOP.
+
+### CHUNK S3 — CI / ACCEPTANCE ONLY
+1. Re-read current `main` + handoff.
+2. Inspect only the resulting CI/run/artifact evidence.
+3. If failed: persist first failed required step and STOP before editing.
+4. If success: persist acceptance checkpoint.
+5. STOP.
 
 ## EXACT NEXT ACTION
-Raw-credit activation is blocked pending an authoritative current Matrix source. Preserve the accepted calculation fix and permanent regression contract. Resume the next explicit independent NER Menu Quantity backlog/product item from durable project context; do not reopen Phase 1 and do not invent shrimp data.
+Do **CHUNK S1 ONLY** next: identify the next independent durable backlog/product item from current repo/project context, record it, and STOP. Do not resume the blocked raw-credit search without new authoritative evidence.
