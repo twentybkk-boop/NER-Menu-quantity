@@ -3,11 +3,11 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — UAT-014 LANDSCAPE BACKGROUND INTEGRATED; UI QA RUN 151 IN PROGRESS
+## CURRENT WORK HEAD — UAT-014 INTEGRATED; RUN 151 FAILED ON STALE UAT-013 LANDSCAPE ASSERTION
 
 UAT-013 portrait background remains accepted and must not be reopened.
 
-Latest user hands-on feedback reopened exactly one area: the **landscape background art source**. User approved a cleaner landscape-native sunset terrace / hot-pot image generated in the current session and explicitly asked to use that approved image as the landscape background.
+Latest user hands-on feedback reopened exactly one area: the **landscape background art source**. User approved a cleaner landscape-native sunset terrace / hot-pot image and explicitly asked to use that approved image as the landscape background.
 
 ## UAT-014 USER-APPROVED LANDSCAPE ASSET — VERIFIED MAPPED
 Approved source image:
@@ -47,26 +47,42 @@ Current CSS behavior on `main`:
 - landscape uses `cover`, positioned center/center
 - accepted masthead protection remains present
 
-QA intent:
-- portrait rejects landscape asset and legacy master
-- landscape requires `background-landscape-garden-v1.webp` and rejects portrait asset + legacy `background-master.webp`
-- orientation/layering live readiness verifies both portrait and landscape assets are deployed
-- accepted character rails, center-frame geometry, business/runtime/recipe/quantity/Matrix/PIN/calculator semantics were not changed
-
-## UAT-014 RESULTING UI QA — BOUNDED READ
-Actual resulting UI QA:
+## UAT-014 UI QA RUN 151 — FAILURE ROOT CAUSE CHECKPOINTED
+Run:
 - run ID: `36106680864`
 - run number: 151
 - head SHA: `19e526d618373839a571d7cd0872ce8d18831757`
-- display title: `Integrate approved UAT-014 landscape background`
-- event: `push`
-- status at the single bounded read in this continuation session: `in_progress`
-- conclusion: not final
-- created/started: `2026-09-25T07:14:56Z`
-- updated at bounded read: `2026-09-25T07:15:36Z`
-- do not poll this run again in the same session
+- status: `completed`
+- conclusion: `failure`
+- completed/updated at: `2026-09-25T07:17:54Z`
 
-Incorrect provisional run IDs `36110104415` / `36110104256` are invalid for UAT-014 production state and must not be reused.
+All required steps before the failure passed, including:
+- base Chromium + WebKit UI QA
+- P0-A complete character composition
+- P0-B protected center frame
+- P0-D top composition local
+- P0-D long-list rhythm local
+- V4 thumbnail semantics/density local
+- V4 Chunk 4 polish local
+- orientation layering/backmost environment local, including UAT-014 landscape cases
+
+First failed required step:
+- `Verify UAT-013 portrait-native background locally`
+- command: `node qa/uat013-portrait-background-contract.mjs`
+- failure at `qa/uat013-portrait-background-contract.mjs:86`
+- assertion: `chromium/phone-landscape/local: accepted landscape master missing`
+- stale expected value: `/background-master\.webp/`
+- actual correct landscape background: `background-landscape-garden-v1.webp`
+
+Exact root cause:
+- `qa/uat013-portrait-background-contract.mjs` correctly protects UAT-013 portrait art but still contains the pre-UAT-014 landscape assertion that requires legacy `background-master.webp`.
+- this is a stale QA contract caused by the approved UAT-014 landscape art replacement.
+- there is no evidence of a product CSS/asset/runtime regression: the earlier orientation/layering UAT-014 gate passed phone/iPad landscape in Chromium and WebKit before this stale contract failed.
+
+Artifact uploaded despite failure:
+- `ui-qa-screenshots`
+- artifact ID `10852050473`
+- artifact ZIP SHA256 reported by Actions: `3ab9cf1e467a52b027c7b7258e7ccfddd0f1f442677032ae9e6c9bb53566db3f`
 
 ## UAT-013 PORTRAIT — VERIFIED DURABLE / DO NOT REOPEN
 - production path: `assets/background-portrait-garden-v1.webp`
@@ -92,20 +108,19 @@ Incorrect provisional run IDs `36110104415` / `36110104256` are invalid for UAT-
 ## DO NOT REPEAT
 - do not regenerate or remap accepted portrait art
 - do not recreate removed UAT-013 repair staging/chunks/workflow
-- do not alter landscape layout/interaction beyond UAT-014 without concrete regression evidence
+- do not alter landscape product CSS/layout/interaction without new product regression evidence
 - do not touch accepted character binaries
-- do not reopen portrait QA fixes without new portrait regression evidence
+- do not reopen prior portrait QA fixes beyond the single stale landscape branch identified here
 - do not rerun successful UAT-013 UI QA run `36103333988`
 - do not touch UAT-011 staging/workflow as part of UAT-014
 - do not use detached staging SHA `3376af34...` as production source of truth
 - do not use provisional/invalid UAT-014 run IDs `36110104415` or `36110104256`
-- do not poll actual UAT-014 UI QA run `36106680864` again in this same session
+- do not rerun failed run `36106680864`; a new push should produce the next run
 
 ## EXACT NEXT ACTION
-1. In the next continuation session, re-read current `main` + this handoff first.
-2. Read actual UAT-014 UI QA run `36106680864` exactly once.
-3. If still `queued` / `in_progress`: persist current status and STOP; no polling loop.
-4. If `failure`: inspect only the first failed required step/log and persist exact blocker before any further edit.
-5. If `success`: persist automation-success checkpoint, then download only `ui-qa-screenshots`.
-6. Inspect targeted local/live landscape evidence: `29-phone-landscape-layering-v1@2x.png`, `29-ipad-landscape-layering-v1@2x.png`, `29-ipad-wide-landscape-layering-v1@2x.png` and their `live-` counterparts; inspect landscape calculator screenshot if useful.
-7. Verify local/live equivalence plus manual visual integration of the user-approved landscape scene. If clean, persist `UAT-014 READY FOR USER REVIEW`.
+1. Edit only `qa/uat013-portrait-background-contract.mjs`.
+2. Preserve every UAT-013 portrait assertion unchanged.
+3. In the landscape branch, require `background-landscape-garden-v1.webp`, reject `background-portrait-garden-v1.webp`, and reject legacy `background-master.webp`.
+4. Update live deployment readiness in this contract only if needed so it waits for the current landscape asset before evaluating deployed landscape cases.
+5. Commit the QA-only fix; do not change product CSS/assets/runtime/business logic.
+6. Read the resulting UI QA run once. If running, checkpoint and stop; if failure, inspect only the first failed required step; if success, persist success then review targeted local/live landscape screenshots and verify UAT-014 visually.
