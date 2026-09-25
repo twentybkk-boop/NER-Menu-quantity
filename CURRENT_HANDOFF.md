@@ -3,7 +3,7 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — UAT-013 LONG-LIST QA FIX DURABLE; UI QA RUN 150 IN PROGRESS
+## CURRENT WORK HEAD — UAT-013 LONG-LIST QA FIX DURABLE; UI QA RUN 150 STILL IN PROGRESS
 
 Only remaining user-reported defect was portrait background art looking composited/cut-and-paste. User explicitly approved the newly generated portrait-native garden/hot-pot background.
 
@@ -63,14 +63,16 @@ Behavior:
 Root-cause checkpoint before edit:
 - `a811bd8abef9d2386d8c8431f615aa837d1dbfc6` — `Checkpoint UAT-013 long-list stale QA root cause`
 
-## RESULTING UI QA — BOUNDED READ COMPLETE FOR THIS SESSION
+## RESULTING UI QA — FOLLOW-UP BOUNDED READ
 - UI QA run `36103333988`
 - head SHA `f9a647098024b9f048cbe97f9b35924cbe401eb5`
 - run number 150
 - event `push`
-- bounded-read status: `in_progress`
+- first bounded read after fix: `in_progress`
+- follow-up bounded read in the next continuation session: still `in_progress`
 - conclusion: not final yet
-- read exactly once after the long-list fix; no further polling performed in this session
+- no code evidence changed; no product or QA edit performed in this follow-up session
+- no further polling performed in this session
 
 ## ACCEPTED / DO NOT REOPEN
 - UAT-011 character cutout cleanup
