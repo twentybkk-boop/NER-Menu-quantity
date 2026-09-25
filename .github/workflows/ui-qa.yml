@@ -64,6 +64,10 @@ jobs:
         run: node qa/calculator-visual-v2-runner.mjs
       - name: Verify multi-item shrimp pooling calculation
         run: node qa/replacement-pooling-contract.mjs
+      - name: Verify transactional Excel import structure
+        run: node qa/transactional-import-validation-contract.mjs
+      - name: Verify transactional Excel import UI locally
+        run: node qa/transactional-import-ui-contract.mjs
       - name: Verify V4 phone-landscape calculator interaction locally
         run: node qa/landscape-calculator-v4-contract.mjs
       - name: Verify deployed GitHub Pages P0-A/P0-B acceptance
@@ -92,6 +96,11 @@ jobs:
         env:
           UAT013_BASE: https://twentybkk-boop.github.io/NER-Menu-quantity/
         run: node qa/uat013-portrait-background-contract.mjs
+      - name: Verify deployed transactional Excel import UI
+        env:
+          TRANSACTIONAL_IMPORT_BASE: https://twentybkk-boop.github.io/NER-Menu-quantity/
+          TRANSACTIONAL_IMPORT_PREFIX: live
+        run: node qa/transactional-import-ui-contract.mjs
       - name: Verify deployed V4 phone-landscape calculator interaction
         env:
           LANDSCAPE_BASE: https://twentybkk-boop.github.io/NER-Menu-quantity/
