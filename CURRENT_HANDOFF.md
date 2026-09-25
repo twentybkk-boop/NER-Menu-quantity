@@ -24,43 +24,81 @@
 ## CURRENT WORK HEAD — STARTUP RECIPE MASTER RUNTIME INTEGRITY GATE
 
 ### Discovery evidence
-Startup data is loaded by `loadData()` from:
-- `https://raw.githubusercontent.com/twentybkk-boop/NER-Menu-quantity/main/recipe_master.json`
+Startup `loadData()` fetches `recipe_master.json`, checks only HTTP/JSON and truthiness of `baseMenu` / `replaceRules`, then immediately assigns candidate data to:
+- `originalMenu`
+- `menuCategories`
+- `replaceUseRules`
+- `allIngredientsList`
 
-Current startup flow only checks:
-- HTTP success
-- JSON parse success
-- truthiness of `data.baseMenu` and `data.replaceRules`
+It then calls `initMenus()` and `renderMatrixTable()`.
 
-It then immediately commits candidate data into live state:
-- `originalMenu = data.baseMenu`
-- `menuCategories = data.categories || {}`
-- `replaceUseRules = data.replaceRules`
-- `allIngredientsList = data.ingredients || []`
-- followed by `initMenus()` and `renderMatrixTable()`
-
-There is no runtime integrity gate before those assignments.
-
-### Existing validation logic is already available
-Browser production code already has `validateImportedRecipeData(baseMenu, replaceRules)` and `hasImportValidationErrors(...)` for Excel import.
-The validator covers the same established four linkage classes:
+Browser production already contains `validateImportedRecipeData(baseMenu, replaceRules)` with the established four integrity classes:
 - mismatched menu
 - invalid exclude
 - duplicate `(menu, exclude)` rule
 - multi-ingredient exclusion with no usable replacement option
 
-`qa/import-data-integrity-audit.mjs` contains the durable equivalent contract for bundled data.
+That validator is currently used for Excel import but not startup `loadData()`.
 
-### Verified gap
-`validateImportedRecipeData(...)` is called for Excel-import candidate data only; `loadData()` does not call it.
-Permanent UI QA currently has no startup/bootstrap invalid-payload acceptance step.
-There are no open GitHub issues providing a competing higher-priority durable item.
+## STARTUP RUNTIME REPRODUCTION — ROOT GAP VERIFIED
 
-### Why this is independent from the closed bundled audit
-The closed bundled audit proved the current committed `recipe_master.json` is clean at one checkpoint.
-This new item is runtime fail-closed protection for future startup payloads. It does NOT reopen or dispute the clean audit result.
+### Permanent targeted contract
+Added:
+- `qa/startup-runtime-integrity-contract.mjs`
+- commit `5860149c0b4cdd3a60a311299558e3c946d4abde`
 
-A future malformed/internally inconsistent startup payload can currently be assigned to live application state even though the exact integrity rules already exist elsewhere.
+The contract extracts the actual production `loadData()` and `validateImportedRecipeData()` functions from `index.html` into a Node VM harness. It mocks `fetch()` only; it does not modify `recipe_master.json` or production runtime behavior.
+
+Pinned cases:
+- one integrity-clean valid startup payload
+- mismatchedMenus
+- invalidExcludes
+- duplicateRules
+- noOptions
+
+Expected transactional startup contract:
+- valid payload commits normally and calls menu/Matrix initialization once
+- invalid payload preserves the previous live state and does not call normal successful initialization/rendering
+
+### One-shot reproduction infrastructure
+Temporary read-only workflow:
+- `.github/workflows/audit-startup-runtime-integrity.yml`
+- commit `e6bd2e47e9a3661eddf71a5a12bf1a36af873868`
+
+Temporary trigger:
+- `repair-staging/startup-runtime-integrity/RUN_REPRO`
+- trigger commit `380e7e8c8452275238b1f75bc22f683698448a0b`
+
+Reproduction execution:
+- workflow run `36135348486`
+- job `108071973557`
+- completed/failure as expected
+- failed step: `Run startup recipe runtime integrity contract`
+
+### Exact observed behavior
+Valid case passed before the failing invalid assertion:
+- `STARTUP_RUNTIME_VALID_CASE={"initCalls":1,"matrixCalls":1}`
+
+First invalid fixture (`mismatchedMenus`) was independently confirmed by the existing validator:
+- findingCount = 1
+
+But current `loadData()` still committed the invalid candidate and initialized it:
+- committed menu names = `["เมนูทดสอบ"]`
+- `initCalls = 1`
+- `matrixCalls = 1`
+
+Exact failing assertion:
+`mismatchedMenus: invalid startup payload must preserve previous originalMenu`
+
+Actual state after invalid load:
+- `{ "เมนูทดสอบ": { "กุ้ง": 2, "หมูหมัก": 3 } }`
+
+Expected preserved pre-load state:
+- `{ "ข้อมูลเดิม": { "กุ้ง": 9 } }`
+
+Conclusion: current startup runtime is not fail-closed. Integrity-invalid startup data is assigned into live application state before any established integrity validation.
+
+The remaining invalid fixtures are already pinned in the same contract but execution stops at the first intentional failure; after production repair, the same contract must pass all four invalid classes plus the valid case.
 
 ## SCOPE BOUNDARY
 This item is specifically **startup `recipe_master.json` runtime validation before live-state commit**.
@@ -75,33 +113,25 @@ It is NOT:
 - a request to modify `recipe_master.json`
 - a new set of business integrity rules
 
-Reuse the existing four integrity classes; do not invent additional recipe rules in this item.
-
-## INITIAL ACCEPTANCE CONTRACT
-Valid startup payload:
-- must continue to load normally
-- must populate the same live state and render menus/Matrix as today
-
-Invalid startup payload containing any established integrity finding:
-- must be rejected BEFORE assigning candidate data to `originalMenu`, `menuCategories`, `replaceUseRules`, or `allIngredientsList`
-- must not partially commit candidate data
-- must not call normal successful menu/Matrix initialization for the invalid candidate
-- must surface an honest startup data error state rather than treating internally invalid data as valid
-
-At minimum reproduce one invalid linkage case first; preferred targeted coverage pins all four existing finding classes plus one valid case.
+Reuse the existing validator and existing four integrity classes. Do not invent new recipe rules.
 
 ## DO NOT REPEAT
 - do not reopen accepted Phase 1 / shrimp pooling / transactional Excel / Matrix edit items
 - do not rerun the old bundled data audit merely to reconfirm zero counts
-- do not revisit blocked raw shrimp credits without new authoritative evidence
+- do not rerun reproduction run `36135348486` merely to reconfirm the same failure
+- do not weaken `qa/startup-runtime-integrity-contract.mjs`
 - do not modify `recipe_master.json` for this item
-- do not invent new data-integrity semantics beyond the existing four classes
+- do not invent new integrity semantics beyond the established four classes
+- do not delete the temporary startup repro workflow/trigger until the production fix has passed permanent verification
 
 ## EXACT NEXT ACTION — NEXT SHORT CHUNK ONLY
-Do a targeted **Startup Recipe Master Runtime Integrity reproduction/QA chunk**:
+Do the **Startup Recipe Master Runtime Integrity implementation chunk**:
 1. Re-read current `main` + this handoff.
-2. Inspect only `loadData()`, the existing browser validator, and the smallest relevant QA harness.
-3. Add a targeted failing reproduction that injects/mocks an invalid startup `recipe_master.json` payload and proves current `loadData()` accepts/commits it without the integrity gate.
-4. Include one valid startup payload to prove the normal path contract.
-5. Prefer browser request interception or a faithful extracted-function harness; do not alter production if reproduction can be added independently.
-6. Persist exact failing assertion/root gap and STOP before production implementation.
+2. Inspect only `loadData()`, the existing browser validator/helpers, and `qa/startup-runtime-integrity-contract.mjs`.
+3. Patch `loadData()` so candidate startup data is validated with the existing four-class validator BEFORE assigning any live-state variable.
+4. On integrity findings, throw/reject into the existing startup error path before `initMenus()` / `renderMatrixTable()`; do not partially commit candidate state.
+5. Preserve the current valid startup path exactly.
+6. Do not modify `recipe_master.json`.
+7. Run `qa/startup-runtime-integrity-contract.mjs`; it must pass the valid case plus all four invalid fixtures.
+8. If targeted contract passes, integrate it as a permanent required UI QA step and run a fresh full UI QA.
+9. Persist production commit + QA run evidence, then STOP before unrelated backlog discovery.
