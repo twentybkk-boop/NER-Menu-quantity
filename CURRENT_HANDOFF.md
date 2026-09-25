@@ -4,11 +4,11 @@
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + durable artifacts.
 
 ## SHORT-CHUNK EXECUTION POLICY
-- ONE chunk = ONE milestone only.
+- ONE chunk = ONE milestone only by default.
 - Re-read current `main` + this handoff at the start of every chunk.
 - Do not reopen DONE / ACCEPTED work.
-- Persist a checkpoint at the end of each chunk.
-- STOP after checkpoint; do not chain the next major milestone in the same session.
+- Persist a checkpoint at each meaningful milestone.
+- The user explicitly requested this session to continue through real-screen review; therefore continue across milestones in the same session while checkpointing each milestone.
 
 ## LOCKED / ACCEPTED
 - Phase 1 visual/UAT V4 UAT-001–UAT-014 is ACCEPTED / FROZEN.
@@ -27,103 +27,82 @@
 - one-shot workflow removed at `e9f78028fee57dd11d2a26a075939995c2ec0e51`
 - trigger removed at `040c3c3ed02fe103a3316056ade56ffbcce56699`
 
-## CURRENT WORK HEAD — TRANSACTIONAL EXCEL IMPORT VALIDATION REPRODUCED
+## CURRENT WORK HEAD — TRANSACTIONAL EXCEL IMPORT VALIDATION IMPLEMENTATION SETUP READY
 
-### Backlog scope
-Protect runtime Excel import from integrity/linkage errors before parsed workbook data replaces the currently loaded live state.
+### Reproduced production gap
+Repro run `36128207165` / job `108049130583` completed/failure exactly at:
+- `Run transactional import validation contract`
+- assertion: `transactional import validation gate is missing before live-state replacement`
 
-### Existing behavior already present
-Current `index.html` canonicalizes known aliases during Excel import:
-- `ปลากหมึก` -> `ปลาหมึก`
-- `เนื้อเสื้อร้องให้สไลซ์` -> `เนื้อเสือร้องไห้สไลซ์`
-
-### Verified production gap
-Current import flow parses candidate data into:
-- `newOriginalMenu`
-- `newMenuCategories`
-- `newReplaceRules`
-- `repIngredientsList`
-
-Then it directly assigns those candidates into live state:
-- `originalMenu = newOriginalMenu`
-- `menuCategories = newMenuCategories`
-- `replaceUseRules = newReplaceRules`
-- `allIngredientsList = repIngredientsList`
-
-There is no integrity-validation gate before the first live-state assignment.
-
-### Regression contract
+Regression contract:
 - `qa/transactional-import-validation-contract.mjs`
 - commit `9c8665c3217254803fc312d3d5e79add3179e76e`
 
-The contract verifies reusable audit behavior for:
-- valid parsed data -> clean
-- mismatched menu -> detected
-- invalid exclude -> detected
-- duplicate `(menu, exclude)` -> detected
-- no base-overlap replacement options -> detected
+### Accepted implementation interface
+Browser production will use these functions:
+- `validateImportedRecipeData(baseMenu, replaceRules)` — same four integrity semantics as durable audit
+- `hasImportValidationErrors(result)`
+- `formatImportValidationSummary(result)`
+- `setImportStatus(kind, message)`
 
-Structural transaction requirement:
-- intended integration point: `validateImportedRecipeData(newOriginalMenu, newReplaceRules)`
-- validation must occur before the first live-state assignment
+Required transactional order:
+1. parse workbook into candidate objects
+2. call exactly `validateImportedRecipeData(newOriginalMenu, newReplaceRules)`
+3. if findings exist: render actionable Matrix error status and return without assigning live state
+4. only on clean validation assign `originalMenu`, `menuCategories`, `replaceUseRules`, `allIngredientsList`
+5. render success status + preserve existing success alert
 
-### Reproduction run — COMPLETE / EXPECTED FAILURE
-One-shot setup:
-- workflow `.github/workflows/audit-transactional-import-validation.yml`
-- workflow commit `36cb05b99fe150d52ddea518010e84246195a898`
-- trigger `repair-staging/import-transaction/RUN_REPRO`
-- trigger commit `3f518522fb5cdad0eaa648f6b0ce2cd45e52cca7`
-- permissions read-only
-
-Run:
-- run ID `36128207165`
-- job ID `108049130583`
-- workflow `Audit transactional import validation`
-- head `3f518522fb5cdad0eaa648f6b0ce2cd45e52cca7`
-- status `completed`
-- conclusion `failure`
-
-Failed required step:
-- `Run transactional import validation contract`
-
-Exact assertion from job log:
-- `AssertionError [ERR_ASSERTION]: transactional import validation gate is missing before live-state replacement`
-- contract location: `qa/transactional-import-validation-contract.mjs:61:8`
-- exit code `1`
-
-This is the intended reproduction and confirms the harness is reaching the structural transaction assertion. Checkout/setup passed; failure is not a workflow/setup error.
-
-Production behavior/data has NOT been modified by this reproduction work.
-
-## ACCEPTANCE CONTRACT FOR IMPLEMENTATION
-A valid workbook must preserve current successful import behavior.
-An invalid workbook must be rejected BEFORE live-state replacement when any of these are found:
+Error status must summarize the four existing finding classes only:
 - mismatched menu
 - invalid exclude
-- duplicate rule
-- no replacement options for a multi-ingredient exclusion
+- duplicate `(menu, exclude)`
+- no replacement option overlap
 
+The Matrix UI gains a non-blocking `#importStatus` live-region banner between header and matrix table. It is hidden by default, error-styled on rejection, and success-styled on accepted import.
+
+### Guarded production patch setup
+One-shot write workflow:
+- `.github/workflows/repair-transactional-import-validation.yml`
+- setup commit `ac316e8a23f4acfb9a58b3a6673bc4a5283ca002`
+- trigger path: `repair-staging/import-transaction/RUN_FIX`
+- permissions: contents write
+
+Workflow safeguards:
+- exact markers for CSS, Matrix status element, import handler, and assignment block
+- refuses duplicate validator/status implementation
+- runs `qa/transactional-import-validation-contract.mjs` before commit
+- requires production diff to be exactly `index.html`
+- runs `git diff --check`
+- commits only `index.html`
+
+At this checkpoint production `index.html` has NOT yet been modified by the fix workflow.
+
+## ACCEPTANCE CONTRACT
+A valid workbook must preserve current successful import behavior.
+An invalid workbook must be rejected BEFORE live-state replacement when any finding exists.
 On rejection:
 - preserve prior `originalMenu`, `menuCategories`, `replaceUseRules`, `allIngredientsList`
-- do not partially commit parsed import state
-- show a concise actionable error summary instead of success
-- reuse the existing integrity semantics from `qa/import-data-integrity-audit.mjs`
+- no partial commit
+- show concise actionable error summary instead of success
 - do not modify `recipe_master.json`
+
+Real-screen acceptance required before closing this item:
+- Matrix screen visibly shows the invalid-import error banner from an actual generated Excel import
+- banner is readable on phone and desktop/tablet viewport
+- existing Matrix controls/table remain usable
+- valid import path remains accepted by automated contract
+- fresh UI QA remains green
 
 ## DO NOT REPEAT
 - do not reopen Phase 1 visual work
 - do not revisit blocked raw shrimp credit provenance without new authoritative evidence
-- do not recreate shrimp repair workflow/staging
 - do not recreate/rerun the closed bundled-data import audit
-- do not create another transactional repro run merely to reconfirm this failure
+- do not rerun the old failing repro merely to reconfirm the gap
 - do not modify bundled production data for this runtime import-safety item
-- do not add the new transactional contract to permanent UI QA until implementation makes it pass
 
-## EXACT NEXT ACTION — NEXT SHORT CHUNK ONLY
-Do one implementation-design chunk for **Transactional Excel Import Validation**:
-1. Re-read current `main` + this handoff.
-2. Inspect only `importExcelData()` and `qa/import-data-integrity-audit.mjs`.
-3. Define the minimal production interface that can reuse the existing audit semantics inside browser runtime without duplicating/inventing rules.
-4. Preserve transactional behavior: validate candidates first, assign live state only after a clean result.
-5. Define the concise error-summary format for the four finding classes.
-6. Persist the exact patch plan/interface and STOP before editing production.
+## EXACT NEXT ACTION
+1. Create `repair-staging/import-transaction/RUN_FIX` to trigger the guarded production patch.
+2. Verify the resulting workflow run and bot production commit.
+3. Add targeted browser QA that performs an actual invalid Excel import and captures Matrix error-state screenshots.
+4. Add the transactional contract + browser acceptance to permanent UI QA.
+5. Run fresh UI QA, download screenshots, inspect real phone + desktop/tablet evidence, and present them to the user for review.
