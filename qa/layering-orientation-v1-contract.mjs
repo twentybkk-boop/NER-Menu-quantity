@@ -1,4 +1,4 @@
-// V3 Session 1 final gate + V4 UAT Chunk 1 regression checks:
+// V3 Session 1 final gate + V4 UAT Chunk 1/UAT-013 regression checks:
 // layering/orientation/background depth across phone + iPad states.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -30,13 +30,14 @@ async function waitForDeployment(page) {
     const polish = await page.request.get(`${root}assets/visual-polish.css?layer=${Date.now()}`, { headers: {'cache-control':'no-cache'} });
     const layer = await page.request.get(`${root}assets/visual-layering-orientation-v1.css?layer=${Date.now()}`, { headers: {'cache-control':'no-cache'} });
     const v4 = await page.request.get(`${root}assets/visual-uat-v4-chunk1.css?layer=${Date.now()}`, { headers: {'cache-control':'no-cache'} });
-    if (polish.ok() && layer.ok() && v4.ok()) {
+    const portrait = await page.request.get(`${root}assets/background-portrait-garden-v1.webp?layer=${Date.now()}`, { headers: {'cache-control':'no-cache'} });
+    if (polish.ok() && layer.ok() && v4.ok() && portrait.ok()) {
       const [p,l,v] = await Promise.all([polish.text(), layer.text(), v4.text()]);
-      if (p.includes('visual-layering-orientation-v1.css') && p.includes('visual-uat-v4-chunk1.css') && l.includes('layering/orientation/background V1') && v.includes('V4 HANDS-ON UAT')) return;
+      if (p.includes('visual-layering-orientation-v1.css') && p.includes('visual-uat-v4-chunk1.css') && l.includes('layering/orientation/background V1') && v.includes('background-portrait-garden-v1.webp')) return;
     }
     await sleep(8_000);
   }
-  throw new Error('GitHub Pages did not expose V4 Chunk 1 layering assets before timeout');
+  throw new Error('GitHub Pages did not expose UAT-013 layering assets before timeout');
 }
 
 const CASES = [
@@ -99,19 +100,20 @@ async function inspect(browserType, browserName, c) {
     assert.ok(r.decorZ > r.shell.z, `${scope}: characters are not above content (${r.decorZ} <= ${r.shell.z})`);
     assert.ok(r.bodyBgZ < r.shell.z && r.bodyBgZ < r.decorZ, `${scope}: environmental background is not backmost`);
     assert.equal(r.bodyBgPointer, 'none', `${scope}: backmost environment intercepts controls`);
-    assert.match(r.bodyBg, /background-master\.webp/, `${scope}: backmost illustrated background missing`);
     assert.match(r.bodyBg, /radial-gradient/, `${scope}: backmost ambient circles missing`);
 
-    /* UAT-012: a 440x293 landscape master scaled to 100dvh on portrait exposed
-       only the center sliver and looked blank on the real phone. Lock the new
-       width-driven portrait crop without weakening the backmost-layer contract. */
     if (c.name.endsWith('portrait')) {
+      assert.match(r.bodyBg, /background-portrait-garden-v1\.webp/, `${scope}: approved portrait-native environment missing`);
+      assert.doesNotMatch(r.bodyBg, /background-master\.webp/, `${scope}: legacy landscape master leaked into portrait`);
       const imageLayerSize = r.bodyBgSize.split(',').at(-1)?.trim() || '';
-      assert.match(imageLayerSize, /160%/, `${scope}: portrait environment reverted to an over-cropped sizing strategy (${r.bodyBgSize})`);
+      assert.equal(imageLayerSize, 'cover', `${scope}: portrait-native environment must use cover (${r.bodyBgSize})`);
+    } else {
+      assert.match(r.bodyBg, /background-master\.webp/, `${scope}: accepted landscape background missing`);
+      assert.doesNotMatch(r.bodyBg, /background-portrait-garden-v1\.webp/, `${scope}: portrait-only art leaked into landscape`);
     }
 
     /* V4 UAT-001: no round ambient shape may remain inside the foreground
-       character stacking context. This is the regression the V3 gate missed. */
+       character stacking context. */
     for (const [i,p] of r.decorPseudo.entries()) {
       assert.equal(p.pointer, 'none', `${scope}: decor pseudo ${i} intercepts controls`);
       assert.equal(p.display, 'none', `${scope}: decor pseudo ${i} still paints above the UI`);
@@ -126,10 +128,6 @@ async function inspect(browserType, browserName, c) {
     if (c.maxMenu) assert.ok(r.menus.width <= c.maxMenu, `${scope}: menu lane too wide ${r.menus.width}`);
     if (c.gridCols) assert.equal(r.gridCols, c.gridCols, `${scope}: expected ${c.gridCols} menu columns, got ${r.gridCols}`);
 
-    /* Phone portrait already has dedicated P0-A/P0-B/P0-D contracts that accept
-       the intentional upper-left story overlap around the brand panel. The new
-       rail-intrusion gate is scoped only to the newly reported landscape/iPad
-       defect, where characters must not fall behind or materially enter cards. */
     if (c.name !== 'phone-portrait') {
       const maxRailIntrusion = 40;
       const leftIntrusion = Math.max(0, Math.max(r.decor[0].right, r.decor[1].right) - r.menus.left);
@@ -163,4 +161,4 @@ for (const c of CASES) {
   await inspect(chromium,'chromium',c);
   await inspect(webkit,'webkit',c);
 }
-console.log(`LAYERING ORIENTATION V1/V4 CHUNK 1 ${LIVE?'LIVE':'LOCAL'} PASS`);
+console.log(`LAYERING ORIENTATION V1/V4/UAT-013 ${LIVE?'LIVE':'LOCAL'} PASS`);
