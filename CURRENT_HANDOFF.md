@@ -4,107 +4,74 @@
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + durable artifacts.
 
 ## SHORT-CHUNK EXECUTION POLICY
-From this checkpoint onward, use short recoverable sessions:
 - ONE chunk = ONE milestone only.
 - Re-read current `main` + this handoff at the start of every chunk.
 - Do not reopen DONE / ACCEPTED work.
 - Persist a checkpoint at the end of each chunk.
 - STOP after checkpoint; do not chain the next major milestone in the same session.
-- If CI is still running, record run ID/status and STOP instead of waiting through multiple stages.
 
-## RECOVERED VERIFIED STATE
-Current `main` before this recovery checkpoint:
-- `eb809c690352ab65a98f2888e5bf15bb36cafc96` — `Checkpoint shrimp pooling cleanup complete`
+## LOCKED / ACCEPTED
+- Phase 1 visual/UAT V4 UAT-001–UAT-014 is ACCEPTED / FROZEN.
+- Multi-item shrimp pooling calculation is ACCEPTED / VERIFIED.
+  - production fix `e3ef7945de8a4d6e708e215a65e144a2fb8aa863`
+  - permanent regression contract `qa/replacement-pooling-contract.mjs`
+  - UI QA run `36124443879` / run 155: completed/success
+- raw-current shrimp credits remain BLOCKED because no authoritative current raw source exists.
+- DO NOT infer missing decimal credits, migrate the old decimal matrix wholesale, or reopen Drive/Gmail/source searches without new evidence.
 
-### Phase 1 visual/UAT — ACCEPTED / FROZEN
-- V4 UAT-001–UAT-014 accepted.
-- UAT-013 portrait and UAT-014 landscape are accepted.
-- All accepted character/layout/orientation/calculator/thumbnail behavior remains frozen.
-- UI QA run 153 was accepted before later business work.
+## CHUNK S1 — COMPLETE
+### Next independent durable backlog item
+**Import Data Integrity / replacement linkage audit** for the current `recipe_master.json`, including the product failure mode where an exclusion can end up with no replacement options.
 
-### Multi-item shrimp pooling calculation — ACCEPTED / VERIFIED
-Requirement:
-- aggregate RAW shrimp replacement credits first
-- floor pooled shrimp credit exactly once at the end
-- examples: `0.4 + 0.7 -> 1`, `0.8 + 0.8 -> 1`
+This item is independent from:
+- accepted Phase 1 visual work
+- blocked raw-current shrimp credit provenance
 
-Production fix:
-- `e3ef7945de8a4d6e708e215a65e144a2fb8aa863` — `Fix multi-item shrimp pooling calculation`
-- changed only `index.html`
-- shrimp replacement contribution is accumulated separately from base shrimp
-- pooled contribution uses `Math.floor()` once before adding to base shrimp
-- non-shrimp replacement accumulation remains unchanged
+### Durable evidence already on current `main`
+The repo advanced beyond the prior handoff before this recovery read. Current source of truth already contains non-production audit scaffolding:
 
-Permanent regression protection:
-- `qa/replacement-pooling-contract.mjs`
-- added at `486540b159195612a708f37dc1adbc7f0d75c022`
-- permanently wired into UI QA at `182af74d424c98ab2bc356a5aeb0b6cb88f3d2c4`
+1. `8aec6e0b6e43382d744cecd3b33f6da6be7194bf` — `Add import data integrity audit`
+   - adds `qa/import-data-integrity-audit.mjs`
+   - audit classes:
+     - `mismatchedMenus`: replacement rule references a menu missing from `baseMenu`
+     - `invalidExcludes`: rule exclude is not an ingredient in that menu's base recipe
+     - `duplicateRules`: duplicate `(menu, exclude)` replacement rows
+     - `noOptions`: a multi-ingredient base item has either no rule or no replacement option overlapping its base ingredients
+   - audit is read-only; no production behavior/data is modified.
 
-Verification:
-- repair verification run `36124335016`: success
-- UI QA run `36124443879` / run 155: completed/success
-- pooling contract passed
-- every existing local/deployed visual + interaction gate passed
+2. `b114dfc6957dfb169b04058b6281d3b947e5a42f` — `Add one-shot import data integrity audit workflow`
+   - adds `.github/workflows/audit-import-data-integrity.yml`
+   - read-only permissions
+   - runs `node qa/import-data-integrity-audit.mjs`
 
-Temporary repair artifacts were cleaned up:
-- workflow removed at `6ed60495eff8f6367b2435c4d2822ab682e88856`
-- repair trigger removed at `af28ead10b6e460e0333498cf6fbcecb95ff7aac`
+3. `a3ce6f6fba2f20e099eea2c0443070e86eb4aa23` — `Trigger import data integrity audit`
+   - adds only `repair-staging/import-validation/RUN_AUDIT`
+   - no production code/data modification
 
-### Raw-current shrimp credits — BLOCKED / DO NOT GUESS
-The calculation engine is ready for decimal raw credits, but current bundled `recipe_master.json` contains many shrimp replacement values already stored as rounded integer `0`/`1`.
+4. Audit run:
+   - run ID `36125886778`
+   - workflow `Audit import data integrity`
+   - head `a3ce6f6fba2f20e099eea2c0443070e86eb4aa23`
+   - completed/success
+   - job `audit-import-data-integrity` completed/success
+   - audit step completed/success
 
-Authoritative current raw source was NOT found after checking:
-- Git history
-- Project / Library files
-- connected Google Drive
-- Gmail
-- prior project/chat context
+### Scope boundary
+CHUNK S1 does NOT interpret the audit output and does NOT modify production. Do not create a second audit or trigger.
 
-Important evidence:
-- old decimal snapshot `f9dad2255a32514d3e19a8cd482756cbdfbd8d45` is a materially different business matrix; DO NOT migrate it wholesale.
-- current-style integer matrix was uploaded wholesale at `24771d0e28577ed0f4fb386f055bde437d422b18` with no committed workbook/CSV/generator.
-- Drive candidates `NER pre order.xlsx`, `NER pre order`, `Copy of NER pre order` are price/menu lists, NOT replacement matrices.
+## DO NOT REPEAT
+- do not reopen Phase 1 visual work
+- do not revisit blocked raw shrimp credit provenance without new authoritative evidence
+- do not recreate shrimp repair workflow/staging
+- do not recreate `qa/import-data-integrity-audit.mjs`
+- do not recreate `.github/workflows/audit-import-data-integrity.yml`
+- do not retrigger run `36125886778` merely to reconfirm it
+- do not modify `recipe_master.json` or `index.html` until the audit output has been read and classified
 
-Status: **RAW-CURRENT SHRIMP CREDIT SOURCE UNAVAILABLE**.
-
-Hard rule:
-- DO NOT infer missing decimal credits from rounded `0`/`1`.
-- DO NOT derive them from the old matrix.
-- DO NOT invent cost formulas.
-- DO NOT reopen Drive/Gmail/source searches unless new source evidence appears.
-
-## LOCKED / DO NOT REPEAT
-- do not reopen Phase 1/UAT visual work
-- do not regenerate accepted portrait/landscape/character assets
-- do not rerun old repair workflows/runs merely to reconfirm accepted work
-- do not recreate deleted shrimp repair staging/workflow
-- do not modify recipe/base quantities without explicit new source evidence
-- qty=0 remains disabled / `แทนไม่ได้`
-- do not change unrelated Matrix/PIN/import-export semantics
-
-## SHORT RECOVERY CHUNKS
-### CHUNK S1 — NEXT BACKLOG DISCOVERY ONLY
+## EXACT NEXT ACTION — CHUNK S2A ONLY
 1. Re-read current `main` + this handoff.
-2. Search only durable repo/project context for the next independent NER Menu Quantity backlog/product item that is NOT the blocked raw-credit task and NOT Phase 1 visual work.
-3. Do not modify production in this chunk.
-4. Persist the identified next item, evidence, scope boundary, and exact next action.
-5. STOP.
-
-### CHUNK S2 — IMPLEMENT ONE VERIFIED ITEM ONLY
-Start only after S1 identifies a concrete backlog item.
-1. Re-read current `main` + handoff.
-2. Inspect only code/data directly relevant to that item.
-3. Implement the smallest complete milestone.
-4. Run targeted regression/QA.
-5. Persist checkpoint.
-6. STOP.
-
-### CHUNK S3 — CI / ACCEPTANCE ONLY
-1. Re-read current `main` + handoff.
-2. Inspect only the resulting CI/run/artifact evidence.
-3. If failed: persist first failed required step and STOP before editing.
-4. If success: persist acceptance checkpoint.
-5. STOP.
-
-## EXACT NEXT ACTION
-Do **CHUNK S1 ONLY** next: identify the next independent durable backlog/product item from current repo/project context, record it, and STOP. Do not resume the blocked raw-credit search without new authoritative evidence.
+2. Read the logs/output of existing audit job `108041781453` from run `36125886778` exactly once.
+3. Record exact counts for `mismatchedMenus`, `invalidExcludes`, `duplicateRules`, and `noOptions`.
+4. If all counts are zero: mark this audit item clean, clean up the one-shot audit workflow/trigger in a later separate chunk, and return to independent backlog discovery.
+5. If any count is nonzero: persist the exact affected rows/reasons as the next implementation scope; DO NOT edit production in the same chunk.
+6. Persist checkpoint and STOP.
