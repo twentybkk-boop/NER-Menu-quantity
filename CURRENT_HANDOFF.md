@@ -3,9 +3,19 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + durable artifacts + latest user review.
 
+## CURRENT PROJECT STATUS — DONE FOR CURRENT BUGFIX SCOPE
+User confirmed on 2026-09-25 that real usage appears okay and the goal is simply to have the known bugs fixed.
+
+Therefore:
+- current implementation is considered DONE for the present bugfix / production-hardening scope
+- STOP proactive backlog discovery
+- do not search for speculative defects merely to create more work
+- resume only when there is concrete new bug evidence from real usage, a failed permanent QA gate, an authoritative data source for the blocked raw-credit item, or an explicit new feature/requirement from the user
+- all accepted/verified items below remain closed unless new defect evidence directly contradicts them
+
 ## SHORT-CHUNK EXECUTION POLICY
 - ONE chunk = ONE milestone by default.
-- Re-read current `main` + this handoff at the start of every chunk.
+- Re-read current `main` + this handoff at the start of every future work chunk.
 - Do not reopen DONE / ACCEPTED work without concrete new defect evidence.
 - Persist a checkpoint at each meaningful milestone.
 - STOP after checkpoint unless the user explicitly asks to continue through multiple milestones.
@@ -118,13 +128,15 @@ Conclusion: Startup Recipe Master Runtime Integrity is VERIFIED / CLEANUP COMPLE
 - do not weaken permanent regression coverage
 - do not modify `recipe_master.json` without authoritative business evidence
 - do not revisit blocked raw shrimp-credit provenance without new authoritative evidence
+- do not perform proactive independent backlog discovery while current real usage remains okay
 
-## EXACT NEXT ACTION — NEXT SHORT CHUNK ONLY
-Do **independent backlog discovery only**:
-1. Re-read current `main` + this handoff.
-2. Exclude all ACCEPTED / VERIFIED / CLEANUP COMPLETE items above and the blocked raw-credit item.
-3. Inspect only durable runtime/code/QA/open-issue evidence needed to identify one next independent product defect or safety gap.
-4. Select exactly one item with concrete evidence; do not invent speculative work.
-5. Do NOT modify production in the discovery chunk.
-6. Persist evidence, scope boundary, acceptance contract, and exact next action.
-7. STOP before implementation.
+## EXACT NEXT ACTION
+No active engineering action.
+
+Wait for one of these concrete triggers before reopening work:
+1. user reports a reproducible bug from real usage
+2. permanent QA fails
+3. authoritative raw shrimp-credit source becomes available
+4. user requests a new feature, behavior change, or release milestone
+
+Otherwise keep the current implementation unchanged and treat the current bugfix scope as complete.
