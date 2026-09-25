@@ -19,6 +19,10 @@ const validatorSource = extract(
   'function validateImportedRecipeData(baseMenu, replaceRules) {',
   '\n\n    function hasImportValidationErrors(result) {'
 );
+const validationErrorHelperSource = extract(
+  'function hasImportValidationErrors(result) {',
+  '\n\n    function formatImportValidationSummary(result) {'
+);
 
 const initialState = {
   originalMenu: { 'ข้อมูลเดิม': { 'กุ้ง': 9 } },
@@ -69,7 +73,6 @@ const invalidPayloads = {
 };
 
 async function exercise(payload) {
-  const elements = { 'app-menus': { innerHTML: 'OLD_UI' } };
   const context = {
     console,
     Date,
@@ -97,6 +100,7 @@ async function exercise(payload) {
     function initMenus() { initCalls += 1; }
     function renderMatrixTable() { matrixCalls += 1; }
     ${validatorSource}
+    ${validationErrorHelperSource}
     ${loadDataSource}
   `, context);
 
@@ -139,6 +143,7 @@ for (const [kind, payload] of Object.entries(invalidPayloads)) {
   assert.deepEqual(observed.allIngredientsList, initialState.allIngredientsList, `${kind}: invalid startup payload must preserve previous allIngredientsList`);
   assert.equal(observed.initCalls, 0, `${kind}: invalid startup payload must not initialize menus`);
   assert.equal(observed.matrixCalls, 0, `${kind}: invalid startup payload must not render Matrix`);
+  assert.match(observed.appMenusHtml, /ข้อมูลกลางไม่สอดคล้อง/, `${kind}: invalid startup payload must surface an honest integrity error state`);
 }
 
 console.log('Startup recipe runtime integrity contract: PASS');
