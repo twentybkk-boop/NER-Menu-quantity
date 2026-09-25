@@ -12,88 +12,87 @@
 
 ## LOCKED / ACCEPTED
 - Phase 1 visual/UAT V4 UAT-001–UAT-014 ACCEPTED / FROZEN.
-- Multi-item shrimp pooling ACCEPTED / VERIFIED; raw-current shrimp credits remain BLOCKED without authoritative data.
-- Bundled import-data integrity audit CLEAN / CLOSED.
+- Multi-item shrimp pooling ACCEPTED / VERIFIED.
+- raw-current shrimp credits remain BLOCKED because no authoritative current raw source exists; do not infer or restart source searches without new evidence.
+- Bundled import-data integrity audit CLEAN / CLOSED / CLEANUP COMPLETE.
 - Transactional Excel import validation ACCEPTED / CLEANUP COMPLETE.
 
-## MATRIX NUMERIC EDIT VALIDATION — VERIFIED
+## MATRIX NUMERIC EDIT VALIDATION — VERIFIED / CLEANUP COMPLETE
 
-### Reproduced pre-fix defect
+### Reproduced defect
 Permanent regression contract:
 - `qa/matrix-edit-validation-contract.mjs`
 - commit `b09c13e58aa29b48713a5ca145e6dafbad229b4c`
 
 Pre-fix repro:
-- workflow `.github/workflows/audit-matrix-edit-validation.yml`
-- trigger `repair-staging/matrix-edit-validation/RUN_REPRO`
-- trigger commit `0ec7b81e6be55ec6a1b9a97f56e357ca143de36b`
 - run `36131405557` / job `108059265181`
 - completed/failure as expected
-
-Observed pre-fix behavior:
-- valid `3` -> `3`, render 1
-- valid `0.75` -> `0.75`, render 1
-- `1abc` -> `1`, render 1 DEFECT
-- `-5` -> `-5`, render 1 DEFECT
-- `Infinity` accepted, render 1 DEFECT
-- whitespace preserved previous value, render 0
+- proved current `parseFloat()` behavior accepted invalid Matrix quantity edits such as `1abc`, `-5`, and `Infinity`
 
 ### Production fix
-Guarded repair workflow:
-- `.github/workflows/repair-matrix-edit-validation.yml`
-- setup commit `86d6890cf086c9fe8435abebcdbfa34b24b94dd4`
-- trigger `repair-staging/matrix-edit/RUN_FIX`
-- trigger commit `292db2f0d3ed91895654f2963266814add365b60`
-- run `36131740293`: completed/success
-
 Production commit:
 - `a08aeffa80f5de25fd71b222af4997a4b7c38d53` — `Validate Matrix numeric edits strictly`
-- exact production diff changed only `index.html`
+- changed only `index.html`
 
-Implemented behavior:
+Verified behavior:
 - cancel => no mutation
-- trim prompt value
-- require complete unsigned integer/decimal syntax
-- strict `Number(...)` conversion
-- require `Number.isFinite(...)`
-- require value >= 0
-- valid decimal remains stored raw without rounding
-- invalid input preserves previous value and does not re-render
+- whitespace => reject
+- partial numeric text such as `1abc` => reject
+- negative => reject
+- non-finite such as `Infinity` => reject
+- valid integer => accepted exactly
+- valid decimal => accepted with raw decimal precision preserved
+- rejected edit does not re-render
+- no rounding during direct Matrix editing
 
 ### Permanent QA protection
 UI QA integration:
-- `.github/workflows/ui-qa.yml`
 - commit `7cf1dd76d002225d09f3a4674428efc8a8de93f9`
-- required step: `Verify Matrix numeric edit validation`
+- permanent required step: `Verify Matrix numeric edit validation`
 
 Fresh verification:
 - UI QA run `36131840880`
 - run number 161
-- head `7cf1dd76d002225d09f3a4674428efc8a8de93f9`
 - completed/success
-- Matrix numeric edit validation step: success
-- all existing local and deployed/live gates: success
-- screenshot/evidence upload: success
+- Matrix numeric edit validation step success
+- all existing local and deployed/live gates success
+- evidence upload success
 
-Conclusion: Matrix numeric edit validation is VERIFIED and protected by permanent regression QA.
-
-## SCOPE BOUNDARY / DO NOT REOPEN
-Do not broaden this item into PIN, Excel import, JSON export, recipe/base quantities, replacement business rules, Phase 1 visual work, raw shrimp-credit recovery, or `recipe_master.json` changes without separate evidence.
-
-## TEMPORARY ARTIFACTS STILL PRESENT
-Cleanup is intentionally deferred to the next short chunk:
+### Cleanup complete
+Temporary one-shot artifacts removed after verification:
 - `.github/workflows/audit-matrix-edit-validation.yml`
+  - removed at `e96579def89cbdbc34c0ae93e0c9fae4f0bf4ca8`
 - `.github/workflows/repair-matrix-edit-validation.yml`
+  - removed at `70c8ac37a8a673fa64f8f27c303275ed95edc119`
 - `repair-staging/matrix-edit-validation/RUN_REPRO`
+  - removed at `f3ec10e59bdeae21572e0c353fbee602710442bd`
 - `repair-staging/matrix-edit/RUN_FIX`
+  - removed at `1a65d4c2df3e90b895279524bdd51946aa78e614`
 
-Keep permanently:
+Permanent regression protection remains:
 - `qa/matrix-edit-validation-contract.mjs`
 - `Verify Matrix numeric edit validation` step in `.github/workflows/ui-qa.yml`
 
+Conclusion: Matrix Numeric Edit Validation is VERIFIED, permanently protected, and temporary repair/repro infrastructure is cleaned up.
+
+## SCOPE BOUNDARY / DO NOT REOPEN
+Do not reopen without new defect evidence:
+- Phase 1 visual work
+- shrimp pooling behavior
+- bundled import-data integrity
+- transactional Excel import validation
+- Matrix numeric edit validation
+
+Do not revisit blocked raw shrimp-credit provenance without new authoritative evidence.
+Do not recreate deleted one-shot Matrix workflows/triggers merely to reconfirm the accepted fix.
+Do not modify `recipe_master.json` without explicit new source evidence.
+
 ## EXACT NEXT ACTION — NEXT SHORT CHUNK ONLY
-Cleanup Matrix numeric edit temporary artifacts only:
+Do independent backlog discovery only:
 1. Re-read current `main` + this handoff.
-2. Delete the four temporary workflow/trigger files listed above.
-3. Verify permanent contract and permanent UI QA step remain present.
-4. Persist cleanup-complete checkpoint and STOP before unrelated backlog discovery.
+2. Inspect durable repo/project context for the next product/runtime item with concrete evidence.
+3. Exclude all accepted/closed items listed above and the blocked raw shrimp-credit provenance task.
+4. Select exactly one independent backlog item.
+5. Do NOT modify production in the discovery chunk.
+6. Persist evidence, scope boundary, and exact next action.
+7. STOP before implementation.
