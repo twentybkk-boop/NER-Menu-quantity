@@ -29,8 +29,6 @@
 - trigger commit changes only the QA marker; product/runtime unchanged
 
 ## FINAL VERIFICATION ACTIONS — LATEST BOUNDED READ
-Read each required run once after checkpoint `00e4d907371a57aa9dcccc971395397f75915d2d`.
-
 Pages:
 - run `36096022108`
 - head SHA `88a27c41da670409c8321e69b84747369f2fe295`
@@ -43,7 +41,10 @@ UI QA:
 - **in_progress**
 - conclusion not yet available
 
-Per crash-safe short-session rule, no further polling is allowed in this session.
+### SHORT-SESSION RECONFIRMATION
+- latest bounded re-read reconfirmed `UI QA 36096022816` is still `in_progress` while Pages remains `completed/success`.
+- no product/runtime/asset edits were made in this session.
+- per crash-safe short-session rule, no additional polling was performed after this reconfirmation.
 
 ## PRIOR FAILED QA — DO NOT RERUN UNCHANGED
 - UI QA `36093279114` — completed/failure at V3 high-res sharpness local
