@@ -6,122 +6,125 @@
 ## SHORT-CHUNK EXECUTION POLICY
 - ONE chunk = ONE milestone by default.
 - Re-read current `main` + this handoff at the start of every chunk.
-- Do not reopen DONE / ACCEPTED work.
+- Do not reopen DONE / ACCEPTED work without concrete new defect evidence.
 - Persist a checkpoint at each meaningful milestone.
 - STOP after checkpoint unless the user explicitly asks to continue through multiple milestones.
 
-## LOCKED / ACCEPTED
-- Phase 1 visual/UAT V4 UAT-001–UAT-014 ACCEPTED / FROZEN.
-- Multi-item shrimp pooling ACCEPTED / VERIFIED.
-- Bundled import-data integrity audit CLEAN / CLOSED / CLEANUP COMPLETE.
-- Transactional Excel import validation ACCEPTED / CLEANUP COMPLETE.
-- Matrix Numeric Edit Validation VERIFIED / CLEANUP COMPLETE.
-  - production `a08aeffa80f5de25fd71b222af4997a4b7c38d53`
-  - permanent `qa/matrix-edit-validation-contract.mjs`
-  - UI QA run `36131840880` / run 161 completed/success
-- raw-current shrimp credits remain BLOCKED because no authoritative current raw source exists; do not infer or restart source searches without new evidence.
+## LOCKED / ACCEPTED / VERIFIED
+### Phase 1 visual / UAT
+- V4 UAT-001–UAT-014 ACCEPTED / FROZEN.
 
-## STARTUP RECIPE MASTER RUNTIME INTEGRITY — VERIFIED
+### Multi-item shrimp pooling
+- ACCEPTED / VERIFIED.
+- production `e3ef7945de8a4d6e708e215a65e144a2fb8aa863`
+- permanent `qa/replacement-pooling-contract.mjs`
+- UI QA run `36124443879` / run 155 success.
+- raw-current shrimp credits remain BLOCKED because no authoritative current raw source exists; do not infer values or restart source searches without new evidence.
 
-### Root gap reproduction
+### Bundled import-data integrity audit
+- CLEAN / CLOSED / CLEANUP COMPLETE.
+- permanent diagnostic `qa/import-data-integrity-audit.mjs`
+- run `36125886778` clean: all four finding counts zero.
+
+### Transactional Excel import validation
+- ACCEPTED / CLEANUP COMPLETE.
+- production `e0de978f7a71f2b12dfb07c60ba4988a7e8d6dc6`
+- permanent contracts:
+  - `qa/transactional-import-validation-contract.mjs`
+  - `qa/transactional-import-ui-contract.mjs`
+- permanent local/deployed UI QA coverage remains.
+- UI QA run `36129243341` / run 159 success.
+- user accepted deployed/live phone + desktop evidence on 2026-09-25.
+
+### Matrix Numeric Edit Validation
+- VERIFIED / CLEANUP COMPLETE.
+- production `a08aeffa80f5de25fd71b222af4997a4b7c38d53`
+- permanent `qa/matrix-edit-validation-contract.mjs`
+- permanent step `Verify Matrix numeric edit validation`
+- UI QA run `36131840880` / run 161 success.
+
+## STARTUP RECIPE MASTER RUNTIME INTEGRITY — VERIFIED / CLEANUP COMPLETE
+
+### Root gap reproduced
 Permanent targeted contract:
 - `qa/startup-runtime-integrity-contract.mjs`
 - original repro commit `5860149c0b4cdd3a60a311299558e3c946d4abde`
-- harness/helper integration commit `971847b5ca4ade0d5c32dcb3920ca44285993bb0`
+- harness/helper integration `971847b5ca4ade0d5c32dcb3920ca44285993bb0`
 
 Pre-fix repro:
 - run `36135348486`
 - job `108071973557`
 - completed/failure as expected
-- proved integrity-invalid startup payload was committed into live state before validation
-- exact first assertion: `mismatchedMenus: invalid startup payload must preserve previous originalMenu`
+- proved integrity-invalid startup payload was committed before validation
+- first assertion: `mismatchedMenus: invalid startup payload must preserve previous originalMenu`
 
 ### Production fix
-Production commit:
-- `1b2248a493dfd80bd89b866ee6b13c5ce0946dd2` — `Validate startup recipe data before commit`
+- commit `1b2248a493dfd80bd89b866ee6b13c5ce0946dd2` — `Validate startup recipe data before commit`
 - changed only `index.html`
-
-Verified behavior:
-- startup candidate is validated with existing `validateImportedRecipeData(...)` before any live-state assignment
-- existing `hasImportValidationErrors(...)` is used; no new business integrity classes invented
-- invalid candidate throws `RECIPE_INTEGRITY` before `originalMenu`, `menuCategories`, `replaceUseRules`, or `allIngredientsList` are replaced
-- invalid candidate does not call successful `initMenus()` / `renderMatrixTable()`
+- startup candidate now uses existing `validateImportedRecipeData(...)` + `hasImportValidationErrors(...)` BEFORE any live-state assignment
+- no new business integrity classes were invented
+- invalid candidate throws `RECIPE_INTEGRITY` before replacing:
+  - `originalMenu`
+  - `menuCategories`
+  - `replaceUseRules`
+  - `allIngredientsList`
+- invalid candidate does not run successful `initMenus()` / `renderMatrixTable()`
 - invalid candidate surfaces `ข้อมูลกลางไม่สอดคล้อง (recipe_master.json)`
-- normal network/basic-load error message remains unchanged
-- valid startup payload preserves the previous assignment/init/render behavior
+- valid startup payload preserves previous behavior
 - `recipe_master.json` unchanged
 
-Guarded repair verification:
-- run `36136114418`
-- patch success
-- targeted startup runtime contract success
+Guarded repair run:
+- `36136114418`
+- targeted contract success
 - one-file diff gate success
 - bot commit/push success
 
-Targeted contract after fix passes all pinned cases:
-- valid startup payload
-- mismatchedMenus
-- invalidExcludes
-- duplicateRules
-- noOptions
-
-### Permanent QA protection
+### Permanent verification
 Permanent UI QA integration:
-- commit `ee5778a8cf0dffce4a12c9e170e4e7f409d3ee38` — `Add startup runtime integrity to permanent UI QA`
-- required step: `Verify startup recipe runtime integrity`
+- `ee5778a8cf0dffce4a12c9e170e4e7f409d3ee38`
+- step: `Verify startup recipe runtime integrity`
 - command: `node qa/startup-runtime-integrity-contract.mjs`
 
 Fresh full verification:
-- UI QA run `36136229617`
-- run number 164
-- head `ee5778a8cf0dffce4a12c9e170e4e7f409d3ee38`
+- UI QA run `36136229617` / run 164
 - completed/success
-- `Verify startup recipe runtime integrity` success
+- startup integrity step success
 - all existing local gates success
 - all existing deployed/live gates success
-- contact-sheet evidence rendering success
-- screenshot/evidence upload success
+- contact-sheet evidence success
+- evidence upload success
 
-Conclusion: Startup Recipe Master Runtime Integrity is VERIFIED and permanently protected.
+### Cleanup completed
+Removed temporary repro/repair infrastructure:
+- repro workflow removed `dfe52d0dcedbde2014c512d390b30ce08250b586`
+- repair workflow removed `d420ace34e6c4d5832ee2fe2f6b3e8a151fc92f5`
+- `RUN_REPRO` removed `6110167e8c7566ab38fade97cd621904299b3bb0`
+- `RUN_FIX` removed `b97b56b68f34fdfe0d24ca8144700d189c8c3930`
 
-### Temporary infrastructure — CLEANUP PENDING
-Repro temporary artifacts still present:
-- `.github/workflows/audit-startup-runtime-integrity.yml`
-- `repair-staging/startup-runtime-integrity/RUN_REPRO`
-
-Repair temporary artifacts still present:
-- `.github/workflows/repair-startup-runtime-integrity.yml`
-- `repair-staging/startup-runtime-integrity/RUN_FIX`
-
-Permanent protection that MUST remain:
+Verified permanent protection remains after cleanup:
 - `qa/startup-runtime-integrity-contract.mjs`
 - `Verify startup recipe runtime integrity` in `.github/workflows/ui-qa.yml`
 - production startup validation in `index.html`
 
-## SCOPE BOUNDARY / DO NOT REOPEN
-Do not reopen without new defect evidence:
-- Phase 1 visual work
-- shrimp pooling behavior
-- bundled import-data integrity
-- transactional Excel import validation
-- Matrix numeric edit validation
-- startup recipe runtime integrity behavior
+Conclusion: Startup Recipe Master Runtime Integrity is VERIFIED / CLEANUP COMPLETE.
 
-Do not revisit blocked raw shrimp-credit provenance without new authoritative evidence.
-Do not modify `recipe_master.json` for startup integrity work.
-Do not invent new integrity classes beyond the established four.
-Do not rerun old repro/repair runs merely to reconfirm accepted evidence.
-Do not weaken permanent startup integrity regression coverage.
+## DO NOT REPEAT
+- do not reopen Phase 1 visual work
+- do not reopen shrimp pooling
+- do not rerun bundled integrity audit just to reconfirm zero counts
+- do not recreate transactional temporary workflows/triggers
+- do not reopen Matrix numeric edit validation without new defect evidence
+- do not recreate startup repro/repair workflows/triggers
+- do not weaken permanent regression coverage
+- do not modify `recipe_master.json` without authoritative business evidence
+- do not revisit blocked raw shrimp-credit provenance without new authoritative evidence
 
 ## EXACT NEXT ACTION — NEXT SHORT CHUNK ONLY
-Do startup temporary-artifact cleanup only:
+Do **independent backlog discovery only**:
 1. Re-read current `main` + this handoff.
-2. Delete workflow first, then trigger, for repro artifacts:
-   - `.github/workflows/audit-startup-runtime-integrity.yml`
-   - `repair-staging/startup-runtime-integrity/RUN_REPRO`
-3. Delete workflow first, then trigger, for repair artifacts:
-   - `.github/workflows/repair-startup-runtime-integrity.yml`
-   - `repair-staging/startup-runtime-integrity/RUN_FIX`
-4. Verify `qa/startup-runtime-integrity-contract.mjs` remains.
-5. Verify permanent UI QA step `Verify startup recipe runtime integrity` remains.
-6. Persist `VERIFIED / CLEANUP COMPLETE` checkpoint and STOP before unrelated backlog discovery.
+2. Exclude all ACCEPTED / VERIFIED / CLEANUP COMPLETE items above and the blocked raw-credit item.
+3. Inspect only durable runtime/code/QA/open-issue evidence needed to identify one next independent product defect or safety gap.
+4. Select exactly one item with concrete evidence; do not invent speculative work.
+5. Do NOT modify production in the discovery chunk.
+6. Persist evidence, scope boundary, acceptance contract, and exact next action.
+7. STOP before implementation.
