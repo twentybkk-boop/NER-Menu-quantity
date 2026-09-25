@@ -68,6 +68,8 @@ jobs:
         run: node qa/transactional-import-validation-contract.mjs
       - name: Verify transactional Excel import UI locally
         run: node qa/transactional-import-ui-contract.mjs
+      - name: Verify Matrix numeric edit validation
+        run: node qa/matrix-edit-validation-contract.mjs
       - name: Verify V4 phone-landscape calculator interaction locally
         run: node qa/landscape-calculator-v4-contract.mjs
       - name: Verify deployed GitHub Pages P0-A/P0-B acceptance
