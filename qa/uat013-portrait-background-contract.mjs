@@ -1,4 +1,5 @@
 // UAT-013 — approved portrait-native background acceptance.
+// UAT-014 keeps this contract orientation-aware after replacing landscape art.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -27,14 +28,20 @@ async function waitForDeployment(page) {
   const deadline = Date.now() + 180_000;
   while (Date.now() < deadline) {
     const css = await page.request.get(`${root}assets/visual-uat-v4-chunk1.css?uat013=${Date.now()}`, {headers:{'cache-control':'no-cache'}});
-    const art = await page.request.get(`${root}assets/background-portrait-garden-v1.webp?uat013=${Date.now()}`, {headers:{'cache-control':'no-cache'}});
-    if (css.ok() && art.ok()) {
+    const portraitArt = await page.request.get(`${root}assets/background-portrait-garden-v1.webp?uat013=${Date.now()}`, {headers:{'cache-control':'no-cache'}});
+    const landscapeArt = await page.request.get(`${root}assets/background-landscape-garden-v1.webp?uat013=${Date.now()}`, {headers:{'cache-control':'no-cache'}});
+    if (css.ok() && portraitArt.ok() && landscapeArt.ok()) {
       const text = await css.text();
-      if (text.includes('background-portrait-garden-v1.webp') && text.includes('UAT-013')) return;
+      if (
+        text.includes('background-portrait-garden-v1.webp') &&
+        text.includes('background-landscape-garden-v1.webp') &&
+        text.includes('UAT-013') &&
+        text.includes('UAT-014')
+      ) return;
     }
     await sleep(8_000);
   }
-  throw new Error('GitHub Pages did not expose the UAT-013 portrait background before timeout');
+  throw new Error('GitHub Pages did not expose the current UAT-013 portrait + UAT-014 landscape backgrounds before timeout');
 }
 
 const CASES = [
@@ -83,8 +90,9 @@ async function inspect(browserType, browserName, c) {
       const imageLayerSize = state.size.split(',').at(-1)?.trim() || '';
       assert.equal(imageLayerSize, 'cover', `${scope}: portrait-native art must use cover, got ${state.size}`);
     } else {
-      assert.match(state.bg, /background-master\.webp/, `${scope}: accepted landscape master missing`);
+      assert.match(state.bg, /background-landscape-garden-v1\.webp/, `${scope}: approved UAT-014 landscape-native art missing`);
       assert.doesNotMatch(state.bg, /background-portrait-garden-v1\.webp/, `${scope}: portrait art leaked into landscape`);
+      assert.doesNotMatch(state.bg, /background-master\.webp/, `${scope}: legacy landscape master still participates in landscape`);
     }
 
     if (browserName === 'chromium' && c.name === 'phone-portrait') {
