@@ -6,14 +6,34 @@ import { pathToFileURL } from 'node:url';
  * Runtime compatibility wrapper for qa/ui-qa.mjs.
  *
  * The legacy base harness contains the manager/PIN regression path and should not be
- * wholesale rewritten just to change thumbnail presentation assertions. This wrapper
- * updates only the old atlas-specific thumbnail contract in an ephemeral copy, then
- * executes the complete original harness unchanged for all business/Matrix behavior.
+ * wholesale rewritten just to change presentation assertions. This wrapper updates
+ * only known presentation contracts in an ephemeral copy, then executes the complete
+ * original harness unchanged for all business/Matrix behavior.
  */
 
 const sourcePath = path.resolve('qa/ui-qa.mjs');
 const runtimePath = path.resolve('qa/.ui-qa-runtime.mjs');
 let source = fs.readFileSync(sourcePath, 'utf8');
+
+const oldBackgroundBlock = `  const background = await page.evaluate(() => getComputedStyle(document.body, '::before').backgroundImage);
+  assert.match(background, /background-master\\.webp/, \`${'${deviceName}'}: background master not active\`);
+  assert.match(background, /radial-gradient/, \`${'${deviceName}'}: central readability veil not active\`);`;
+
+const newBackgroundBlock = `  const background = await page.evaluate(() => getComputedStyle(document.body, '::before').backgroundImage);
+  const isPortrait = deviceName.endsWith('/iphone') || deviceName.endsWith('/ipad-portrait');
+  if (isPortrait) {
+    assert.match(background, /background-portrait-garden-v1\\.webp/, \`${'${deviceName}'}: approved portrait background not active\`);
+    assert.doesNotMatch(background, /background-master\\.webp/, \`${'${deviceName}'}: legacy landscape master leaked into portrait\`);
+  } else {
+    assert.match(background, /background-master\\.webp/, \`${'${deviceName}'}: accepted landscape background master not active\`);
+    assert.doesNotMatch(background, /background-portrait-garden-v1\\.webp/, \`${'${deviceName}'}: portrait background leaked into landscape\`);
+  }
+  assert.match(background, /radial-gradient/, \`${'${deviceName}'}: central readability veil not active\`);`;
+
+if (!source.includes(oldBackgroundBlock)) {
+  throw new Error('ui-qa background assertion block changed; update qa/ui-qa-runner.mjs intentionally instead of silently patching the wrong source');
+}
+source = source.replace(oldBackgroundBlock, newBackgroundBlock);
 
 const oldBlock = `  const thumbs = await page.locator('.menu-card').evaluateAll(cards => cards.map(card => {
     const s = getComputedStyle(card, '::before');
