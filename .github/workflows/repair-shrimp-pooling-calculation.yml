@@ -26,82 +26,77 @@ jobs:
 
           path = Path('index.html')
           text = path.read_text(encoding='utf-8')
+          start_marker = '    function calculateNetRecipe(menuName) {'
+          end_marker = '\n\n    function getSortedReplacementOptions'
 
-          old = """    function calculateNetRecipe(menuName) {
-      const baseRecipe = originalMenu[menuName];
-      if (!baseRecipe) return [];
-      const netRecipeMap = { ...baseRecipe };
-      const modifiedFlags = {};
+          if text.count(start_marker) != 1:
+              raise SystemExit(f'expected one calculateNetRecipe start, found {text.count(start_marker)}')
+          start = text.index(start_marker)
+          if end_marker not in text[start:]:
+              raise SystemExit('getSortedReplacementOptions boundary missing')
+          end = text.index(end_marker, start)
+          old = text[start:end]
 
-      Object.keys(excludedItemsMap).forEach(ex => delete netRecipeMap[ex]);
+          required = [
+              'const netRecipeMap = { ...baseRecipe };',
+              'const modifiedFlags = {};',
+              'const addAmt = Number(rule.replace[rep]) || 0;',
+              'netRecipeMap[rep] = (Number(netRecipeMap[rep]) || 0) + addAmt;',
+              'modifiedFlags[rep] = true;',
+              'const qty = applySmartRounding(item, rawTotal);',
+          ]
+          missing = [fragment for fragment in required if fragment not in old]
+          if missing:
+              raise SystemExit(f'expected production fragments missing: {missing}')
+          if 'pooledShrimpCredit' in old or 'floorPooledShrimpCredit' in text:
+              raise SystemExit('pooling calculation already present; refusing duplicate patch')
 
-      Object.entries(excludedItemsMap).forEach(([ex, rep]) => {
-        if (!rep) return;
-        const rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(ex).trim());
-        if (rule?.replace?.[rep] !== undefined) {
-          const addAmt = Number(rule.replace[rep]) || 0;
-          netRecipeMap[rep] = (Number(netRecipeMap[rep]) || 0) + addAmt;
-          modifiedFlags[rep] = true;
-        }
-      });
-
-      return Object.entries(netRecipeMap).flatMap(([item, rawTotal]) => {
-        const unit = getUnit(item);
-        const qty = applySmartRounding(item, rawTotal);
-        if (qty <= 0 && unit === 'กรัม') return [];
-        return [{ name: item, qty, unit, isModified: modifiedFlags[item] === true }];
-      });
-    }
-"""
-
-          new = """    function floorPooledShrimpCredit(rawTotal) {
-      const num = Number(rawTotal);
-      if (!Number.isFinite(num) || num <= 0) return 0;
-      return Math.floor(num);
-    }
-
-    function calculateNetRecipe(menuName) {
-      const baseRecipe = originalMenu[menuName];
-      if (!baseRecipe) return [];
-      const netRecipeMap = { ...baseRecipe };
-      const modifiedFlags = {};
-      let pooledShrimpCredit = 0;
-
-      Object.keys(excludedItemsMap).forEach(ex => delete netRecipeMap[ex]);
-
-      Object.entries(excludedItemsMap).forEach(([ex, rep]) => {
-        if (!rep) return;
-        const rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(ex).trim());
-        if (rule?.replace?.[rep] !== undefined) {
-          const addAmt = Number(rule.replace[rep]) || 0;
-          if (rep === 'กุ้ง') {
-            pooledShrimpCredit += addAmt;
-          } else {
-            netRecipeMap[rep] = (Number(netRecipeMap[rep]) || 0) + addAmt;
-            modifiedFlags[rep] = true;
-          }
-        }
-      });
-
-      const pooledShrimpAddition = floorPooledShrimpCredit(pooledShrimpCredit);
-      if (pooledShrimpAddition > 0) {
-        netRecipeMap['กุ้ง'] = (Number(netRecipeMap['กุ้ง']) || 0) + pooledShrimpAddition;
-        modifiedFlags['กุ้ง'] = true;
-      }
-
-      return Object.entries(netRecipeMap).flatMap(([item, rawTotal]) => {
-        const unit = getUnit(item);
-        const qty = applySmartRounding(item, rawTotal);
-        if (qty <= 0 && unit === 'กรัม') return [];
-        return [{ name: item, qty, unit, isModified: modifiedFlags[item] === true }];
-      });
-    }
-"""
-
-          count = text.count(old)
-          if count != 1:
-              raise SystemExit(f'expected exactly one calculateNetRecipe block, found {count}')
-          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          new_lines = [
+              '    function floorPooledShrimpCredit(rawTotal) {',
+              '      const num = Number(rawTotal);',
+              '      if (!Number.isFinite(num) || num <= 0) return 0;',
+              '      return Math.floor(num);',
+              '    }',
+              '',
+              '    function calculateNetRecipe(menuName) {',
+              '      const baseRecipe = originalMenu[menuName];',
+              '      if (!baseRecipe) return [];',
+              '      const netRecipeMap = { ...baseRecipe };',
+              '      const modifiedFlags = {};',
+              '      let pooledShrimpCredit = 0;',
+              '',
+              '      Object.keys(excludedItemsMap).forEach(ex => delete netRecipeMap[ex]);',
+              '',
+              '      Object.entries(excludedItemsMap).forEach(([ex, rep]) => {',
+              '        if (!rep) return;',
+              '        const rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(ex).trim());',
+              '        if (rule?.replace?.[rep] !== undefined) {',
+              '          const addAmt = Number(rule.replace[rep]) || 0;',
+              "          if (rep === 'กุ้ง') {",
+              '            pooledShrimpCredit += addAmt;',
+              '          } else {',
+              '            netRecipeMap[rep] = (Number(netRecipeMap[rep]) || 0) + addAmt;',
+              '            modifiedFlags[rep] = true;',
+              '          }',
+              '        }',
+              '      });',
+              '',
+              '      const pooledShrimpAddition = floorPooledShrimpCredit(pooledShrimpCredit);',
+              '      if (pooledShrimpAddition > 0) {',
+              "        netRecipeMap['กุ้ง'] = (Number(netRecipeMap['กุ้ง']) || 0) + pooledShrimpAddition;",
+              "        modifiedFlags['กุ้ง'] = true;",
+              '      }',
+              '',
+              '      return Object.entries(netRecipeMap).flatMap(([item, rawTotal]) => {',
+              '        const unit = getUnit(item);',
+              '        const qty = applySmartRounding(item, rawTotal);',
+              "        if (qty <= 0 && unit === 'กรัม') return [];",
+              '        return [{ name: item, qty, unit, isModified: modifiedFlags[item] === true }];',
+              '      });',
+              '    }',
+          ]
+          new = '\n'.join(new_lines)
+          path.write_text(text[:start] + new + text[end:], encoding='utf-8')
           PY
 
       - name: Run pooling regression contract
