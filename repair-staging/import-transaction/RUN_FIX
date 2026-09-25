@@ -1,4 +1,0 @@
-NER Menu Quantity transactional Excel import validation fix
-contract=qa/transactional-import-validation-contract.mjs
-scope=index.html only
-retry=workflow-serialization-fixed-ae34b12dd92bef9033b7a79848aeebc8704aab48
