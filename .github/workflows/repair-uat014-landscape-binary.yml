@@ -28,7 +28,9 @@ jobs:
             repair-staging/uat014/landscape-01b.b64 \
             repair-staging/uat014/landscape-02.b64 \
             repair-staging/uat014/landscape-03.b64 \
-            repair-staging/uat014/landscape-04.b64 \
+            repair-staging/uat014/landscape-04a.b64 \
+            repair-staging/uat014/landscape-04b1.b64 \
+            repair-staging/uat014/landscape-04b2.b64 \
             repair-staging/uat014/landscape-05.b64 \
             repair-staging/uat014/landscape-06a.b64 \
             repair-staging/uat014/landscape-06b.b64 \
