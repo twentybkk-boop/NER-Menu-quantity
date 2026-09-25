@@ -3,7 +3,7 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — UAT-013 AUTOMATION SUCCESS; VISUAL ARTIFACT REVIEW NEXT
+## CURRENT WORK HEAD — UAT-013 VISUAL EVIDENCE ACCEPTED; TEMPORARY REPAIR CLEANUP NEXT
 
 Only remaining user-reported defect was portrait background art looking composited/cut-and-paste. User explicitly approved the newly generated portrait-native garden/hot-pot background.
 
@@ -71,12 +71,44 @@ Root-cause checkpoint before edit:
 - status `completed`
 - conclusion `success`
 - completed at `2026-09-25T06:37:03Z`
-- this verifies the UAT-013 portrait integration and all required local/deployed QA gates wired in the workflow passed for the long-list fix head
-- automation-success checkpoint persisted before artifact review
+- verifies all required local/deployed gates wired in the workflow passed for the long-list-fix head
+
+## VISUAL ARTIFACT REVIEW — VERIFIED ACCEPTED
+Artifact:
+- run `36103333988`
+- `ui-qa-screenshots`
+- artifact ID `10850046829`
+- artifact digest `sha256:d8a3c8ed4ce2e823ae8a122c9c807e678a2bf03525a15afa0fecb5e4daf44e2b`
+
+Targeted evidence inspected:
+- `35-phone-portrait-uat013.png`
+- `live-35-phone-portrait-uat013.png`
+- `29-phone-portrait-layering-v1@2x.png`
+- `live-29-phone-portrait-layering-v1@2x.png`
+
+Equivalence verification:
+- all four target images: 780x1688
+- all four target image SHA256: `8f2f0aac56eb5cebc4b7852571590a233cb891fb3f4b77d2f3c23079c4bf4461`
+- local/live UAT-013 pair: byte-identical and pixel-identical
+- local/live portrait-layering pair: byte-identical and pixel-identical
+- portrait UAT-013 target and portrait-layering target are also identical screenshots for this state
+
+Manual visual integration verification:
+- portrait-native garden/hot-pot environment reads as one continuous background scene rather than a composited patch
+- protected center content remains readable and unobstructed
+- all three approved character placements are present together in the portrait evidence: upper-left, lower-left, lower-right
+- accepted top character remains without glasses
+- no portrait-only asset appears as a landscape regression in the reviewed portrait evidence
+- no concrete visual regression found; product CSS/assets remain accepted
+
+Pages/deployment note:
+- direct Pages/deployment endpoint was not exposed by the connector in this session, and direct web-open of the Pages URL was unavailable to the web tool
+- however run 150 itself completed `success` including its wired deployed gates, and the run artifact contains the live Pages screenshots above; those live screenshots are byte/pixel identical to local evidence
 
 ## ACCEPTED / DO NOT REOPEN
 - UAT-011 character cutout cleanup
 - V4 Chunk 1–4 acceptance
+- UAT-013 portrait-native background integration and visual evidence
 - landscape background/layout/interaction
 - P0-A/P0-B/P0-D/layering/sharpness/tap-safety/phone-landscape calculator behavior
 - business/runtime/recipe/quantity/exclusion/replacement/Matrix/PIN/import-export semantics
@@ -90,10 +122,10 @@ Root-cause checkpoint before edit:
 - do not rerun failed runs `36101969064`, `36102366681`, or `36102894216`
 - do not reopen `qa/ui-qa-runner.mjs`, `qa/top-composition-v1-contract.mjs`, or `qa/long-list-rhythm-v1-contract.mjs` without new evidence
 - do not rerun successful run `36103333988`
+- do not repeat UAT-013 artifact visual review unless new regression evidence appears
 
 ## EXACT NEXT ACTION
-1. Check latest GitHub Pages/deployment state once.
-2. Fetch only the `ui-qa-screenshots` artifact from successful UI QA run `36103333988`.
-3. Inspect targeted local/live `35-phone-portrait-uat013.png` plus phone portrait layering evidence; verify local/live equivalence and manual visual integration.
-4. If visual acceptance is verified, remove only temporary UAT-013 repair staging/trigger artifacts, verify cleanup scope, then persist `READY FOR USER FINAL REVIEW`.
-5. If visual evidence shows a concrete regression, checkpoint the exact visual finding before any edit and change only the implicated scope.
+1. Identify only temporary UAT-013 repair staging/trigger artifacts still present on current `main`.
+2. Delete only artifacts that are demonstrably temporary and no longer referenced by production/QA workflow.
+3. Verify cleanup diff contains no production asset/CSS/runtime/business behavior changes.
+4. Persist final cleanup checkpoint as `READY FOR USER FINAL REVIEW`.
