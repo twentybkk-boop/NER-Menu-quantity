@@ -27,21 +27,21 @@
 - one-shot workflow removed at `e9f78028fee57dd11d2a26a075939995c2ec0e51`
 - trigger removed at `040c3c3ed02fe103a3316056ade56ffbcce56699`
 
-## CURRENT WORK HEAD — TRANSACTIONAL EXCEL IMPORT VALIDATION REPRO SETUP COMPLETE
+## CURRENT WORK HEAD — TRANSACTIONAL EXCEL IMPORT VALIDATION REPRO RUNNING
 
 ### Backlog scope
 Protect runtime Excel import from integrity/linkage errors before parsed workbook data replaces the currently loaded live state.
 
-### Existing behavior
+### Verified current gap
 Current `index.html` already canonicalizes known aliases during Excel import:
 - `ปลากหมึก` -> `ปลาหมึก`
 - `เนื้อเสื้อร้องให้สไลซ์` -> `เนื้อเสือร้องไห้สไลซ์`
 
 Current import flow parses `newOriginalMenu`, `newMenuCategories`, `newReplaceRules`, and `repIngredientsList`, then directly assigns them to live state and shows success. No integrity validation call exists between parse and the first live-state assignment.
 
-### Regression contract added
-- file: `qa/transactional-import-validation-contract.mjs`
-- commit: `9c8665c3217254803fc312d3d5e79add3179e76e`
+### Regression contract
+- `qa/transactional-import-validation-contract.mjs`
+- commit `9c8665c3217254803fc312d3d5e79add3179e76e`
 
 Contract verifies reusable integrity logic on:
 - valid parsed data -> clean
@@ -52,22 +52,26 @@ Contract verifies reusable integrity logic on:
 
 Structural transaction requirement:
 - planned integration point: `validateImportedRecipeData(newOriginalMenu, newReplaceRules)`
-- validation must occur before the first of these live-state assignments:
-  - `originalMenu = newOriginalMenu`
-  - `menuCategories = newMenuCategories`
-  - `replaceUseRules = newReplaceRules`
-  - `allIngredientsList = repIngredientsList`
+- validation must occur before the first live-state assignment
+- expected current structural failure: `transactional import validation gate is missing before live-state replacement`
 
-The contract is intentionally NOT wired into permanent UI QA yet because production does not implement the validation gate. Expected current result is a targeted failure: `transactional import validation gate is missing before live-state replacement`.
+### One-shot repro setup
+- workflow: `.github/workflows/audit-transactional-import-validation.yml`
+- workflow commit: `36cb05b99fe150d52ddea518010e84246195a898`
+- setup checkpoint: `6339fa36edbf9bf29f97c47ceab1e2e10b330e3e`
+- trigger: `repair-staging/import-transaction/RUN_REPRO`
+- trigger commit: `3f518522fb5cdad0eaa648f6b0ce2cd45e52cca7`
+- permissions: read-only
+- production behavior/data has NOT been modified
 
-### One-shot repro workflow added
-- `.github/workflows/audit-transactional-import-validation.yml`
-- commit `36cb05b99fe150d52ddea518010e84246195a898`
-- read-only permissions
-- trigger path: `repair-staging/import-transaction/RUN_REPRO`
-- runs only `node qa/transactional-import-validation-contract.mjs`
+### Repro run
+- run ID: `36128207165`
+- workflow: `Audit transactional import validation`
+- head: `3f518522fb5cdad0eaa648f6b0ce2cd45e52cca7`
+- first and only status read in this chunk: `in_progress`
+- conclusion: not yet available
 
-Production behavior/data has NOT been modified in this chunk.
+Do NOT poll this run again in the same chunk.
 
 ## ACCEPTANCE CONTRACT FOR FUTURE IMPLEMENTATION
 A valid workbook must preserve current successful import behavior.
@@ -90,12 +94,12 @@ On rejection:
 - do not recreate shrimp repair workflow/staging
 - do not recreate/rerun the closed bundled-data import audit
 - do not modify bundled production data for this runtime import-safety item
+- do not create another transactional repro run while `36128207165` exists
 - do not add the new transactional contract to permanent UI QA until production implementation makes it pass
 
-## EXACT NEXT ACTION — THIS REPRO CHUNK ONLY
-1. Create `repair-staging/import-transaction/RUN_REPRO` as the final trigger write.
-2. Identify the resulting `Audit transactional import validation` run.
-3. Read the result once.
-4. Expected current failure: audit helper cases pass, then structural assertion fails because validation gate is absent before live-state assignment.
-5. Persist exact run/job/error as root-gap evidence.
-6. STOP before production implementation.
+## EXACT NEXT ACTION — NEXT SHORT CHUNK ONLY
+1. Re-read current `main` + this handoff.
+2. Read run `36128207165` status exactly once.
+3. If still queued/in-progress: persist status and STOP.
+4. If failure: inspect only the failed contract step/log, record exact assertion/root-gap evidence, checkpoint, and STOP before production implementation.
+5. If unexpectedly success: inspect why the structural gate contract passed before making any production decision, checkpoint, and STOP.
