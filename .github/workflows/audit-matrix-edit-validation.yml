@@ -1,0 +1,17 @@
+name: Audit Matrix numeric edit validation
+
+on:
+  push:
+    paths:
+      - 'repair-staging/matrix-edit-validation/RUN_REPRO'
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce-matrix-edit-validation-gap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Matrix numeric edit validation contract
+        run: node qa/matrix-edit-validation-contract.mjs
