@@ -3,7 +3,7 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — UAT-013 APPROVED PORTRAIT BACKGROUND; EXACT BINARY TRANSPORT PLANNED
+## CURRENT WORK HEAD — UAT-013 PORTRAIT BACKGROUND EXACT TRANSPORT IN PROGRESS
 
 Latest user hands-on result:
 - UAT-011 cutout cleanup is accepted; do not reopen it.
@@ -24,16 +24,17 @@ Optimized production target:
 - SHA256 `050777632f5fcd1c9217777e4925041633699f52ad37636aeb100a08226ad823`
 - WebP quality 88 / method 6 from the approved PNG.
 
-## EXACT BINARY TRANSPORT PLAN — VERIFIED DECISION
-Direct connector writes are text-oriented and prior binary payload transport has produced truncation, so UAT-013 will use the already-proven repository repair pattern:
-1. create `.github/workflows/repair-uat013-portrait-background.yml`;
-2. stage the exact approved WebP as bounded base64 text chunks under `repair-staging/uat013/`;
-3. workflow triggers only from `repair-staging/uat013/RUN_EXACT_REPAIR`;
-4. runner concatenates chunks, decodes binary, verifies exactly 125,912 bytes and SHA256 `050777632f5fcd1c9217777e4925041633699f52ad37636aeb100a08226ad823`;
-5. runner commits exactly `assets/background-portrait-garden-v1.webp` and refuses any other staged production path;
-6. verify production Git blob size/hash before any CSS change.
+## EXACT BINARY TRANSPORT — DURABLE PROGRESS
+Repair workflow exists:
+- `.github/workflows/repair-uat013-portrait-background.yml`
+- trigger path: `repair-staging/uat013/RUN_EXACT_REPAIR`
+- runner reconstructs staged base64 chunks, verifies exactly 125,912 bytes + expected SHA256, then commits only `assets/background-portrait-garden-v1.webp`.
 
-No workflow trigger has been created yet at this checkpoint.
+Staging status on current `main`:
+- `portrait-00.b64` through `portrait-08.b64` are VERIFIED DURABLE on remote.
+- current verified staging head: `5762a1b7f023748c91acd53e877347fcaadabb8a` (`Stage UAT-013 portrait background chunk 08`).
+- `portrait-09.b64` and `portrait-10.b64` are the only remaining chunks to stage.
+- no repair trigger marker has been created yet.
 
 ## UAT-011 — VERIFIED FIXED / DO NOT REOPEN
 - exact cleaned top-left production blob `5740a9a4619938e8d71b28d8162729b2738bfb59`, 180,814 bytes
@@ -55,15 +56,16 @@ No workflow trigger has been created yet at this checkpoint.
 - do not regenerate UAT-011 assets/masks
 - do not edit landscape background behavior
 - do not modify business logic
+- do not rewrite chunks `00–08`
+- do not trigger the repair workflow until chunks `09–10` are durable and the full staging set is verified
 - do not trust UAT-013 binary mapping without exact final blob size/hash verification
-- do not trigger the repair workflow until workflow + every base64 chunk are durable and verified present
 
 ## EXACT NEXT ACTION
-1. Create UAT-013 repair workflow.
-2. Stage all exact base64 chunks of the approved WebP; verify expected chunk count/aggregate encoded length.
-3. Persist staging-ready checkpoint.
-4. Create trigger marker and observe repair run once.
-5. Verify mapped production blob exact size/hash.
-6. Persist binary-mapping checkpoint before CSS.
-7. Update portrait-only CSS to use the portrait-native asset; keep landscape unchanged/backmost.
-8. Run UI QA/Pages and targeted phone-portrait local/live review; persist `READY FOR USER FINAL REVIEW` if passed.
+SESSION B ONLY:
+1. Stage `repair-staging/uat013/portrait-09.b64` and `portrait-10.b64` from the already-prepared exact local chunks.
+2. Verify remote staging directory contains `portrait-00.b64` through `portrait-10.b64` with no gaps.
+3. Verify expected encoded aggregate before trigger.
+4. Persist a STAGING READY checkpoint.
+5. STOP before creating `RUN_EXACT_REPAIR`.
+
+After that, next session may create the trigger marker, observe the repair run once, verify mapped production blob exact size/hash, persist binary-mapping checkpoint, then update portrait-only CSS and run QA/Pages + targeted phone-portrait local/live review.
