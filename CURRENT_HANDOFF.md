@@ -3,7 +3,7 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — UAT-013 PORTRAIT BACKGROUND EXACT TRANSPORT IN PROGRESS
+## CURRENT WORK HEAD — UAT-013 STAGING READY; REPAIR NOT YET TRIGGERED
 
 Latest user hands-on result:
 - UAT-011 cutout cleanup is accepted; do not reopen it.
@@ -22,18 +22,19 @@ Optimized production target:
 - 941x1672 RGB
 - 125,912 bytes
 - SHA256 `050777632f5fcd1c9217777e4925041633699f52ad37636aeb100a08226ad823`
+- expected base64 encoded length: 167,884 characters
 - WebP quality 88 / method 6 from the approved PNG.
 
-## EXACT BINARY TRANSPORT — DURABLE PROGRESS
+## EXACT BINARY TRANSPORT — STAGING VERIFIED READY
 Repair workflow exists:
 - `.github/workflows/repair-uat013-portrait-background.yml`
 - trigger path: `repair-staging/uat013/RUN_EXACT_REPAIR`
-- runner reconstructs staged base64 chunks, verifies exactly 125,912 bytes + expected SHA256, then commits only `assets/background-portrait-garden-v1.webp`.
+- runner concatenates staged `portrait-*.b64`, strips whitespace, decodes, verifies exactly 125,912 bytes + expected SHA256, then commits only `assets/background-portrait-garden-v1.webp`.
 
-Staging status on current `main`:
-- `portrait-00.b64` through `portrait-08.b64` are VERIFIED DURABLE on remote.
-- current verified staging head: `5762a1b7f023748c91acd53e877347fcaadabb8a` (`Stage UAT-013 portrait background chunk 08`).
-- `portrait-09.b64` and `portrait-10.b64` are the only remaining chunks to stage.
+Remote staging verification:
+- `portrait-00.b64` through `portrait-10.b64` are all present on `main` with no gaps.
+- current staging head before this checkpoint: `0eb2a98aedcbd610c25bf9459c6a854fdb0149ed` (`Stage UAT-013 portrait background chunk 10`).
+- raw aggregate GitHub file sizes sum to exactly 167,884 bytes/chars, matching the approved base64 encoded length.
 - no repair trigger marker has been created yet.
 
 ## UAT-011 — VERIFIED FIXED / DO NOT REOPEN
@@ -56,16 +57,16 @@ Staging status on current `main`:
 - do not regenerate UAT-011 assets/masks
 - do not edit landscape background behavior
 - do not modify business logic
-- do not rewrite chunks `00–08`
-- do not trigger the repair workflow until chunks `09–10` are durable and the full staging set is verified
-- do not trust UAT-013 binary mapping without exact final blob size/hash verification
+- do not rewrite any staged chunk `00–10`
+- do not trust UAT-013 binary mapping without exact final production blob size/hash verification
 
 ## EXACT NEXT ACTION
-SESSION B ONLY:
-1. Stage `repair-staging/uat013/portrait-09.b64` and `portrait-10.b64` from the already-prepared exact local chunks.
-2. Verify remote staging directory contains `portrait-00.b64` through `portrait-10.b64` with no gaps.
-3. Verify expected encoded aggregate before trigger.
-4. Persist a STAGING READY checkpoint.
-5. STOP before creating `RUN_EXACT_REPAIR`.
+SESSION C ONLY:
+1. Create `repair-staging/uat013/RUN_EXACT_REPAIR` trigger marker.
+2. Observe the UAT-013 repair workflow once.
+3. If still running, persist run ID/status and STOP; do not poll loop.
+4. If completed, verify result and mapped `assets/background-portrait-garden-v1.webp` exact size/hash.
+5. Persist binary-mapping checkpoint before any CSS change.
+6. STOP before portrait CSS integration.
 
-After that, next session may create the trigger marker, observe the repair run once, verify mapped production blob exact size/hash, persist binary-mapping checkpoint, then update portrait-only CSS and run QA/Pages + targeted phone-portrait local/live review.
+After that, a later short session may update portrait-only CSS to use the new asset, keep landscape unchanged/backmost, then run UI QA/Pages and targeted phone-portrait local/live review.
