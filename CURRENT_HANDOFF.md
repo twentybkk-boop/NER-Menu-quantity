@@ -3,82 +3,64 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — UAT-011 DURABLE; UAT-012 ROOT CAUSE VERIFIED
-Current recovery lineage already preserved on `main` through the emergency recovery checkpoint after UAT-011.
+## CURRENT WORK HEAD — UAT-011 + UAT-012 CODE DURABLE; FINAL VERIFICATION NEXT
 
-## UAT-011 — FIX DURABLE, FINAL COMBINED QA PENDING
-- Root cause: foreign cross-character pixels were inside the production high-resolution overlay binaries, not CSS.
-- Production cleanup commit: `be16bd5979546218bbbca81a0d46c1da33e3ac5c`.
-- Verified commit scope: exactly
+## UAT-011 — FIX DURABLE
+- production cleanup commit `be16bd5979546218bbbca81a0d46c1da33e3ac5c`
+- changed exactly:
   - `assets/overlay-top-left-hires.webp`
   - `assets/overlay-bottom-left-hires.webp`
-- Cleaned top-left: 518x500 RGBA, SHA256 `f0ffd24fdde830d06b0d715c7c6ba8c2e81402c9e93731524a3dfa724915d393`, blob `e457bc39bfa490b467b7b061afd388c924203dec`.
-- Cleaned bottom-left: 655x524 RGBA, SHA256 `bd645b4744270e221fe0eae8fe08eabf2771269391ddfc4650492e6da831ad31`, blob `d028a38f30098759217c1f2808a29f2327de441d`.
-- Character geometry was not changed.
+- cleaned top-left: 518x500 RGBA, SHA256 `f0ffd24fdde830d06b0d715c7c6ba8c2e81402c9e93731524a3dfa724915d393`, Git blob `e457bc39bfa490b467b7b061afd388c924203dec`
+- cleaned bottom-left: 655x524 RGBA, SHA256 `bd645b4744270e221fe0eae8fe08eabf2771269391ddfc4650492e6da831ad31`, Git blob `d028a38f30098759217c1f2808a29f2327de441d`
+- character geometry unchanged.
 
-## UAT-012 — ROOT CAUSE VERIFIED DURABLE
-User real-device phone portrait still reads as pale/blank instead of showing the environmental scene clearly.
+## UAT-012 — ROOT CAUSE + FIX DURABLE
+Root cause:
+- `background-master.webp` is 440x293 landscape.
+- old portrait `auto 100dvh` scaled it to ~1267x844 on a 390x844 phone, showing only ~31% of source width; ivory wash further flattened the visible crop.
+- old layering QA checked presence/backmost stacking but not portrait crop strategy.
 
-### Final effective CSS path
-Import order ends with `visual-uat-v4-chunk1.css` for background behavior; Chunk 2/3/4 do not override `body::before` environment sizing.
+Product fix:
+- commit `6fdebb8da6fc87710be6f93141c26579d57d0056` — `Restore visible portrait environment background`
+- changed exactly `assets/visual-uat-v4-chunk1.css`
+- portrait only:
+  - preserved radial ambience/backmost layer and background-master aspect ratio;
+  - image layer size `auto 100dvh -> 160% auto`;
+  - reduced only the portrait ivory wash from `.42/.16/.34` to `.18/.06/.16`;
+  - landscape rule unchanged.
 
-Relevant final portrait rule in `assets/visual-uat-v4-chunk1.css`:
-- image layer = `url("background-master.webp")`
-- opacity of the pseudo plane = `1`
-- background position = `center top`
-- image layer size = `auto 100dvh`
-- an ivory linear-gradient wash remains above the image at approximately `.42` opacity at top, `.16` mid, `.34` bottom.
+Regression gate:
+- commit `f28893b255f41ff70643c4e406d4de003909eddb` — `Guard portrait environment crop strategy`
+- changed exactly `qa/layering-orientation-v1-contract.mjs`
+- adds computed `body::before.backgroundSize` capture and requires portrait cases to expose the new `160%` image sizing;
+- all existing backmost/layering/ambient/rail assertions remain unchanged.
 
-Earlier `visual-responsive.css` independently used the same `auto 100dvh` strategy for phone/iPad portrait, so this behavior is intentional historical carry-over rather than a later accidental override.
-
-### Background master geometry
-`assets/background-master.webp` is a VP8 WebP with dimensions **440x293**, aspect ratio about **1.50:1 (landscape)**.
-
-On a representative 390x844 phone portrait viewport:
-- `auto 100dvh` scales the 440x293 master to about 1267x844;
-- the 390px viewport therefore exposes only about **31% of the source width**, centered;
-- roughly 69% of the source's horizontal environmental context is cropped away.
-
-This exactly matches the real-device symptom: the page receives the image technically, so old QA sees `background-master.webp` and passes, but visually the user mostly sees a pale central crop plus the ivory wash rather than the environment.
-
-### Why automated QA missed it
-`qa/layering-orientation-v1-contract.mjs` currently checks:
-- background exists;
-- background is backmost;
-- background contains the master and radial ambience;
-- pointer safety / stacking.
-It does **not** assert portrait background sizing/crop, so `auto 100dvh` is allowed to pass despite poor real-device visibility.
-
-### Smallest presentation fix selected
-Preserve the landscape master aspect ratio and backmost plane; do NOT stretch to `100% 100%`.
-For portrait only:
-- change only the image layer size from `auto 100dvh` to **`160% auto`**;
-  - phone 390px viewport -> image ~624x416, exposing ~62.5% of source width instead of ~31%, while still extending through the masthead/hero/top-menu region;
-  - iPad portrait receives the same aspect-preserving behavior.
-- reduce the portrait ivory wash only, so the scene reads clearly without competing with content.
-- leave landscape rules unchanged.
-- keep all ambient circles on `body::before` and all foreground pseudo-circles disabled.
-
-Add a regression assertion to the existing layering/orientation contract so phone/iPad portrait computed `body::before` background-size must include the new portrait image sizing. Do not weaken any existing layering gate.
+## DIFF SCOPE — VERIFIED
+- `6fdebb8d...`: one CSS file, only portrait background presentation block/comment.
+- `f28893b2...`: one QA contract, only background-size capture/assertion.
+- no landscape behavior, character geometry, JS/business/recipe/quantity/exclusion/replacement/Matrix/PIN/import-export changes.
 
 ## VERIFIED BASELINE — DO NOT REOPEN
-- V4 Chunk 1–4 remain verified except this newly identified portrait-visibility delta.
-- no recipe/business/quantity/exclusion/replacement/Matrix/PIN/import-export changes.
-- preserve character geometry, phone-landscape interaction/modal behavior, P0-A/P0-B/P0-D/layering/sharpness/tap-safety gates.
+- V4 Chunk 1–4 pre-delta acceptance remains the baseline.
+- preserve P0-A/P0-B/P0-D/layering/sharpness/tap-safety and phone-landscape interaction/modal behavior.
 
 ## DO NOT REPEAT
-- do not redo UAT-011 cleanup.
-- do not re-investigate generic stacking for UAT-012; backmost stacking is already verified.
-- do not change landscape background behavior.
-- do not distort the 440x293 master to fill portrait height.
+- do not redo UAT-011 binary cleanup.
+- do not redo UAT-012 root-cause derivation.
+- do not modify landscape background for this delta.
+- do not weaken existing QA gates.
 
-## EXACT NEXT ACTION — UAT-012 SMALLEST FIX
-1. Fresh-confirm this checkpoint is durable on `main`.
-2. Edit only `assets/visual-uat-v4-chunk1.css` portrait environment rule:
-   - preserve all radial ambience/backmost properties;
-   - use the same background master with portrait image-layer size `160% auto`;
-   - reduce only the portrait ivory wash to improve scene visibility.
-3. Update only `qa/layering-orientation-v1-contract.mjs` as needed to record/assert computed background-size for portrait; preserve all existing assertions.
-4. Verify diff scope; checkpoint before Actions.
-5. Run one final combined UI QA + Pages verification for UAT-011 and UAT-012.
-6. Inspect targeted phone-portrait layering screenshot plus character evidence; if PASS, persist READY FOR USER RE-REVIEW and hand back live URL.
+## ACTIONS STATUS
+- intentionally NOT consumed yet for the final latest head in this checkpoint.
+
+## EXACT NEXT ACTION — FINAL COMBINED VERIFICATION
+1. Fresh-read current `main`; current GitHub wins.
+2. Perform one bounded Actions read for the latest relevant head containing both UAT-011 and UAT-012 fixes.
+3. If UI QA/Pages are still running, persist run IDs/status and STOP rather than polling long.
+4. If failed, read only the first failed required step/log and persist before edits.
+5. If success, persist run IDs + artifact metadata immediately.
+6. Inspect targeted final evidence only:
+   - phone portrait `29-*-layering-v1@2x.png` for stronger environment visibility/backmost behavior;
+   - phone portrait Chunk 4/page character evidence for clean top/bottom-left cutouts;
+   - local/live equivalence when available.
+7. If both UAT-011 and UAT-012 visually PASS, persist `READY FOR USER RE-REVIEW` and hand the live URL back to the user.
