@@ -3,7 +3,7 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — UAT-013 LONG-LIST QA FIX DURABLE; UI QA RUN 150 STILL IN PROGRESS
+## CURRENT WORK HEAD — UAT-013 AUTOMATION SUCCESS; VISUAL ARTIFACT REVIEW NEXT
 
 Only remaining user-reported defect was portrait background art looking composited/cut-and-paste. User explicitly approved the newly generated portrait-native garden/hot-pot background.
 
@@ -63,16 +63,16 @@ Behavior:
 Root-cause checkpoint before edit:
 - `a811bd8abef9d2386d8c8431f615aa837d1dbfc6` — `Checkpoint UAT-013 long-list stale QA root cause`
 
-## RESULTING UI QA — FOLLOW-UP BOUNDED READ
+## RESULTING UI QA — AUTOMATION SUCCESS VERIFIED
 - UI QA run `36103333988`
 - head SHA `f9a647098024b9f048cbe97f9b35924cbe401eb5`
 - run number 150
 - event `push`
-- first bounded read after fix: `in_progress`
-- follow-up bounded read in the next continuation session: still `in_progress`
-- conclusion: not final yet
-- no code evidence changed; no product or QA edit performed in this follow-up session
-- no further polling performed in this session
+- status `completed`
+- conclusion `success`
+- completed at `2026-09-25T06:37:03Z`
+- this verifies the UAT-013 portrait integration and all required local/deployed QA gates wired in the workflow passed for the long-list fix head
+- automation-success checkpoint persisted before artifact review
 
 ## ACCEPTED / DO NOT REOPEN
 - UAT-011 character cutout cleanup
@@ -89,14 +89,11 @@ Root-cause checkpoint before edit:
 - do not touch accepted character binaries
 - do not rerun failed runs `36101969064`, `36102366681`, or `36102894216`
 - do not reopen `qa/ui-qa-runner.mjs`, `qa/top-composition-v1-contract.mjs`, or `qa/long-list-rhythm-v1-contract.mjs` without new evidence
-- do not poll run `36103333988` again in the same session
+- do not rerun successful run `36103333988`
 
 ## EXACT NEXT ACTION
-NEXT SHORT SESSION ONLY:
-1. Read UI QA run `36103333988` once.
-2. If still running, persist status and STOP; no polling loop.
-3. If completed/failure, inspect only the first failed required step/log and checkpoint exact blocker before any edit.
-4. If completed/success, persist automation-success checkpoint before artifact review.
-5. Then check latest Pages once and download only `ui-qa-screenshots` artifact.
-6. Inspect targeted local/live `35-phone-portrait-uat013.png` plus phone portrait layering evidence; verify local/live equivalence and manual visual integration.
-7. After verified visual acceptance, remove only temporary UAT-013 repair staging/trigger artifacts, verify cleanup scope, then persist READY FOR USER FINAL REVIEW.
+1. Check latest GitHub Pages/deployment state once.
+2. Fetch only the `ui-qa-screenshots` artifact from successful UI QA run `36103333988`.
+3. Inspect targeted local/live `35-phone-portrait-uat013.png` plus phone portrait layering evidence; verify local/live equivalence and manual visual integration.
+4. If visual acceptance is verified, remove only temporary UAT-013 repair staging/trigger artifacts, verify cleanup scope, then persist `READY FOR USER FINAL REVIEW`.
+5. If visual evidence shows a concrete regression, checkpoint the exact visual finding before any edit and change only the implicated scope.
