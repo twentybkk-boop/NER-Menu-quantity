@@ -3,12 +3,15 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — UAT-014 R1A SETUP COMPLETE; EXACT REPAIR TRIGGER IS THE FINAL SETUP COMMIT
+## CURRENT WORK HEAD — UAT-014 R1A COMPLETE; EXACT REPAIR TRIGGER CREATED; REPAIR RUN NOT YET READ
+
+Current durable production branch checkpoint before this handoff update:
+- `d02edcd69d22629f4e6c7713a190bfb7381bacf4` — `Trigger exact UAT-014 landscape binary repair`
 
 UAT-013 portrait remains accepted. Do not reopen it.
 
 ## VERIFIED DEFECT
-The landscape selector/path is correct, but `assets/background-landscape-garden-v1.webp` currently contains the wrong binary.
+The landscape selector/path is correct, but `assets/background-landscape-garden-v1.webp` contains the wrong binary.
 
 Approved production derivative:
 - local filename: `bg_960_q50.webp`
@@ -27,7 +30,7 @@ Do not change CSS/layout/portrait/characters for this defect.
 ## R1A STAGING — VERIFIED COMPLETE
 The approved binary was base64-staged. One early file `repair-staging/uat014/landscape-01.b64` was truncated to 6,016 chars and MUST NOT be used.
 
-The repair workflow uses ONLY these verified files in this exact order:
+SAFE reconstruction order, explicit only — DO NOT glob/lexically concatenate:
 1. `landscape-00.b64` — 6,976 chars
 2. `landscape-01a.b64` — 3,488 chars
 3. `landscape-01b.b64` — 3,488 chars
@@ -40,22 +43,36 @@ The repair workflow uses ONLY these verified files in this exact order:
 10. `landscape-07a.b64` — 3,476 chars
 11. `landscape-07b.b64` — 3,476 chars
 
-Verified total reconstructed base64 length is 55,784 chars.
+Verified reconstructed base64 total: 55,784 chars.
 
-A dangling blob `fa4eaf09fabd172860ef6133943f98327d3003f5` from an abandoned direct-upload experiment contains only chunk 00, is not referenced by any tree/branch, and MUST NOT be used.
+Unused objects:
+- `repair-staging/uat014/landscape-01.b64` — incomplete 6,016-char file; DO NOT use.
+- dangling blob `fa4eaf09fabd172860ef6133943f98327d3003f5` — abandoned partial direct-upload experiment; not referenced by any tree/branch; DO NOT use.
 
-## ONE-SHOT REPAIR WORKFLOW — VERIFIED DURABLE
+## ONE-SHOT REPAIR WORKFLOW — DURABLE
 Workflow:
 - `.github/workflows/repair-uat014-landscape-binary.yml`
 - setup commit: `970b85045fbbf9551237a48fb41232bdc9efe6db`
-- triggers ONLY when `repair-staging/uat014/RUN_EXACT_REPAIR` is pushed
-- reconstructs the 11 verified staging files above in explicit order
-- ignores corrupt `landscape-01.b64`
-- before touching production, verifies exact size 41,838, SHA256 `b6e84af07f0d51c0f9a68a7dc0471c8bdd121f0ec0cc78cb1b0abbff86f10819`, and Git blob `6183aecb8d4469b137edaa3ffb95d8cf7e8ec2bc`
+- reconstructs only the explicit 11-file safe order above
+- ignores incomplete `landscape-01.b64`
+- verifies BEFORE production write:
+  - size exactly 41,838 bytes
+  - SHA256 exactly `b6e84af07f0d51c0f9a68a7dc0471c8bdd121f0ec0cc78cb1b0abbff86f10819`
+  - `git hash-object` exactly `6183aecb8d4469b137edaa3ffb95d8cf7e8ec2bc`
 - copies only to `assets/background-landscape-garden-v1.webp`
 - repeats all three verifications after copy
 - verifies the only working-tree change is the production landscape asset
 - commits/pushes only that asset as `Repair UAT-014 approved landscape binary`
+
+## R1A FINAL TRIGGER — CREATED
+Trigger file:
+- `repair-staging/uat014/RUN_EXACT_REPAIR`
+- trigger commit: `d02edcd69d22629f4e6c7713a190bfb7381bacf4`
+- commit message: `Trigger exact UAT-014 landscape binary repair`
+
+R1A is COMPLETE. DO NOT recreate trigger or restage chunks.
+
+This recovery session intentionally did NOT read/poll the resulting workflow run. No repair-run conclusion is recorded here yet.
 
 ## VERIFIED PRIOR RESULTS
 - UAT-014 integration: `19e526d618373839a571d7cd0872ce8d18831757`
@@ -63,6 +80,7 @@ Workflow:
 - UI QA run 152 `36107928193`: completed/success
 - run 152 artifact `ui-qa-screenshots` ID `10851394527`
 - run 152 local/live landscape screenshots matched, but manual visual goal failed because the wrong binary was deployed
+- all three characters/layout/calculator behavior remained stable
 
 ## ACCEPTED / DO NOT REOPEN
 - UAT-011 character cleanup
@@ -71,14 +89,20 @@ Workflow:
 - P0-A / P0-B / P0-D / layering / sharpness / tap-safety
 - business/runtime/recipe/quantity/exclusion/replacement/Matrix/PIN/import-export semantics
 
-## SHORT-CHUNK RECOVERY RULE
-This handoff is intentionally written immediately BEFORE the final trigger commit to avoid racing the repair workflow with another handoff push.
+## SHORT-CHUNK CONTINUATION
+### NEXT CHUNK R1B — REPAIR RUN STATUS ONLY
+1. Re-read current `main` + this handoff.
+2. Identify the one-shot repair workflow run caused by trigger commit `d02edcd69d22629f4e6c7713a190bfb7381bacf4`.
+3. Read that run status exactly once.
+4. If queued/in_progress: persist status and STOP.
+5. If failure: inspect only first failed required step, persist blocker, STOP before edit.
+6. If success: verify `assets/background-landscape-garden-v1.webp` is exactly 41,838 bytes and blob SHA `6183aecb8d4469b137edaa3ffb95d8cf7e8ec2bc`; persist `R1 COMPLETE` checkpoint and STOP before UI QA/visual review.
 
-If `repair-staging/uat014/RUN_EXACT_REPAIR` already exists when resuming, DO NOT recreate it. That means R1A is complete and the next chunk is R1B.
+### FOLLOWING CHUNK R2 — UI QA ONLY
+Read the resulting UI QA run once, persist outcome, STOP.
+
+### FOLLOWING CHUNK R3 — VISUAL EVIDENCE ONLY
+Download only resulting `ui-qa-screenshots`; inspect phone/iPad/iPad-wide landscape local/live. If approved sunset terrace is visibly integrated and local/live match, persist `UAT-014 READY FOR USER REVIEW`, STOP.
 
 ## EXACT NEXT ACTION
-1. If `repair-staging/uat014/RUN_EXACT_REPAIR` does not yet exist, create it as the FINAL R1A setup commit and STOP without polling.
-2. If it already exists, start **R1B only**: re-read current `main`, identify the one-shot repair workflow run triggered by that file, and read its status exactly once.
-3. If repair run is queued/in_progress: persist status and STOP.
-4. If repair run fails: inspect only first failed step, persist blocker, STOP before edit.
-5. If repair run succeeds: verify `assets/background-landscape-garden-v1.webp` metadata is exactly 41,838 bytes and blob SHA `6183aecb8d4469b137edaa3ffb95d8cf7e8ec2bc`, checkpoint R1 complete, then STOP before UI QA/visual review.
+Start **R1B only**: identify the repair workflow run from trigger commit `d02edcd69d22629f4e6c7713a190bfb7381bacf4`, read its status exactly once, checkpoint, and STOP.
