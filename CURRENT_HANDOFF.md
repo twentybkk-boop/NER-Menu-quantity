@@ -16,28 +16,29 @@
 - Bundled import-data integrity audit CLEAN / CLOSED.
 - Transactional Excel import validation ACCEPTED / CLEANUP COMPLETE.
 
-## CURRENT WORK HEAD — MATRIX NUMERIC EDIT VALIDATION IMPLEMENTED / UI QA RUN 161 IN PROGRESS
+## MATRIX NUMERIC EDIT VALIDATION — VERIFIED
 
-### Reproduced defect
-Targeted contract:
+### Reproduced pre-fix defect
+Permanent regression contract:
 - `qa/matrix-edit-validation-contract.mjs`
 - commit `b09c13e58aa29b48713a5ca145e6dafbad229b4c`
 
-Repro workflow/run:
-- `.github/workflows/audit-matrix-edit-validation.yml`
+Pre-fix repro:
+- workflow `.github/workflows/audit-matrix-edit-validation.yml`
+- trigger `repair-staging/matrix-edit-validation/RUN_REPRO`
 - trigger commit `0ec7b81e6be55ec6a1b9a97f56e357ca143de36b`
 - run `36131405557` / job `108059265181`
 - completed/failure as expected
 
 Observed pre-fix behavior:
-- `3` -> `3`, render 1
-- `0.75` -> `0.75`, render 1
+- valid `3` -> `3`, render 1
+- valid `0.75` -> `0.75`, render 1
 - `1abc` -> `1`, render 1 DEFECT
 - `-5` -> `-5`, render 1 DEFECT
 - `Infinity` accepted, render 1 DEFECT
-- whitespace preserved prior value, render 0
+- whitespace preserved previous value, render 0
 
-### Production fix — IMPLEMENTED
+### Production fix
 Guarded repair workflow:
 - `.github/workflows/repair-matrix-edit-validation.yml`
 - setup commit `86d6890cf086c9fe8435abebcdbfa34b24b94dd4`
@@ -49,35 +50,50 @@ Production commit:
 - `a08aeffa80f5de25fd71b222af4997a4b7c38d53` — `Validate Matrix numeric edits strictly`
 - exact production diff changed only `index.html`
 
-Implementation semantics:
+Implemented behavior:
 - cancel => no mutation
-- trim prompt text
-- require full-string unsigned decimal syntax
-- convert with `Number(...)`
+- trim prompt value
+- require complete unsigned integer/decimal syntax
+- strict `Number(...)` conversion
 - require `Number.isFinite(...)`
 - require value >= 0
-- preserve raw decimal value; do not round during edit
-- invalid input leaves previous value unchanged and does not re-render
+- valid decimal remains stored raw without rounding
+- invalid input preserves previous value and does not re-render
 
-Targeted contract passed inside guarded repair run before commit.
+### Permanent QA protection
+UI QA integration:
+- `.github/workflows/ui-qa.yml`
+- commit `7cf1dd76d002225d09f3a4674428efc8a8de93f9`
+- required step: `Verify Matrix numeric edit validation`
 
-### Permanent QA integration
-- `.github/workflows/ui-qa.yml` commit `7cf1dd76d002225d09f3a4674428efc8a8de93f9`
-- required step added: `Verify Matrix numeric edit validation`
-
-Fresh UI QA:
-- run ID `36131840880`
+Fresh verification:
+- UI QA run `36131840880`
 - run number 161
 - head `7cf1dd76d002225d09f3a4674428efc8a8de93f9`
-- latest observed status: in_progress
-- latest observed step: Install Playwright
-- no failure evidence at this checkpoint
+- completed/success
+- Matrix numeric edit validation step: success
+- all existing local and deployed/live gates: success
+- screenshot/evidence upload: success
 
-## SCOPE BOUNDARY
-Do not broaden this item into PIN, Excel import, JSON export, recipe/base quantities, replacement business rules, Phase 1 visual work, raw shrimp-credit recovery, or `recipe_master.json` changes.
+Conclusion: Matrix numeric edit validation is VERIFIED and protected by permanent regression QA.
 
-## EXACT NEXT ACTION
-1. Continue only UI QA run `36131840880`; do not create a duplicate run.
-2. Verify `Verify Matrix numeric edit validation` passes and all existing local/deployed gates remain green.
-3. If run 161 succeeds, persist Matrix numeric edit validation as VERIFIED and STOP before unrelated backlog discovery.
-4. If run 161 fails, inspect only the first failed required step before editing anything.
+## SCOPE BOUNDARY / DO NOT REOPEN
+Do not broaden this item into PIN, Excel import, JSON export, recipe/base quantities, replacement business rules, Phase 1 visual work, raw shrimp-credit recovery, or `recipe_master.json` changes without separate evidence.
+
+## TEMPORARY ARTIFACTS STILL PRESENT
+Cleanup is intentionally deferred to the next short chunk:
+- `.github/workflows/audit-matrix-edit-validation.yml`
+- `.github/workflows/repair-matrix-edit-validation.yml`
+- `repair-staging/matrix-edit-validation/RUN_REPRO`
+- `repair-staging/matrix-edit/RUN_FIX`
+
+Keep permanently:
+- `qa/matrix-edit-validation-contract.mjs`
+- `Verify Matrix numeric edit validation` step in `.github/workflows/ui-qa.yml`
+
+## EXACT NEXT ACTION — NEXT SHORT CHUNK ONLY
+Cleanup Matrix numeric edit temporary artifacts only:
+1. Re-read current `main` + this handoff.
+2. Delete the four temporary workflow/trigger files listed above.
+3. Verify permanent contract and permanent UI QA step remain present.
+4. Persist cleanup-complete checkpoint and STOP before unrelated backlog discovery.
