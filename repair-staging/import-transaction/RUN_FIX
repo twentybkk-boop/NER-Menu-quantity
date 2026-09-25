@@ -1,0 +1,3 @@
+NER Menu Quantity transactional Excel import validation fix
+contract=qa/transactional-import-validation-contract.mjs
+scope=index.html only
