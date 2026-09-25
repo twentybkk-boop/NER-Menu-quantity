@@ -3,7 +3,7 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — UAT-011 EXACT OVERLAYS MAPPED; PAGES PASS; UI QA NEEDS EXPLICIT TRIGGER
+## CURRENT WORK HEAD — UAT-011/UAT-012 FINAL VERIFICATION RUNNING; DO NOT POLL IN LOOP
 
 ## UAT-011 — EXACT REPAIR VERIFIED DURABLE
 User defect: foreign top/bottom character fragments were embedded in the production cutouts.
@@ -14,19 +14,14 @@ Verified cleaned targets:
 
 Verified bot mapping commit:
 - `df45d20922d7706ceb641c160be21247a3cada9b` — `Map exact cleaned UAT-011 overlays`
-- author: `github-actions[bot]`
-- commit diff contains exactly:
+- commit diff exactly:
   - `assets/overlay-top-left-hires.webp`
   - `assets/overlay-bottom-left-hires.webp`
 
-Verified production Git tree at bot commit:
-- `assets/overlay-top-left-hires.webp`
-  - Git blob `5740a9a4619938e8d71b28d8162729b2738bfb59`
-  - size **180,814 bytes**
-- `assets/overlay-bottom-left-hires.webp`
-  - Git blob `cc0c119b00d1d91fa6b4d6503b1bec5c66061128`
-  - size **233,136 bytes**
-- right control remains `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`, 51,376 bytes
+Verified production Git tree:
+- top blob `5740a9a4619938e8d71b28d8162729b2738bfb59`, **180,814 bytes**
+- bottom blob `cc0c119b00d1d91fa6b4d6503b1bec5c66061128`, **233,136 bytes**
+- right control unchanged `a4d051c52a4b0f5191ad2770c3eee416fa01aba4`, 51,376 bytes
 
 ## UAT-012 — FIX REMAINS DURABLE
 - product fix `6fdebb8da6fc87710be6f93141c26579d57d0056`
@@ -35,26 +30,41 @@ Verified production Git tree at bot commit:
 - landscape unchanged
 - regression gate `f28893b255f41ff70643c4e406d4de003909eddb`
 
-## POST-REPAIR ACTIONS — ONE-SHOT READ
-Queried workflow runs for exact bot head `df45d20922d7706ceb641c160be21247a3cada9b` once.
+## DEPLOYMENT OF CORRECTED BINARIES — VERIFIED
+Bot-head Pages run:
+- `36095839556`
+- head SHA `df45d20922d7706ceb641c160be21247a3cada9b`
+- `completed / success`
+
+No UI QA run was created for the bot head, so a normal QA-only trigger was used.
+
+## QA TRIGGER — DURABLE
+Trigger marker:
+- `qa/RUN_UI_QA_UAT_DELTA`
+- content: `uat-delta-exact-overlays-and-portrait-background-v1`
+
+Trigger commit:
+- `88a27c41da670409c8321e69b84747369f2fe295` — `Trigger UI QA for UAT-011 and UAT-012`
+- product/runtime files unchanged by this trigger commit
+
+## FINAL VERIFICATION ACTIONS — BOUNDED READ
+Read Actions for exact trigger head `88a27c41da670409c8321e69b84747369f2fe295` once.
 
 Observed:
-- Pages run `36095839556`
-  - status `completed`
-  - conclusion `success`
-  - head SHA `df45d20922d7706ceb641c160be21247a3cada9b`
-- no UI QA run was returned for this exact bot head SHA
+- UI QA run `36096022816`
+  - run number `142`
+  - status **in_progress**
+  - conclusion not yet available
+- Pages run `36096022108`
+  - status **pending**
+  - conclusion not yet available
 
-Therefore:
-- deployment of the corrected binaries succeeded
-- do NOT poll this head waiting for UI QA
-- a separate normal `qa/**` trigger commit is required to exercise the existing UI QA workflow against current `main`
+Per crash-safe rule, no polling loop was started after observing running external state.
 
 ## PRIOR FAILED QA — DO NOT RERUN UNCHANGED
-- UI QA `36093279114` — completed/failure
-- first failed required step: V3 high-res sharpness local
+- UI QA `36093279114` — completed/failure at V3 high-res sharpness local
 - cause resolved by corrected full-size production blobs
-- artifact `10845589504`, digest `sha256:dcad54fa1a5757ba9706cb751aeaf16f3de394e76ceff8de2c346eef091e578e`
+- failure artifact `10845589504`, digest `sha256:dcad54fa1a5757ba9706cb751aeaf16f3de394e76ceff8de2c346eef091e578e`
 
 ## VERIFIED BASELINE — DO NOT REOPEN
 - V4 Chunk 1–4 baseline acceptance
@@ -65,19 +75,22 @@ Therefore:
 
 ## DO NOT REPEAT
 - do not trigger exact overlay repair again
-- do not regenerate UAT-011 masks/assets again
-- do not resume abandoned base64 chunk staging
-- do not change UAT-012 portrait rules while validating the combined fix
-- do not poll bot head `df45d209…` waiting for a UI QA run
+- do not regenerate UAT-011 assets/masks again
+- do not create another QA trigger while run `36096022816` is active
+- do not poll `36096022816` or `36096022108` in a loop
+- do not change UAT-012 portrait rules while verification is running
 - do not rerun old failed run `36093279114`
 
 ## EXACT NEXT ACTION — NEXT SHORT SESSION
 1. Fresh-read current `main` + this handoff.
-2. Check whether a dedicated UAT-delta QA trigger marker already exists under `qa/`.
-3. If absent, create one small marker commit under `qa/**` (no product/runtime changes) to trigger the existing UI QA workflow against current `main`.
-4. Read Actions for that trigger commit once.
-5. If UI QA is still running: persist run ID/status and stop; no polling loop.
-6. If UI QA completed:
-   - inspect final status + first failed required step if any;
-   - if success, fetch artifact metadata and checkpoint automation success before manual evidence review.
-7. After automation success, inspect only targeted phone-portrait environment + top/bottom-left cutout evidence; if visually PASS, persist `READY FOR USER RE-REVIEW` and return the live URL.
+2. Read UI QA `36096022816` and Pages `36096022108` **once each**.
+3. If either required run is still non-terminal: persist current statuses and stop again.
+4. If UI QA failed: inspect only the first failed required step/log and checkpoint evidence before edits.
+5. If both completed/success:
+   - fetch UI QA job steps + artifact metadata once;
+   - persist automation-success checkpoint before opening images.
+6. Then inspect only targeted phone-portrait evidence for:
+   - environment/background visibility (UAT-012)
+   - clean top-left/bottom-left cutouts with no cross-character fragments (UAT-011)
+   - local/live equivalence when available.
+7. If targeted visual evidence passes, persist `READY FOR USER RE-REVIEW` and return `https://twentybkk-boop.github.io/NER-Menu-quantity/`.
