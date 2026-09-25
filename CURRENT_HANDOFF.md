@@ -3,60 +3,78 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — MULTI-ITEM SHRIMP POOLING / CALCULATION CONTRACT
+## CURRENT WORK HEAD — SHRIMP POOLING CALCULATION FIX SETUP COMPLETE / TRIGGER PENDING
 
-Phase 1 visual/UAT work is ACCEPTED / COMPLETE and remains frozen. The user accepted UAT-014 run-153 evidence (`โอเค`) on 2026-09-25. Do not reopen visual assets/layout/characters absent concrete regression evidence or explicit new feedback.
+Phase 1 visual/UAT work remains ACCEPTED / COMPLETE and frozen.
 
-### New business workstream
-Recovered prior product requirement: when several excluded items are replaced by the same shrimp target, preserve their RAW decimal shrimp credits, aggregate them first, then floor the pooled shrimp credit exactly once.
+## PRODUCT REQUIREMENT / ACCEPTANCE CONTRACT
+When several excluded items are replaced by shrimp, preserve RAW decimal shrimp credits, aggregate first, then floor the pooled shrimp credit exactly once.
 
 Acceptance examples:
-- `0.4 + 0.7 = 1.1` => pooled shrimp addition `1`
-- a pooled raw credit such as `0.8 + 0.8 = 1.6` must add `1`, not `2`
-- do not round each source row before aggregation
+- `0.4 + 0.7 = 1.1` => add `1` shrimp
+- `0.8 + 0.8 = 1.6` => add `1` shrimp, not `2`
+- do not round each source row first
 - current single-item `qty = 0` UX remains `แทนไม่ได้` / disabled
 - do not invent replacement quantities
 
-## VERIFIED CURRENT ROOT CAUSE
-Current `index.html` behavior:
-- `calculateNetRecipe()` starts from base recipe quantities.
-- selected replacement raw values are added directly into the same `netRecipeMap` entries as the base quantities.
-- the final combined total is passed through `applySmartRounding()` (`Math.round`).
+## VERIFIED CALCULATION DEFECT
+Current production `calculateNetRecipe()` adds replacement amount directly into the base quantity and then `Math.round()`s the combined total.
 
-Therefore shrimp base quantity and pooled replacement credit are rounded together. Example: base shrimp `3` + pooled credit `1.6` => current code rounds `4.6` to `5`, but the pooled-credit contract requires base `3` + `floor(1.6)` = `4`.
+Example:
+- base shrimp = `3`
+- pooled raw shrimp credit = `1.6`
+- current behavior: `round(4.6) = 5`
+- required behavior: `3 + floor(1.6) = 4`
 
-This is a reproduced calculation defect independent of the data-provenance issue.
+This defect is independent from missing raw-credit data.
 
-## DATA-PRECISION FINDING / BLOCKER
-- Excel/Matrix import path uses `parseFloat()` and preserves raw decimals in `replaceUseRules`.
-- Matrix display rounds for presentation only.
-- current bundled `recipe_master.json` stores many shrimp replacement rows as integer `0`/`1`, so some raw precision has already been lost in the bundled snapshot.
-- historical decimal `recipe_master.json` at `f9dad2255a32514d3e19a8cd482756cbdfbd8d45` proves decimals existed, but that historical matrix differs materially from the current business matrix and MUST NOT be migrated wholesale.
-- current-style integer matrix was re-uploaded as a whole file at `24771d0e28577ed0f4fb386f055bde437d422b18`; its tree contains only README/data/index/recipe JSON and no source workbook/CSV/generator.
-- Project/Library spreadsheet search found no authoritative workbook.
+## DATA-PRECISION BLOCKER — DO NOT GUESS
+- Excel import uses `parseFloat()` and can preserve raw decimals.
+- Matrix presentation rounds separately.
+- bundled current `recipe_master.json` has many shrimp cells already reduced to integer `0`/`1`.
+- old decimal snapshot `f9dad2255a32514d3e19a8cd482756cbdfbd8d45` is a materially different matrix; do NOT migrate it wholesale.
+- current-style integer matrix was uploaded wholesale at `24771d0e28577ed0f4fb386f055bde437d422b18` after the old recipe file was deleted; its tree has no workbook/CSV/generator.
+- Project/Library spreadsheet search found no authoritative raw-current workbook.
 
-Do not fabricate raw shrimp credits. Calculation support can be fixed now; bundled data activation remains blocked until authoritative raw credits are available.
+Do not populate missing raw shrimp credits without an authoritative source.
+
+## SAFE FIX SETUP — COMPLETE
+Regression contract:
+- `qa/replacement-pooling-contract.mjs`
+- commit `486540b159195612a708f37dc1adbc7f0d75c022`
+- verifies `0.4+0.7 -> 1`, `0.8+0.8 -> 1`, invalid/negative handling, separate shrimp pool, and preservation of non-shrimp accumulation path.
+
+One-shot workflow:
+- `.github/workflows/repair-shrimp-pooling-calculation.yml`
+- commit `8e28d134f27d40d8b376fed389ff39a14a662630`
+- trigger path: `repair-staging/shrimp-pooling/RUN_CALC_FIX`
+- exact old `calculateNetRecipe()` block must match exactly once
+- patch adds `floorPooledShrimpCredit()` and a separate `pooledShrimpCredit`
+- shrimp replacement contribution is floored once before adding to base shrimp
+- non-shrimp replacement accumulation remains the existing behavior
+- runs regression contract before commit
+- requires production diff to be exactly `index.html`
+- commits only `index.html`
+
+Production `index.html` has NOT yet been modified at this checkpoint.
 
 ## PHASE 1 ACCEPTED / DO NOT REOPEN
 - V4 UAT-001–UAT-010 / Chunk 1–4
-- UAT-011 / UAT-012 acceptance checkpoint `c8da0558949193de8b8915ef1d106c2269b68154`
-- UAT-013 portrait-native background
-- UAT-014 landscape-native background
-- UAT-014 repair commit `3d6e50aba15dd862101996e1dc9afaefa6109c3e`
-- UI QA run `36113051938` / run 153 completed/success
-- artifact `ui-qa-screenshots` ID `10854126924`
-- P0-A / P0-B / P0-C / P0-D, orientation/layering/sharpness/tap-safety, calculator landscape, thumbnail semantics/density
+- UAT-011 / UAT-012 checkpoint `c8da0558949193de8b8915ef1d106c2269b68154`
+- UAT-013 portrait background
+- UAT-014 landscape background
+- UI QA run `36113051938` / run 153 success
+- accepted visual assets/layout/characters/P0-A/B/C/D/layering/sharpness/tap-safety
 
 ## LOCKED BUSINESS INVARIANTS
 - do not change recipe/base quantities
 - do not invent replacement Matrix values
-- do not alter exclusion/replacement selection semantics except where a separately reproduced pooling defect requires calculation handling
 - qty=0 remains disabled / `แทนไม่ได้`
-- Matrix/PIN/import-export behavior remains unchanged unless directly required by this defect
+- do not alter unrelated Matrix/PIN/import-export semantics
 
 ## EXACT NEXT ACTION
-1. Implement the calculation fix only: keep base quantities separate from replacement contributions; for shrimp replacement contribution, aggregate raw values first and `Math.floor()` exactly once before adding to base shrimp.
-2. Preserve existing rounding behavior for non-shrimp targets and existing integer bundled data behavior.
-3. Add a regression contract covering `0.4+0.7 -> 1` and `0.8+0.8 -> 1`, plus no-change behavior for non-shrimp replacement totals.
-4. Run/trigger targeted QA and persist the result.
-5. Do NOT populate missing raw shrimp credits in `recipe_master.json` without an authoritative source.
+1. Create `repair-staging/shrimp-pooling/RUN_CALC_FIX` as the trigger. This must be the final setup write.
+2. Identify the resulting `Repair shrimp pooling calculation` run and read its status.
+3. If failure: inspect first failed required step, persist blocker before editing.
+4. If success: verify bot production commit changes only `index.html`, inspect exact diff, run/trigger fresh UI QA, and persist calculation-fix success.
+5. Do NOT edit `recipe_master.json` raw shrimp values without authoritative source data.
