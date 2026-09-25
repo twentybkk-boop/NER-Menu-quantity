@@ -3,7 +3,7 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — UAT-013 REPAIR TRIGGERED; WORKFLOW IN PROGRESS
+## CURRENT WORK HEAD — UAT-013 REPAIR RUN FAILED; FAILURE CHECKPOINTED
 
 Latest user hands-on result:
 - UAT-011 cutout cleanup is accepted; do not reopen it.
@@ -26,23 +26,25 @@ Optimized production target:
 - WebP quality 88 / method 6 from the approved PNG.
 
 ## EXACT BINARY TRANSPORT — STAGING VERIFIED READY
-Repair workflow exists:
-- `.github/workflows/repair-uat013-portrait-background.yml`
+- repair workflow: `.github/workflows/repair-uat013-portrait-background.yml`
 - trigger path: `repair-staging/uat013/RUN_EXACT_REPAIR`
-- runner concatenates staged `portrait-*.b64`, strips whitespace, decodes, verifies exactly 125,912 bytes + expected SHA256, then commits only `assets/background-portrait-garden-v1.webp`.
+- staged `portrait-00.b64` through `portrait-10.b64` are all present on `main` with no gaps.
+- staging head before trigger: `0eb2a98aedcbd610c25bf9459c6a854fdb0149ed`.
+- raw aggregate staged size = 167,884 bytes/chars, matching expected base64 encoded length.
 
-Remote staging verification:
-- `portrait-00.b64` through `portrait-10.b64` are all present on `main` with no gaps.
-- staging head before checkpoint: `0eb2a98aedcbd610c25bf9459c6a854fdb0149ed` (`Stage UAT-013 portrait background chunk 10`).
-- raw aggregate GitHub file sizes sum to exactly 167,884 bytes/chars, matching the approved base64 encoded length.
-
-## REPAIR TRIGGER — DURABLE EXTERNAL STATE
-- trigger marker commit: `bd5ea0a6bd5eea09c46338d5d74e2036083c6476` (`Trigger UAT-013 exact portrait background repair`)
+## REPAIR TRIGGER / FAILURE — VERIFIED DURABLE
+- trigger marker commit: `bd5ea0a6bd5eea09c46338d5d74e2036083c6476`
 - workflow run: `36100717195`
 - workflow: `Repair exact UAT-013 portrait background`
-- head SHA: `bd5ea0a6bd5eea09c46338d5d74e2036083c6476`
-- bounded read status: `in_progress`
-- no further polling was performed in this session.
+- final status: `completed`
+- final conclusion: `failure`
+- no CSS integration has been performed.
+- no rerun/second trigger has been created.
+
+## IMPORTANT CURRENT-GITHUB OBSERVATION
+- current `main` checkpoint commit `69e8e4db0d8ae9960d23a52b65a23113bf475321` has parent `1206cfc98b041676e42f17e164e4039d7597dbbe`.
+- this suggests the workflow may have created a bot commit before failing, but this is NOT YET accepted as successful mapping.
+- do not infer success until the failed step is inspected and `assets/background-portrait-garden-v1.webp` is verified exact size/hash.
 
 ## UAT-011 — VERIFIED FIXED / DO NOT REOPEN
 - exact cleaned top-left production blob `5740a9a4619938e8d71b28d8162729b2738bfb59`, 180,814 bytes
@@ -65,17 +67,17 @@ Remote staging verification:
 - do not edit landscape background behavior
 - do not modify business logic
 - do not rewrite staged chunks `00–10`
-- do not create another UAT-013 repair trigger
-- do not poll repair run `36100717195` repeatedly
-- do not trust UAT-013 binary mapping without exact final production blob size/hash verification
+- do not create another UAT-013 repair trigger yet
+- do not rerun workflow `36100717195` yet
+- do not trust bot commit `1206cfc9…` without exact asset verification
 
 ## EXACT NEXT ACTION
 NEXT SHORT SESSION ONLY:
-1. Read workflow run `36100717195` once.
-2. If still running, persist current status and STOP; no polling loop.
-3. If completed/success, verify the bot mapping commit and `assets/background-portrait-garden-v1.webp` exact size/hash (125,912 bytes; SHA256 `050777632f5fcd1c9217777e4925041633699f52ad37636aeb100a08226ad823`).
-4. If completed/failure, inspect only the failed repair job/step and persist exact blocker.
-5. Persist binary-mapping checkpoint before any CSS change.
+1. Fetch jobs/steps for failed repair run `36100717195`.
+2. Inspect only the failed repair step/log and identify exact failure point.
+3. Fetch bot commit `1206cfc98b041676e42f17e164e4039d7597dbbe` and verify changed paths.
+4. Fetch `assets/background-portrait-garden-v1.webp` metadata/blob from current `main` and verify exact size/hash if possible.
+5. Persist either VERIFIED BINARY MAPPING or exact blocker before any CSS change.
 6. STOP before portrait CSS integration.
 
 After binary mapping is verified, a later short session may update portrait-only CSS to use the new asset, keep landscape unchanged/backmost, then run UI QA/Pages and targeted phone-portrait local/live review.
