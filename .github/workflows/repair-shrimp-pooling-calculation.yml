@@ -1,0 +1,129 @@
+name: Repair shrimp pooling calculation
+
+on:
+  push:
+    paths:
+      - 'repair-staging/shrimp-pooling/RUN_CALC_FIX'
+
+permissions:
+  contents: write
+
+jobs:
+  repair-shrimp-pooling-calculation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact trigger head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch shrimp pooling calculation only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+
+          old = """    function calculateNetRecipe(menuName) {
+      const baseRecipe = originalMenu[menuName];
+      if (!baseRecipe) return [];
+      const netRecipeMap = { ...baseRecipe };
+      const modifiedFlags = {};
+
+      Object.keys(excludedItemsMap).forEach(ex => delete netRecipeMap[ex]);
+
+      Object.entries(excludedItemsMap).forEach(([ex, rep]) => {
+        if (!rep) return;
+        const rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(ex).trim());
+        if (rule?.replace?.[rep] !== undefined) {
+          const addAmt = Number(rule.replace[rep]) || 0;
+          netRecipeMap[rep] = (Number(netRecipeMap[rep]) || 0) + addAmt;
+          modifiedFlags[rep] = true;
+        }
+      });
+
+      return Object.entries(netRecipeMap).flatMap(([item, rawTotal]) => {
+        const unit = getUnit(item);
+        const qty = applySmartRounding(item, rawTotal);
+        if (qty <= 0 && unit === 'กรัม') return [];
+        return [{ name: item, qty, unit, isModified: modifiedFlags[item] === true }];
+      });
+    }
+"""
+
+          new = """    function floorPooledShrimpCredit(rawTotal) {
+      const num = Number(rawTotal);
+      if (!Number.isFinite(num) || num <= 0) return 0;
+      return Math.floor(num);
+    }
+
+    function calculateNetRecipe(menuName) {
+      const baseRecipe = originalMenu[menuName];
+      if (!baseRecipe) return [];
+      const netRecipeMap = { ...baseRecipe };
+      const modifiedFlags = {};
+      let pooledShrimpCredit = 0;
+
+      Object.keys(excludedItemsMap).forEach(ex => delete netRecipeMap[ex]);
+
+      Object.entries(excludedItemsMap).forEach(([ex, rep]) => {
+        if (!rep) return;
+        const rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(ex).trim());
+        if (rule?.replace?.[rep] !== undefined) {
+          const addAmt = Number(rule.replace[rep]) || 0;
+          if (rep === 'กุ้ง') {
+            pooledShrimpCredit += addAmt;
+          } else {
+            netRecipeMap[rep] = (Number(netRecipeMap[rep]) || 0) + addAmt;
+            modifiedFlags[rep] = true;
+          }
+        }
+      });
+
+      const pooledShrimpAddition = floorPooledShrimpCredit(pooledShrimpCredit);
+      if (pooledShrimpAddition > 0) {
+        netRecipeMap['กุ้ง'] = (Number(netRecipeMap['กุ้ง']) || 0) + pooledShrimpAddition;
+        modifiedFlags['กุ้ง'] = true;
+      }
+
+      return Object.entries(netRecipeMap).flatMap(([item, rawTotal]) => {
+        const unit = getUnit(item);
+        const qty = applySmartRounding(item, rawTotal);
+        if (qty <= 0 && unit === 'กรัม') return [];
+        return [{ name: item, qty, unit, isModified: modifiedFlags[item] === true }];
+      });
+    }
+"""
+
+          count = text.count(old)
+          if count != 1:
+              raise SystemExit(f'expected exactly one calculateNetRecipe block, found {count}')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+
+      - name: Run pooling regression contract
+        run: node qa/replacement-pooling-contract.mjs
+
+      - name: Verify minimal production diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only)"
+          test "$changed" = "index.html"
+          git diff --check
+          git diff -- index.html
+
+      - name: Commit calculation fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          cached="$(git diff --cached --name-only)"
+          test "$cached" = "index.html"
+          git commit -m "Fix multi-item shrimp pooling calculation"
+          git push
