@@ -33,12 +33,20 @@ body::before{
   background-size:auto,auto,auto,100% 100%,auto 100dvh!important;
 }
 
-/* Portrait phones/tablets keep the complete vertical environmental master in
-   view. This restores the atmosphere that hands-on UAT found almost absent. */
+/* Portrait master is landscape (440x293). Scaling it to 100dvh enlarged it to
+   ~1267px wide on a 390x844 phone, exposing only ~31% of the source width.
+   Keep the aspect ratio but use a viewport-width-driven presentation so more of
+   the actual environment is visible, and soften the ivory veil only in portrait. */
 @media (orientation:portrait){
   body::before{
+    background-image:
+      radial-gradient(circle at 92% 12%,rgba(189,210,160,.24) 0 40px,transparent 41px),
+      radial-gradient(circle at 97% 21%,rgba(216,229,194,.18) 0 58px,transparent 59px),
+      radial-gradient(circle at 6% 58%,rgba(231,190,166,.13) 0 46px,transparent 47px),
+      linear-gradient(180deg,rgba(255,251,244,.18),rgba(255,253,249,.06) 44%,rgba(250,244,232,.16)),
+      url("background-master.webp")!important;
     background-position:center top,center top,center top,center top,center top!important;
-    background-size:auto,auto,auto,100% 100%,auto 100dvh!important;
+    background-size:auto,auto,auto,100% 100%,160% auto!important;
   }
 }
 
