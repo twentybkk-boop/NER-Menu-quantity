@@ -3,7 +3,7 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — UAT-013 FIRST CI ROOT CAUSE CONFIRMED; QA HARNESS FIX NEXT
+## CURRENT WORK HEAD — UAT-013 QA HARNESS FIX DURABLE; NEW CI VERIFICATION NEXT
 
 Only remaining user-reported defect was portrait background art looking composited/cut-and-paste. User explicitly approved the newly generated portrait-native garden/hot-pot background.
 
@@ -29,25 +29,30 @@ Only remaining user-reported defect was portrait background art looking composit
 - code checkpoint commit `21e994f8a670f527a269693f6b448e21ceebe473`
 
 ## FIRST CI FAILURE — ROOT CAUSE VERIFIED
-UI QA:
-- run `36101969064`
-- job `107966196621`
-- code head `33c9f26cb49dc1ce27dfadccd2151956d2acc26f`
-- final `completed/failure`
+- UI QA run `36101969064`, job `107966196621`, code head `33c9f26cb49dc1ce27dfadccd2151956d2acc26f`
 - first failed required step: `Run Chromium + WebKit UI QA`
-- command: `node qa/ui-qa-runner.mjs`
 - exact assertion: `chromium/iphone: background master not active`
-- expected regex: `/background-master\.webp/`
-- actual computed `body::before` background correctly contains `assets/background-portrait-garden-v1.webp`
+- actual computed portrait background correctly contained `assets/background-portrait-garden-v1.webp`
+- root cause was stale generic/base QA assumption, not a product CSS regression.
 
-Root cause:
-- product UAT-013 portrait CSS is applying correctly.
-- the generic/base UI QA harness still hardcodes the pre-UAT-013 assumption that the iPhone portrait background must be `background-master.webp`.
-- this is a stale QA-harness compatibility assertion, not evidence of a product visual regression.
-- later gates were skipped because the base runner failed first.
+## QA HARNESS FIX — VERIFIED DURABLE
+Commit:
+- `9a6fd3cfa52b28c997fc4eba81fd080480b4fc2a` — `Update base UI QA for UAT-013 portrait background`
 
-Pages:
-- run `36102019453` on checkpoint head `21e994f8a670f527a269693f6b448e21ceebe473` was `in_progress` at the prior bounded read; do not poll it repeatedly while fixing the known QA blocker.
+Scope verification:
+- changed exactly one path: `qa/ui-qa-runner.mjs`
+- no product CSS/assets/business/runtime code changed.
+
+Behavior:
+- compatibility wrapper now patches only the old base background assertion in its ephemeral runtime copy.
+- `iphone` and `ipad-portrait` require `background-portrait-garden-v1.webp` and reject `background-master.webp`.
+- `ipad-landscape` continues to require `background-master.webp` and rejects the portrait-only asset.
+- central readability gradient assertion remains intact.
+- existing thumbnail compatibility patch, calculator behavior, manager/PIN, Matrix/download, overflow, character presence, screenshots and orientation reflow remain unchanged.
+- fail-closed source-block checks remain: if legacy source changes unexpectedly, wrapper throws instead of silently patching the wrong code.
+
+## PAGES PRIOR STATE
+- Pages run `36102019453` on earlier checkpoint head `21e994f8a670f527a269693f6b448e21ceebe473` was `in_progress` at the prior bounded read. This is superseded for final acceptance by the new QA-harness-fix code state.
 
 ## ACCEPTED / DO NOT REOPEN
 - UAT-011 character cutout cleanup
@@ -63,14 +68,13 @@ Pages:
 - do not alter landscape behavior unless a concrete regression appears
 - do not touch accepted character binaries
 - do not rerun old failed UI QA `36101969064`
-- do not change product CSS to satisfy this stale base assertion
+- do not change product CSS for the stale base assertion already fixed in QA harness
 
 ## EXACT NEXT ACTION
-NEXT SHORT CHUNK ONLY:
-1. Inspect `qa/ui-qa-runner.mjs` only around the base background assertion and orientation/viewport case definitions.
-2. Update the base contract minimally so portrait cases require `background-portrait-garden-v1.webp` and reject `background-master.webp`, while landscape cases continue to require `background-master.webp` and reject the portrait asset.
-3. Preserve every other base UI invariant unchanged.
-4. Verify diff scope is QA harness only.
-5. Persist QA-harness-fix checkpoint before reading new Actions.
-
-After that, read the new UI QA + Pages once. If successful, download only the screenshots artifact and inspect targeted local/live UAT-013 portrait evidence before cleanup and READY FOR USER FINAL REVIEW.
+NEXT SHORT SESSION ONLY:
+1. Read Actions for commit `9a6fd3cfa52b28c997fc4eba81fd080480b4fc2a` / current `main`: UI QA + Pages once.
+2. If UI QA is still running, persist run ID/status and STOP; no polling loop.
+3. If UI QA fails, inspect only the first failed required step/log and persist exact blocker before editing.
+4. If UI QA succeeds, persist automation-success checkpoint before artifact review.
+5. Then download only `ui-qa-screenshots` and inspect targeted local/live `35-phone-portrait-uat013.png` plus phone portrait layering evidence; verify local/live equivalence and manual visual integration.
+6. After verified visual acceptance, remove only temporary UAT-013 repair staging/trigger artifacts, verify cleanup scope, then persist READY FOR USER FINAL REVIEW.
