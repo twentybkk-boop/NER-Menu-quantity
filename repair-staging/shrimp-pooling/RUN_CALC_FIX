@@ -1,0 +1,3 @@
+NER Menu Quantity shrimp pooling calculation repair
+contract=aggregate raw shrimp credits first, then floor once
+qa=qa/replacement-pooling-contract.mjs
