@@ -1,0 +1,3 @@
+NER Menu Quantity transactional Excel import validation repro
+contract=qa/transactional-import-validation-contract.mjs
+expected=current production missing validation gate before live-state assignment
