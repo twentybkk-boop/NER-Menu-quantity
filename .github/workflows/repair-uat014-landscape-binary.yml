@@ -1,0 +1,82 @@
+name: Repair UAT-014 landscape binary
+
+on:
+  push:
+    paths:
+      - 'repair-staging/uat014/RUN_EXACT_REPAIR'
+
+permissions:
+  contents: write
+
+jobs:
+  repair-uat014-landscape-binary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact trigger head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reconstruct and verify approved landscape binary
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cat \
+            repair-staging/uat014/landscape-00.b64 \
+            repair-staging/uat014/landscape-01a.b64 \
+            repair-staging/uat014/landscape-01b.b64 \
+            repair-staging/uat014/landscape-02.b64 \
+            repair-staging/uat014/landscape-03.b64 \
+            repair-staging/uat014/landscape-04.b64 \
+            repair-staging/uat014/landscape-05.b64 \
+            repair-staging/uat014/landscape-06a.b64 \
+            repair-staging/uat014/landscape-06b.b64 \
+            repair-staging/uat014/landscape-07a.b64 \
+            repair-staging/uat014/landscape-07b.b64 \
+            > /tmp/uat014-landscape.b64
+
+          base64 --decode /tmp/uat014-landscape.b64 > /tmp/background-landscape-garden-v1.webp
+
+          actual_size="$(wc -c < /tmp/background-landscape-garden-v1.webp | tr -d ' ')"
+          test "$actual_size" = "41838"
+
+          actual_sha256="$(sha256sum /tmp/background-landscape-garden-v1.webp | awk '{print $1}')"
+          test "$actual_sha256" = "b6e84af07f0d51c0f9a68a7dc0471c8bdd121f0ec0cc78cb1b0abbff86f10819"
+
+          actual_blob="$(git hash-object /tmp/background-landscape-garden-v1.webp)"
+          test "$actual_blob" = "6183aecb8d4469b137edaa3ffb95d8cf7e8ec2bc"
+
+      - name: Replace only production landscape asset and verify again
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cp /tmp/background-landscape-garden-v1.webp assets/background-landscape-garden-v1.webp
+
+          actual_size="$(wc -c < assets/background-landscape-garden-v1.webp | tr -d ' ')"
+          test "$actual_size" = "41838"
+
+          actual_sha256="$(sha256sum assets/background-landscape-garden-v1.webp | awk '{print $1}')"
+          test "$actual_sha256" = "b6e84af07f0d51c0f9a68a7dc0471c8bdd121f0ec0cc78cb1b0abbff86f10819"
+
+          actual_blob="$(git hash-object assets/background-landscape-garden-v1.webp)"
+          test "$actual_blob" = "6183aecb8d4469b137edaa3ffb95d8cf7e8ec2bc"
+
+          changed="$(git diff --name-only)"
+          test "$changed" = "assets/background-landscape-garden-v1.webp"
+
+      - name: Commit exact repaired binary
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/background-landscape-garden-v1.webp
+
+          cached="$(git diff --cached --name-only)"
+          test "$cached" = "assets/background-landscape-garden-v1.webp"
+
+          git commit -m "Repair UAT-014 approved landscape binary"
+          git push
