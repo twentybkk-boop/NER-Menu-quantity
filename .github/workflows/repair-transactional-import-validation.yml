@@ -28,29 +28,32 @@ jobs:
           text = path.read_text(encoding='utf-8')
 
           css_marker = "    .matrix-close { background: #6c584d; color: #fff; }\n"
-          css_insert = """    .matrix-close { background: #6c584d; color: #fff; }
-    .import-status {
-      margin: 10px 12px 0; padding: 12px 14px; border-radius: 14px;
-      white-space: pre-line; font-size: 12px; line-height: 1.5; font-weight: 700;
-      border: 1px solid transparent;
-    }
-    .import-status.error { background: #fff0f2; border-color: #e5aeb5; color: #8d3642; }
-    .import-status.success { background: #edf3e9; border-color: #b9c9aa; color: #4d653f; }
-"""
+          css_lines = [
+              "    .matrix-close { background: #6c584d; color: #fff; }",
+              "    .import-status {",
+              "      margin: 10px 12px 0; padding: 12px 14px; border-radius: 14px;",
+              "      white-space: pre-line; font-size: 12px; line-height: 1.5; font-weight: 700;",
+              "      border: 1px solid transparent;",
+              "    }",
+              "    .import-status.error { background: #fff0f2; border-color: #e5aeb5; color: #8d3642; }",
+              "    .import-status.success { background: #edf3e9; border-color: #b9c9aa; color: #4d653f; }",
+          ]
           if text.count(css_marker) != 1:
               raise SystemExit(f'expected one matrix-close marker, found {text.count(css_marker)}')
           if '.import-status.error' in text:
               raise SystemExit('import status CSS already present')
-          text = text.replace(css_marker, css_insert, 1)
+          text = text.replace(css_marker, '\n'.join(css_lines) + '\n', 1)
 
-          html_marker = "      <div id=\"tableContainer\"></div>"
-          html_insert = """      <div id="importStatus" class="import-status is-hidden" role="status" aria-live="polite"></div>
-      <div id="tableContainer"></div>"""
+          html_marker = '      <div id="tableContainer"></div>'
+          html_lines = [
+              '      <div id="importStatus" class="import-status is-hidden" role="status" aria-live="polite"></div>',
+              '      <div id="tableContainer"></div>',
+          ]
           if text.count(html_marker) != 1:
               raise SystemExit(f'expected one tableContainer marker, found {text.count(html_marker)}')
           if 'id="importStatus"' in text:
               raise SystemExit('import status element already present')
-          text = text.replace(html_marker, html_insert, 1)
+          text = text.replace(html_marker, '\n'.join(html_lines), 1)
 
           fn_marker = "    function importExcelData(event) {\n"
           if text.count(fn_marker) != 1:
@@ -146,27 +149,33 @@ jobs:
               raise SystemExit('file marker missing or duplicated')
           handler = handler.replace(file_marker, file_marker + "      setImportStatus('', '');\n", 1)
 
-          assign_block = """          originalMenu = newOriginalMenu;
-          menuCategories = newMenuCategories;
-          replaceUseRules = newReplaceRules;
-          allIngredientsList = repIngredientsList;
-          initMenus();
-          renderMatrixTable();
-          alert('อัปโหลดและแปลงข้อมูลสำเร็จ!');"""
-          replacement_block = """          const validationResult = validateImportedRecipeData(newOriginalMenu, newReplaceRules);
-          if (hasImportValidationErrors(validationResult)) {
-            setImportStatus('error', formatImportValidationSummary(validationResult));
-            return;
-          }
-
-          originalMenu = newOriginalMenu;
-          menuCategories = newMenuCategories;
-          replaceUseRules = newReplaceRules;
-          allIngredientsList = repIngredientsList;
-          initMenus();
-          renderMatrixTable();
-          setImportStatus('success', `นำเข้าสำเร็จ • ${Object.keys(newOriginalMenu).length} เมนู • ${newReplaceRules.length} กฎการแทนที่`);
-          alert('อัปโหลดและแปลงข้อมูลสำเร็จ!');"""
+          assign_lines = [
+              "          originalMenu = newOriginalMenu;",
+              "          menuCategories = newMenuCategories;",
+              "          replaceUseRules = newReplaceRules;",
+              "          allIngredientsList = repIngredientsList;",
+              "          initMenus();",
+              "          renderMatrixTable();",
+              "          alert('อัปโหลดและแปลงข้อมูลสำเร็จ!');",
+          ]
+          replacement_lines = [
+              "          const validationResult = validateImportedRecipeData(newOriginalMenu, newReplaceRules);",
+              "          if (hasImportValidationErrors(validationResult)) {",
+              "            setImportStatus('error', formatImportValidationSummary(validationResult));",
+              "            return;",
+              "          }",
+              "",
+              "          originalMenu = newOriginalMenu;",
+              "          menuCategories = newMenuCategories;",
+              "          replaceUseRules = newReplaceRules;",
+              "          allIngredientsList = repIngredientsList;",
+              "          initMenus();",
+              "          renderMatrixTable();",
+              "          setImportStatus('success', `นำเข้าสำเร็จ • ${Object.keys(newOriginalMenu).length} เมนู • ${newReplaceRules.length} กฎการแทนที่`);",
+              "          alert('อัปโหลดและแปลงข้อมูลสำเร็จ!');",
+          ]
+          assign_block = '\n'.join(assign_lines)
+          replacement_block = '\n'.join(replacement_lines)
           if handler.count(assign_block) != 1:
               raise SystemExit(f'expected one live assignment block, found {handler.count(assign_block)}')
           handler = handler.replace(assign_block, replacement_block, 1)
