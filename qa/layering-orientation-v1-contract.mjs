@@ -84,6 +84,7 @@ async function inspect(browserType, browserName, c) {
           {display:decorAfter.display,content:decorAfter.content,bg:decorAfter.backgroundImage,pointer:decorAfter.pointerEvents},
         ],
         bodyBg:bodyBefore.backgroundImage,
+        bodyBgSize:bodyBefore.backgroundSize,
         bodyBgZ:parseInt(bodyBefore.zIndex)||0,
         bodyBgPointer:bodyBefore.pointerEvents,
         mastheadBg:getComputedStyle(document.querySelector('.brand-masthead')).backgroundImage,
@@ -100,6 +101,14 @@ async function inspect(browserType, browserName, c) {
     assert.equal(r.bodyBgPointer, 'none', `${scope}: backmost environment intercepts controls`);
     assert.match(r.bodyBg, /background-master\.webp/, `${scope}: backmost illustrated background missing`);
     assert.match(r.bodyBg, /radial-gradient/, `${scope}: backmost ambient circles missing`);
+
+    /* UAT-012: a 440x293 landscape master scaled to 100dvh on portrait exposed
+       only the center sliver and looked blank on the real phone. Lock the new
+       width-driven portrait crop without weakening the backmost-layer contract. */
+    if (c.name.endsWith('portrait')) {
+      const imageLayerSize = r.bodyBgSize.split(',').at(-1)?.trim() || '';
+      assert.match(imageLayerSize, /160%/, `${scope}: portrait environment reverted to an over-cropped sizing strategy (${r.bodyBgSize})`);
+    }
 
     /* V4 UAT-001: no round ambient shape may remain inside the foreground
        character stacking context. This is the regression the V3 gate missed. */
