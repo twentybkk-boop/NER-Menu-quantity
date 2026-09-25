@@ -1,3 +1,0 @@
-NER Menu Quantity Matrix numeric edit validation repro
-contract=qa/matrix-edit-validation-contract.mjs
-expected=current production accepts malformed or invalid numeric prompt input
