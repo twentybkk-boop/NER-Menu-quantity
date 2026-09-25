@@ -3,11 +3,11 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — UAT-014 LANDSCAPE BACKGROUND INTEGRATED; UI QA RUN 151 IN PROGRESS
+## CURRENT WORK HEAD — UAT-014 LANDSCAPE BACKGROUND INTEGRATED; UI QA RUN 151 QUEUED
 
 UAT-013 portrait background remains accepted and must not be reopened.
 
-Latest user final hands-on review found one new concrete defect only: **landscape background still did not look right**. User approved a cleaner landscape-native sunset terrace / hot-pot background generated in the current session and asked to use that exact approved image as the landscape background.
+Latest user hands-on feedback reopened exactly one area: the **landscape background art source**. User approved a cleaner landscape-native sunset terrace / hot-pot image generated in the current session and explicitly asked to use that approved image as the landscape background.
 
 ## UAT-014 USER-APPROVED LANDSCAPE ASSET — VERIFIED MAPPED
 Approved source image:
@@ -20,95 +20,93 @@ Production derivative actually integrated:
 - size: 41,838 bytes
 - SHA256: `b6e84af07f0d51c0f9a68a7dc0471c8bdd121f0ec0cc78cb1b0abbff86f10819`
 - production blob: `990785f01074764ad80c7a03cc18fe363d19b7a7`
-- integration commit: `3376af34f12adf33b41c6e91297321e1e6bc49b7`
 
-Note: an earlier 1672x941 q88 WebP candidate was prepared during investigation but was **not** integrated. The 960x540 derivative above is the actual production source of truth.
+An earlier 1672x941 q88 WebP candidate was prepared during investigation but was **not** integrated. The 960x540 derivative above is the actual production asset source of truth.
 
-## UAT-014 PRODUCT / QA INTEGRATION — SCOPE VERIFIED
-Integration commit:
-- `3376af34f12adf33b41c6e91297321e1e6bc49b7` — `Integrate approved UAT-014 landscape background`
+## UAT-014 PRODUCT / QA INTEGRATION — VERIFIED ON MAIN
+Actual integration commit on `main`:
+- `19e526d618373839a571d7cd0872ce8d18831757` — `Integrate approved UAT-014 landscape background`
+- parent: `c5d2f9e28389385a22bf13c2b57a6956b8ccbe23`
+- tree: `4dc24662f96f530a29854849ba6a4db123e88443`
 - fast-forwarded to `main` with `force=false`
 
-Pre-merge compare verified exactly four changed paths:
+Historical note:
+- detached staging commit `3376af34f12adf33b41c6e91297321e1e6bc49b7` contained the same four intended integration paths but was never the production branch head.
+- a checkpoint sequencing mistake temporarily wrote handoff claims as though that detached commit had been fast-forwarded. This was detected by re-reading current `main`; history was not rewritten. The same verified four blobs were then committed on top of the real checkpoint as `19e526d6...`.
+
+Verified integration diff from parent contains exactly four paths:
 1. `assets/background-landscape-garden-v1.webp` — added
-2. `assets/visual-uat-v4-chunk1.css` — landscape art source only + lighter landscape veil / center positioning
+2. `assets/visual-uat-v4-chunk1.css` — landscape art source + lighter landscape veil / center positioning
 3. `qa/ui-qa-runner.mjs` — orientation-aware background assertions updated
 4. `qa/layering-orientation-v1-contract.mjs` — landscape asset/deployment readiness assertions updated
 
-Product behavior:
-- portrait continues to require `background-portrait-garden-v1.webp`
-- landscape now requires `background-landscape-garden-v1.webp`
-- legacy `background-master.webp` is rejected in both orientation-specific QA branches
-- landscape remains `cover`
-- accepted masthead protection, rails, character geometry, menu/business/runtime/calculator semantics remain unchanged
+No other path changed in the integration commit.
 
-## UAT-014 RESULTING UI QA — RUNNING
-- UI QA run `36110104415`
-- run number 151
-- head SHA `3376af34f12adf33b41c6e91297321e1e6bc49b7`
+Current CSS verification on `main`:
+- portrait still maps `background-portrait-garden-v1.webp`
+- portrait image layer remains `cover`
+- landscape maps `background-landscape-garden-v1.webp`
+- landscape image layer uses `cover`, positioned center/center
+- accepted landscape masthead protection remains present
+
+QA intent:
+- portrait rejects landscape asset and legacy master
+- landscape requires `background-landscape-garden-v1.webp` and rejects portrait asset + legacy `background-master.webp`
+- orientation/layering live readiness now verifies both portrait and landscape assets are deployed
+- accepted character rails, center-frame geometry, business/runtime/recipe/quantity/Matrix/PIN/calculator semantics were not changed
+
+## UAT-014 RESULTING UI QA — BOUNDED READ
+Actual resulting UI QA:
+- run ID: `36106680864`
+- run number: 151
+- head SHA: `19e526d618373839a571d7cd0872ce8d18831757`
 - display title: `Integrate approved UAT-014 landscape background`
 - event: `push`
-- status at bounded read: `in_progress`
-- conclusion at bounded read: not final
-- created at `2026-09-25T07:13:04Z`
-- updated at bounded read `2026-09-25T07:13:08Z`
-- read once in this session; do not poll again in the same session
+- status at the single bounded read in this session: `queued`
+- conclusion: not final
+- created/started timestamp reported: `2026-09-25T07:14:56Z`
+- do not poll this run again in the same session
 
-Pages build/deployment for the same integration head was also present as run `36110104256`, status `in_progress` at the same bounded Actions read. No polling loop performed.
+Incorrect provisional run IDs `36110104415` / `36110104256` from the sequencing-error handoff are invalid for UAT-014 production state and must not be reused.
 
-## APPROVED UAT-013 ASSET — VERIFIED MAPPED
+## UAT-013 PORTRAIT — VERIFIED DURABLE / DO NOT REOPEN
 - production path: `assets/background-portrait-garden-v1.webp`
 - dimensions: 941x1672 RGB
 - size: 125,912 bytes
 - SHA256: `050777632f5fcd1c9217777e4925041633699f52ad37636aeb100a08226ad823`
-- repair run `36101535008` — completed/success
-- mapping commit `1d7a134e8cfc595f5633bc3a7cb7614cdb1bf4a4`
-- production blob `30437127857f50d217f12451f9ecff8ec61a9ef9`
-
-## UAT-013 PRODUCT INTEGRATION — VERIFIED DURABLE
-- portrait uses `background-portrait-garden-v1.webp`
-- portrait image layer uses `cover`, centered top
-- dedicated portrait contract and all prior portrait QA remain accepted
-- final UAT-013 UI QA run `36103333988` / run 150 completed `success`
-
-## UAT-013 VISUAL ARTIFACT REVIEW — VERIFIED ACCEPTED
+- production blob: `30437127857f50d217f12451f9ecff8ec61a9ef9`
+- final UAT-013 UI QA run `36103333988` / run 150: completed/success
 - artifact `ui-qa-screenshots`, ID `10850046829`
-- targeted local/live portrait screenshots were byte-identical and pixel-identical
-- all four targeted portrait image SHA256: `8f2f0aac56eb5cebc4b7852571590a233cb891fb3f4b77d2f3c23079c4bf4461`
-- all three approved characters present together
-- approved upper-left character remains without glasses
-
-## UAT-013 TEMPORARY REPAIR CLEANUP — VERIFIED COMPLETE
-- cleanup commit `775b628b32810b83b1ccee785eddf5153abd2bfd`
-- exactly 16 temporary UAT-013 repair paths removed
-- UAT-011 staging/workflow untouched
-- prior final portrait checkpoint: `4def958bc18f6950c085a78d8111dfb5a0b64831`
+- targeted portrait local/live evidence was byte-identical and pixel-identical
+- all three approved characters present together; approved upper-left character remains without glasses
+- temporary UAT-013 repair staging cleanup commit: `775b628b32810b83b1ccee785eddf5153abd2bfd`
+- prior portrait final checkpoint: `4def958bc18f6950c085a78d8111dfb5a0b64831`
 
 ## ACCEPTED / DO NOT REOPEN
 - UAT-011 character cutout cleanup
-- V4 Chunk 1–4 acceptance except the landscape art source explicitly reopened and replaced by UAT-014
 - UAT-013 portrait-native background integration and visual evidence
-- landscape layout/interaction/masthead protection/character placement/calculator behavior (only art source changed)
+- V4 Chunk 1–4 behavior except landscape art source, now replaced by UAT-014
+- landscape layout/interaction/masthead protection/character placement/calculator behavior; only landscape art source was reopened
 - P0-A/P0-B/P0-D/layering/sharpness/tap-safety/phone-landscape calculator behavior
 - business/runtime/recipe/quantity/exclusion/replacement/Matrix/PIN/import-export semantics
 
 ## DO NOT REPEAT
-- do not regenerate UAT-013 portrait art
-- do not rebuild/remap the verified UAT-013 portrait binary
+- do not regenerate or remap accepted portrait art
 - do not recreate removed UAT-013 repair staging/chunks/workflow
-- do not alter landscape layout/interaction beyond the UAT-014 art source without concrete regression evidence
+- do not alter landscape layout/interaction beyond UAT-014 without concrete regression evidence
 - do not touch accepted character binaries
-- do not rerun failed UAT-013 runs `36101969064`, `36102366681`, or `36102894216`
 - do not reopen portrait QA fixes without new portrait regression evidence
 - do not rerun successful UAT-013 UI QA run `36103333988`
-- do not touch UAT-011 staging/workflow as part of UAT-014 work
-- do not poll UAT-014 UI QA run `36110104415` again in this same session
+- do not touch UAT-011 staging/workflow as part of UAT-014
+- do not use detached staging SHA `3376af34...` as production source of truth
+- do not use provisional/invalid UAT-014 run IDs `36110104415` or `36110104256`
+- do not poll actual UAT-014 UI QA run `36106680864` again in this same session
 
 ## EXACT NEXT ACTION
 1. In the next continuation session, re-read current `main` + this handoff first.
-2. Read UI QA run `36110104415` exactly once.
-3. If still running: persist status and STOP; no polling loop.
-4. If failure: inspect only the first failed required step/log and checkpoint exact blocker before any further edit.
-5. If success: persist automation-success checkpoint, then download only `ui-qa-screenshots`.
-6. Inspect targeted local/live landscape screenshots: phone landscape, iPad landscape, iPad wide landscape, plus landscape calculator evidence if useful.
-7. Verify local/live equivalence and manual integration of the user-approved landscape scene; if clean, persist `UAT-014 READY FOR USER REVIEW`.
+2. Read actual UAT-014 UI QA run `36106680864` exactly once.
+3. If still `queued` / `in_progress`: persist current status and STOP; no polling loop.
+4. If `failure`: inspect only the first failed required step/log and persist exact blocker before any further edit.
+5. If `success`: persist automation-success checkpoint, then download only `ui-qa-screenshots`.
+6. Inspect targeted local/live landscape evidence: `29-phone-landscape-layering-v1@2x.png`, `29-ipad-landscape-layering-v1@2x.png`, `29-ipad-wide-landscape-layering-v1@2x.png` and their `live-` counterparts; inspect landscape calculator screenshot if useful.
+7. Verify local/live equivalence plus manual visual integration of the user-approved landscape scene. If clean, persist `UAT-014 READY FOR USER REVIEW`.
