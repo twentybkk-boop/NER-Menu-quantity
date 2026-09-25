@@ -146,9 +146,15 @@ function assertContract(c, browserName) {
   assert.ok(c.masthead.height >= 145 && c.masthead.height <= 165, `${scope}: brand moment height is ${c.masthead.height}px`);
   assert.equal(c.masthead.align, 'left', `${scope}: masthead lost editorial left alignment`);
 
-  /* New real-device feedback moved round ambient bubbles out of the component
-     layers. The illustrated environment must now live on the backmost body layer. */
-  assert.match(c.bodyBg, /background-master\.webp/, `${scope}: backmost illustrated environment missing`);
+  /* UAT-013 uses a portrait-native backmost environment while preserving the
+     accepted landscape master. Keep this P0-D invariant orientation-aware. */
+  if (c.viewport.height >= c.viewport.width) {
+    assert.match(c.bodyBg, /background-portrait-garden-v1\.webp/, `${scope}: portrait-native backmost illustrated environment missing`);
+    assert.doesNotMatch(c.bodyBg, /background-master\.webp/, `${scope}: stale landscape background active in portrait`);
+  } else {
+    assert.match(c.bodyBg, /background-master\.webp/, `${scope}: landscape backmost illustrated environment missing`);
+    assert.doesNotMatch(c.bodyBg, /background-portrait-garden-v1\.webp/, `${scope}: portrait-only background active in landscape`);
+  }
   assert.match(c.bodyBg, /radial-gradient/, `${scope}: backmost ambient bubbles missing`);
   assert.doesNotMatch(c.masthead.bg, /radial-gradient/, `${scope}: round ambient bubble leaked back into masthead layer`);
   assert.match(c.masthead.bg, /linear-gradient/, `${scope}: masthead paper wash missing`);
