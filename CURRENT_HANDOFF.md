@@ -3,7 +3,7 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — UAT-013 BASE QA FIX VERIFIED; P0-D STALE CONTRACT ROOT CAUSE CHECKPOINTED
+## CURRENT WORK HEAD — UAT-013 P0-D QA FIX DURABLE; RESULTING UI QA NOT YET READ
 
 Only remaining user-reported defect was portrait background art looking composited/cut-and-paste. User explicitly approved the newly generated portrait-native garden/hot-pot background.
 
@@ -66,9 +66,24 @@ Behavior:
 - evidence therefore points to a stale P0-D QA contract, not a product CSS regression.
 - root cause persisted before any code edit, per crash-safe continuation policy.
 
-Checkpoint after base QA fix:
+## P0-D QA FIX — VERIFIED DURABLE
+Commit:
+- `c6395cf074077816ab23ac7d92c4787cfc598f37` — `Update P0-D QA for UAT-013 portrait background`
+
+Scope verification:
+- changed exactly one path: `qa/top-composition-v1-contract.mjs`
+- no product CSS/assets/business/runtime code changed.
+
+Behavior:
+- P0-D phone portrait now requires `background-portrait-garden-v1.webp` and rejects stale `background-master.webp`.
+- landscape branch remains fail-closed on `background-master.webp` and rejects portrait-only art.
+- all remaining P0-D assertions are unchanged.
+- resulting UI QA run has not yet been read in this checkpoint; next action is one bounded read only.
+
+Crash-safe checkpoints:
 - `8a0a60ddb60fcd88b4fedc9fb3b1fb00a9d85063` — `Checkpoint UAT-013 base QA harness fix`
 - `ef55bee115460b10b2d9c2153705c69af4a095e6` — `Checkpoint UAT-013 UI QA running`
+- `6adbc4b2d1e6533f245777803c92e7ec4ccdb524` — `Checkpoint UAT-013 P0-D stale contract root cause`
 
 ## ACCEPTED / DO NOT REOPEN
 - UAT-011 character cutout cleanup
@@ -84,15 +99,16 @@ Checkpoint after base QA fix:
 - do not alter landscape behavior unless a concrete regression appears
 - do not touch accepted character binaries
 - do not rerun old failed UI QA `36101969064`
-- do not poll UI QA `36102366681`; it is final failure and its first failing required step is already isolated
+- do not poll final failed UI QA `36102366681`; its blocker is already fixed
 - do not reopen `qa/ui-qa-runner.mjs` unless new evidence points back to it
+- do not edit `qa/top-composition-v1-contract.mjs` again unless the new run gives concrete evidence
 
 ## EXACT NEXT ACTION
 NEXT SHORT SESSION ONLY:
-1. Edit only `qa/top-composition-v1-contract.mjs`.
-2. Make the backmost-environment assertion orientation-aware for its phone portrait viewport: require `background-portrait-garden-v1.webp` and reject stale `background-master.webp` there, while preserving all other P0-D assertions unchanged.
-3. Do not touch accepted product CSS/assets or landscape behavior.
-4. Commit the minimum QA-only fix.
-5. Update `CURRENT_HANDOFF.md` with the fix commit and launch state.
-6. Read the resulting GitHub Actions run once only.
-7. If completed/failure, inspect only the first failed required step and checkpoint before any further edit; if success, persist success before artifact review.
+1. Read the resulting UI QA run for commit `c6395cf074077816ab23ac7d92c4787cfc598f37` exactly once.
+2. If still running, persist run ID/status and STOP; no polling loop.
+3. If completed/failure, inspect only the first failed required step and checkpoint exact blocker before any edit.
+4. If completed/success, persist automation-success checkpoint before artifact review.
+5. Then check latest Pages once and download only `ui-qa-screenshots` artifact.
+6. Inspect targeted local/live `35-phone-portrait-uat013.png` plus phone portrait layering evidence; verify local/live equivalence and manual visual integration.
+7. After verified visual acceptance, remove only temporary UAT-013 repair staging/trigger artifacts, verify cleanup scope, then persist READY FOR USER FINAL REVIEW.
