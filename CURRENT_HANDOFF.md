@@ -19,59 +19,49 @@
 - raw-current shrimp credits remain BLOCKED because no authoritative current raw source exists.
 - DO NOT infer missing decimal credits, migrate the old decimal matrix wholesale, or reopen Drive/Gmail/source searches without new evidence.
 
-## CHUNK S1 — COMPLETE
-### Next independent durable backlog item
-**Import Data Integrity / replacement linkage audit** for the current `recipe_master.json`, including the product failure mode where an exclusion can end up with no replacement options.
+## IMPORT DATA INTEGRITY AUDIT — CLEAN / CLOSED
+Independent backlog item identified in S1:
+**Import Data Integrity / replacement linkage audit** for current `recipe_master.json`, including the product failure mode where an exclusion can end with no replacement options.
 
-This item is independent from:
-- accepted Phase 1 visual work
-- blocked raw-current shrimp credit provenance
+Durable audit scaffolding already on `main`:
+- `8aec6e0b6e43382d744cecd3b33f6da6be7194bf` — `qa/import-data-integrity-audit.mjs`
+- `b114dfc6957dfb169b04058b6281d3b947e5a42f` — one-shot audit workflow
+- `a3ce6f6fba2f20e099eea2c0443070e86eb4aa23` — audit trigger
 
-### Durable evidence already on current `main`
-The repo advanced beyond the prior handoff before this recovery read. Current source of truth already contains non-production audit scaffolding:
+Audit execution:
+- run ID `36125886778`
+- job ID `108041781453`
+- head `a3ce6f6fba2f20e099eea2c0443070e86eb4aa23`
+- run conclusion: success
+- audit step conclusion: success
 
-1. `8aec6e0b6e43382d744cecd3b33f6da6be7194bf` — `Add import data integrity audit`
-   - adds `qa/import-data-integrity-audit.mjs`
-   - audit classes:
-     - `mismatchedMenus`: replacement rule references a menu missing from `baseMenu`
-     - `invalidExcludes`: rule exclude is not an ingredient in that menu's base recipe
-     - `duplicateRules`: duplicate `(menu, exclude)` replacement rows
-     - `noOptions`: a multi-ingredient base item has either no rule or no replacement option overlapping its base ingredients
-   - audit is read-only; no production behavior/data is modified.
+Exact output from the existing job log:
+`IMPORT_DATA_AUDIT_COUNTS={"mismatchedMenus":0,"invalidExcludes":0,"duplicateRules":0,"noOptions":0}`
 
-2. `b114dfc6957dfb169b04058b6281d3b947e5a42f` — `Add one-shot import data integrity audit workflow`
-   - adds `.github/workflows/audit-import-data-integrity.yml`
-   - read-only permissions
-   - runs `node qa/import-data-integrity-audit.mjs`
+Therefore:
+- `mismatchedMenus = 0`
+- `invalidExcludes = 0`
+- `duplicateRules = 0`
+- `noOptions = 0`
 
-3. `a3ce6f6fba2f20e099eea2c0443070e86eb4aa23` — `Trigger import data integrity audit`
-   - adds only `repair-staging/import-validation/RUN_AUDIT`
-   - no production code/data modification
-
-4. Audit run:
-   - run ID `36125886778`
-   - workflow `Audit import data integrity`
-   - head `a3ce6f6fba2f20e099eea2c0443070e86eb4aa23`
-   - completed/success
-   - job `audit-import-data-integrity` completed/success
-   - audit step completed/success
-
-### Scope boundary
-CHUNK S1 does NOT interpret the audit output and does NOT modify production. Do not create a second audit or trigger.
+Conclusion:
+- no production data/linkage defect was found by this contract
+- no implementation patch is justified from this item
+- do NOT modify `recipe_master.json` or `index.html` for this audit item
+- do NOT retrigger run `36125886778`
 
 ## DO NOT REPEAT
 - do not reopen Phase 1 visual work
 - do not revisit blocked raw shrimp credit provenance without new authoritative evidence
 - do not recreate shrimp repair workflow/staging
-- do not recreate `qa/import-data-integrity-audit.mjs`
-- do not recreate `.github/workflows/audit-import-data-integrity.yml`
-- do not retrigger run `36125886778` merely to reconfirm it
-- do not modify `recipe_master.json` or `index.html` until the audit output has been read and classified
+- do not recreate or rerun the import integrity audit just to reconfirm zero counts
+- do not modify production for the now-clean import-integrity item
 
-## EXACT NEXT ACTION — CHUNK S2A ONLY
+## EXACT NEXT ACTION — NEXT SHORT CHUNK ONLY
 1. Re-read current `main` + this handoff.
-2. Read the logs/output of existing audit job `108041781453` from run `36125886778` exactly once.
-3. Record exact counts for `mismatchedMenus`, `invalidExcludes`, `duplicateRules`, and `noOptions`.
-4. If all counts are zero: mark this audit item clean, clean up the one-shot audit workflow/trigger in a later separate chunk, and return to independent backlog discovery.
-5. If any count is nonzero: persist the exact affected rows/reasons as the next implementation scope; DO NOT edit production in the same chunk.
-6. Persist checkpoint and STOP.
+2. Clean up ONLY the temporary one-shot import audit artifacts if still present:
+   - `.github/workflows/audit-import-data-integrity.yml`
+   - `repair-staging/import-validation/RUN_AUDIT`
+3. Do not remove `qa/import-data-integrity-audit.mjs`; keep it as durable diagnostic/regression tooling unless a new source-of-truth decision says otherwise.
+4. Persist cleanup checkpoint and STOP.
+5. After that, start a separate backlog-discovery chunk for the next independent product item.
