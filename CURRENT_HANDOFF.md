@@ -1,13 +1,9 @@
 # CURRENT HANDOFF — NER Menu Quantity
 
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
-> Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + durable artifacts.
+> Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + durable artifacts + latest user review.
 
-## SHORT-CHUNK EXECUTION POLICY
-- Re-read current `main` + this handoff at each milestone.
-- Do not reopen DONE / ACCEPTED work.
-- Persist a checkpoint at each meaningful milestone.
-- User explicitly requested this session to continue through real-screen review, so continue across milestones while checkpointing.
+## CURRENT WORK HEAD — TRANSACTIONAL EXCEL IMPORT VALIDATION READY FOR USER REVIEW
 
 ## LOCKED / ACCEPTED
 - Phase 1 visual/UAT V4 UAT-001–UAT-014 ACCEPTED / FROZEN.
@@ -16,10 +12,10 @@
   - UI QA run `36124443879` / run 155 success
 - raw-current shrimp credits remain BLOCKED; do not infer or reopen source search without new evidence.
 - bundled import-integrity audit CLEAN / CLOSED.
-  - durable diagnostic `qa/import-data-integrity-audit.mjs`
-  - run `36125886778`: `mismatchedMenus=0`, `invalidExcludes=0`, `duplicateRules=0`, `noOptions=0`
+  - `qa/import-data-integrity-audit.mjs`
+  - run `36125886778`: all four counts zero
 
-## CURRENT WORK HEAD — TRANSACTIONAL EXCEL IMPORT VALIDATION IMPLEMENTED / FRESH UI QA RUNNING
+## TRANSACTIONAL EXCEL IMPORT VALIDATION — IMPLEMENTED / VERIFIED
 
 ### Reproduced gap
 Repro run `36128207165` failed exactly at:
@@ -29,91 +25,100 @@ Regression contract:
 - `qa/transactional-import-validation-contract.mjs`
 - commit `9c8665c3217254803fc312d3d5e79add3179e76e`
 
-### Production implementation — COMPLETE
-Initial one-shot workflow setup `ac316e8a23f4acfb9a58b3a6673bc4a5283ca002` had YAML serialization failure run `36128886426` with no jobs; production was untouched.
-
-Workflow serialization fix:
-- `ae34b12dd92bef9033b7a79848aeebc8704aab48`
-- retrigger `eed4cc5f49ee836ab29c2f6f58579cca540b6f62`
-- repair run `36129008124`
-- job `108051678818`: completed/success
-- patch step success
-- transactional contract success
-- one-file diff gate success
-- bot commit success
-
+### Production implementation
 Production commit:
 - `e0de978f7a71f2b12dfb07c60ba4988a7e8d6dc6` — `Add transactional Excel import validation`
 - changed exactly one file: `index.html`
 
-Implementation behavior:
-- browser-side `validateImportedRecipeData(baseMenu, replaceRules)` uses the same four integrity semantics as the durable audit
-- candidate workbook is validated before any live-state assignment
-- invalid import returns without replacing `originalMenu`, `menuCategories`, `replaceUseRules`, or `allIngredientsList`
-- Matrix UI shows `#importStatus` live-region banner with concise Thai error summary
-- valid import commits candidate state only after validation and preserves existing success alert
+Behavior:
+- `validateImportedRecipeData(baseMenu, replaceRules)` uses the same four integrity semantics as the durable audit
+- candidate workbook is validated before any assignment to live state
+- invalid import preserves prior `originalMenu`, `menuCategories`, `replaceUseRules`, and `allIngredientsList`
+- invalid import shows a Thai `#importStatus` error live-region banner with actionable finding summary
+- valid import commits state only after validation and preserves the existing success alert
 - `recipe_master.json` unchanged
 
-### Browser acceptance + permanent QA
-Browser acceptance:
+Guarded repair evidence:
+- first repair run `36128886426` failed before jobs because workflow YAML serialization was invalid; production untouched
+- workflow serialization fix `ae34b12dd92bef9033b7a79848aeebc8704aab48`
+- retrigger `eed4cc5f49ee836ab29c2f6f58579cca540b6f62`
+- repair run `36129008124` / job `108051678818`: completed/success
+- patch, regression contract, one-file diff gate, and bot commit all succeeded
+
+### Browser acceptance
 - `qa/transactional-import-ui-contract.mjs`
 - commit `8d510d34b9ed55f59c7afb985eb0268dc1143ac5`
-- performs actual generated XLSX imports through the real file input
-- invalid workbook asserts error banner + exact live-state preservation
-- valid workbook asserts success banner + live-state commit + existing success alert
-- captures desktop and phone error/success screenshots
+- generates actual `.xlsx` workbooks in Chromium and submits them through the real file input
+- invalid workbook asserts visible error banner + exact live-state preservation + no success alert
+- valid workbook asserts success banner + committed candidate state + existing success alert
+- captures desktop + phone error/success evidence
 
 Permanent UI QA integration:
-- `.github/workflows/ui-qa.yml`
 - commit `41a975495c759ff3e9f41fa6439e654df1b772e2`
-- new required steps:
-  - `Verify transactional Excel import structure`
-  - `Verify transactional Excel import UI locally`
-  - `Verify deployed transactional Excel import UI`
 
-Fresh acceptance run:
-- UI QA run ID `36129243341`
+Fresh acceptance:
+- UI QA run `36129243341`
 - run number 159
 - head `41a975495c759ff3e9f41fa6439e654df1b772e2`
-- latest observed status: in_progress
-- latest observed step: Install Playwright
-- no failure evidence yet
+- status completed
+- conclusion success
+- `Verify transactional Excel import structure`: success
+- `Verify transactional Excel import UI locally`: success
+- `Verify deployed transactional Excel import UI`: success
+- all previously accepted local/deployed UI gates: success
+- screenshot upload: success
 
-Expected screenshot artifact names if steps pass:
-- `33-local-desktop-import-validation-error.png`
-- `34-local-desktop-import-validation-success.png`
-- `33-local-phone-import-validation-error.png`
-- `34-local-phone-import-validation-success.png`
-- equivalent `live` screenshots from deployed Pages
+Artifact:
+- `ui-qa-screenshots`
+- artifact ID `10861246503`
+- size 101,734,891 bytes
+- digest `sha256:d579a7ad21051fcdfc77403a97f975020f0d661e3a3cb90642f63f23fe6d4ef6`
 
-## ACCEPTANCE CONTRACT
-Invalid workbook must be rejected before live-state replacement for:
-- mismatched menu
-- invalid exclude
-- duplicate `(menu, exclude)`
-- no replacement options for a multi-ingredient exclusion
+## REAL-SCREEN EVIDENCE / MANUAL REVIEW
+Local and deployed/live transactional screenshots are byte-identical:
 
-On rejection:
-- preserve prior live state
-- no partial commit
-- show actionable error summary instead of success
+Error — desktop:
+- dimensions 1280x900
+- SHA256 `03e699d20fc2576eeb6eed87684b508ead4fe100d1df1d59de95ad40e9733f32`
 
-Real-screen closeout requires:
-- fresh run 159 green
-- local/deployed screenshots produced
-- phone + desktop Matrix error banner readable
-- Matrix header/actions/table remain usable
-- valid success state readable
+Error — phone:
+- dimensions 390x844
+- SHA256 `a659a33ed4a3ede3c4694412f6d085dc8f0b94c7f4b32d63073917b7183db3ac`
+
+Success — desktop:
+- dimensions 1280x900
+- SHA256 `e8809082aca407b5497e89be2121490c257d9f6323e53beac5e4b099e41b5057`
+
+Success — phone:
+- dimensions 390x844
+- SHA256 `e3fbfbb272494a3a91f17be2657622eb08eeeb3c8c3a8aa4d303d896b0e8b2c8`
+
+Manual visual findings:
+- phone error banner is readable and fits without horizontal overflow
+- Matrix upload/download/close controls remain visible and usable above the banner
+- error state keeps the previous Matrix visible below it, making preservation explicit
+- desktop banner is compact and leaves the Matrix table usable
+- success banner is concise and readable on both phone and desktop
+- synthetic valid import displays the committed two-row Matrix correctly
+- no accepted Phase 1 visual regression observed by run 159
+
+## TEMPORARY ARTIFACTS — CLEANUP AFTER USER ACCEPTANCE
+Do not delete before user review unless required:
+- `.github/workflows/audit-transactional-import-validation.yml`
+- `.github/workflows/repair-transactional-import-validation.yml`
+- `repair-staging/import-transaction/RUN_REPRO`
+- `repair-staging/import-transaction/RUN_FIX`
+
+Keep permanently:
+- `qa/transactional-import-validation-contract.mjs`
+- `qa/transactional-import-ui-contract.mjs`
+- permanent steps in `.github/workflows/ui-qa.yml`
 
 ## DO NOT REPEAT
 - do not reopen Phase 1 visual work
 - do not revisit blocked raw shrimp credits
-- do not recreate old repro run
-- do not modify bundled recipe data for this item
-- do not create duplicate UI QA while run `36129243341` exists
+- do not rerun old repro or repair runs merely to reconfirm
+- do not modify `recipe_master.json` for this item
 
 ## EXACT NEXT ACTION
-1. Continue only UI QA run `36129243341`.
-2. Verify new local structure/UI steps and deployed transactional UI step.
-3. If failure: inspect first failed required step and fix only that issue.
-4. If success: download `ui-qa-screenshots`, inspect transactional import screenshots, persist `READY FOR USER REVIEW`, and present real-screen evidence to the user.
+User reviews deployed/live phone + desktop error/success screenshots from run 159. If accepted, mark transactional Excel import validation ACCEPTED, clean up the four temporary workflow/trigger artifacts, keep permanent regression coverage, then discover the next independent backlog item. If user requests a visual correction, change only the Matrix import-status presentation without reopening the validated transaction semantics.
