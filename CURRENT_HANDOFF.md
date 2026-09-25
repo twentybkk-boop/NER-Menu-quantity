@@ -3,7 +3,7 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — UAT-013 CODE INTEGRATED; FIRST CI RUN FAILED
+## CURRENT WORK HEAD — UAT-013 FIRST CI ROOT CAUSE CONFIRMED; QA HARNESS FIX NEXT
 
 Only remaining user-reported defect was portrait background art looking composited/cut-and-paste. User explicitly approved the newly generated portrait-native garden/hot-pot background.
 
@@ -24,24 +24,30 @@ Only remaining user-reported defect was portrait background art looking composit
   - portrait ivory veil/ambient opacity reduced so the approved art reads as one coherent scene
   - landscape branch remains on accepted `background-master.webp` with existing geometry/masthead protection
 - dedicated contract `qa/uat013-portrait-background-contract.mjs` commit `d7879675cc58f111bb5390b5d10c606d6b98581a`
-  - checks portrait uses new asset and `cover`
-  - checks landscape does not use portrait asset and retains old master
-  - checks backmost/pointer-events safety
-  - renders `35-phone-portrait-uat013.png` / `live-35-phone-portrait-uat013.png`
-- orientation regression contract updated commit `6d3a25434e97588af7bc6e1509e0280978b5b339` for portrait-vs-landscape asset split without weakening layering/rail gates
-- `.github/workflows/ui-qa.yml` commit `33c9f26cb49dc1ce27dfadccd2151956d2acc26f` wires UAT-013 local + deployed gates into the existing suite
-- code checkpoint commit `21e994f8a670f527a269693f6b448e21ceebe473` (`Checkpoint UAT-013 code before CI`)
+- orientation regression contract updated commit `6d3a25434e97588af7bc6e1509e0280978b5b339`
+- `.github/workflows/ui-qa.yml` commit `33c9f26cb49dc1ce27dfadccd2151956d2acc26f` wires UAT-013 local + deployed gates
+- code checkpoint commit `21e994f8a670f527a269693f6b448e21ceebe473`
 
-## FIRST CI READ — VERIFIED DURABLE EXTERNAL STATE
-- UI QA run `36101969064`
-  - code head `33c9f26cb49dc1ce27dfadccd2151956d2acc26f`
-  - final status `completed`
-  - conclusion `failure`
-  - failed step/log not yet inspected at this checkpoint
-- Pages run `36102019453`
-  - checkpoint head `21e994f8a670f527a269693f6b448e21ceebe473`
-  - bounded-read status `in_progress`
-  - no further Pages polling performed in this checkpoint
+## FIRST CI FAILURE — ROOT CAUSE VERIFIED
+UI QA:
+- run `36101969064`
+- job `107966196621`
+- code head `33c9f26cb49dc1ce27dfadccd2151956d2acc26f`
+- final `completed/failure`
+- first failed required step: `Run Chromium + WebKit UI QA`
+- command: `node qa/ui-qa-runner.mjs`
+- exact assertion: `chromium/iphone: background master not active`
+- expected regex: `/background-master\.webp/`
+- actual computed `body::before` background correctly contains `assets/background-portrait-garden-v1.webp`
+
+Root cause:
+- product UAT-013 portrait CSS is applying correctly.
+- the generic/base UI QA harness still hardcodes the pre-UAT-013 assumption that the iPhone portrait background must be `background-master.webp`.
+- this is a stale QA-harness compatibility assertion, not evidence of a product visual regression.
+- later gates were skipped because the base runner failed first.
+
+Pages:
+- run `36102019453` on checkpoint head `21e994f8a670f527a269693f6b448e21ceebe473` was `in_progress` at the prior bounded read; do not poll it repeatedly while fixing the known QA blocker.
 
 ## ACCEPTED / DO NOT REOPEN
 - UAT-011 character cutout cleanup
@@ -56,15 +62,15 @@ Only remaining user-reported defect was portrait background art looking composit
 - do not rewrite exact repair staging chunks
 - do not alter landscape behavior unless a concrete regression appears
 - do not touch accepted character binaries
-- do not rerun UI QA `36101969064` before the first failed step is understood
-- do not poll Pages `36102019453` repeatedly
+- do not rerun old failed UI QA `36101969064`
+- do not change product CSS to satisfy this stale base assertion
 
 ## EXACT NEXT ACTION
-NEXT SHORT SESSION ONLY:
-1. Fetch jobs for failed UI QA run `36101969064`.
-2. Inspect only the first failed required step/log and identify exact failure.
-3. Persist exact failure/root cause before editing.
-4. Make only the minimum QA/product correction supported by that evidence.
-5. Persist fix checkpoint before waiting for new Actions.
+NEXT SHORT CHUNK ONLY:
+1. Inspect `qa/ui-qa-runner.mjs` only around the base background assertion and orientation/viewport case definitions.
+2. Update the base contract minimally so portrait cases require `background-portrait-garden-v1.webp` and reject `background-master.webp`, while landscape cases continue to require `background-master.webp` and reject the portrait asset.
+3. Preserve every other base UI invariant unchanged.
+4. Verify diff scope is QA harness only.
+5. Persist QA-harness-fix checkpoint before reading new Actions.
 
-If the next UI QA succeeds, download only `ui-qa-screenshots` and inspect targeted `35-phone-portrait-uat013.png` / live counterpart plus phone portrait layering evidence. After verified visual acceptance, remove temporary UAT-013 repair staging/trigger artifacts and persist READY FOR USER FINAL REVIEW.
+After that, read the new UI QA + Pages once. If successful, download only the screenshots artifact and inspect targeted local/live UAT-013 portrait evidence before cleanup and READY FOR USER FINAL REVIEW.
