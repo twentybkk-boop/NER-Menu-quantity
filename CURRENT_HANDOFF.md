@@ -3,7 +3,7 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — UAT-013 REPAIR RUN FAILED; FAILURE CHECKPOINTED
+## CURRENT WORK HEAD — UAT-013 REPAIR ROOT CAUSE CONFIRMED; CHUNK 08 ONLY NEEDS RESTORE
 
 Latest user hands-on result:
 - UAT-011 cutout cleanup is accepted; do not reopen it.
@@ -25,26 +25,28 @@ Optimized production target:
 - expected base64 encoded length: 167,884 characters
 - WebP quality 88 / method 6 from the approved PNG.
 
-## EXACT BINARY TRANSPORT — STAGING VERIFIED READY
-- repair workflow: `.github/workflows/repair-uat013-portrait-background.yml`
-- trigger path: `repair-staging/uat013/RUN_EXACT_REPAIR`
-- staged `portrait-00.b64` through `portrait-10.b64` are all present on `main` with no gaps.
-- staging head before trigger: `0eb2a98aedcbd610c25bf9459c6a854fdb0149ed`.
-- raw aggregate staged size = 167,884 bytes/chars, matching expected base64 encoded length.
-
-## REPAIR TRIGGER / FAILURE — VERIFIED DURABLE
-- trigger marker commit: `bd5ea0a6bd5eea09c46338d5d74e2036083c6476`
+## REPAIR RUN 1 — VERIFIED FAILURE
+- trigger commit: `bd5ea0a6bd5eea09c46338d5d74e2036083c6476`
 - workflow run: `36100717195`
-- workflow: `Repair exact UAT-013 portrait background`
-- final status: `completed`
-- final conclusion: `failure`
-- no CSS integration has been performed.
-- no rerun/second trigger has been created.
+- final status: `completed/failure`
+- failed step: `Reconstruct and verify approved portrait background`
+- exact log failure: `base64: invalid input`
+- failure happened during concatenation/decode, before target size/hash verification and before production asset commit.
 
-## IMPORTANT CURRENT-GITHUB OBSERVATION
-- current `main` checkpoint commit `69e8e4db0d8ae9960d23a52b65a23113bf475321` has parent `1206cfc98b041676e42f17e164e4039d7597dbbe`.
-- this suggests the workflow may have created a bot commit before failing, but this is NOT YET accepted as successful mapping.
-- do not infer success until the failed step is inspected and `assets/background-portrait-garden-v1.webp` is verified exact size/hash.
+## ROOT CAUSE — VERIFIED
+- local exact `portrait-08.b64` normalized payload length = 16,000 chars.
+- expected exact normalized Git blob SHA for chunk 08 = `788cd6ab47119fc35da10a6e52f3c420ed0fdb76`.
+- trigger-time remote chunk 08 had blob SHA `5ecc80fe9b6083826191ca874bb42971b73f624d` and size 15,999 chars, so it was missing one base64 character.
+- current `main` now returns 404 for `repair-staging/uat013/portrait-08.b64`; chunk 08 is absent.
+- remote chunks `00–07`, `09`, and `10` match the local exact chunk blob SHAs (allowing only expected trailing-newline/no-newline representation).
+- commit `1206cfc98b041676e42f17e164e4039d7597dbbe` is an EMPTY commit despite message `Correct exact UAT-013 portrait background chunk 08`: GitHub reports `stats.total=0` and `files=[]`; it did not correct the chunk.
+
+## CURRENT STAGING STATE
+- `portrait-00.b64` through `portrait-07.b64`: verified present/exact.
+- `portrait-08.b64`: MISSING on current `main`; must be restored from local exact chunk only.
+- `portrait-09.b64` and `portrait-10.b64`: verified present/exact.
+- `RUN_EXACT_REPAIR` marker still exists from run 1.
+- no production portrait CSS integration has been performed.
 
 ## UAT-011 — VERIFIED FIXED / DO NOT REOPEN
 - exact cleaned top-left production blob `5740a9a4619938e8d71b28d8162729b2738bfb59`, 180,814 bytes
@@ -66,18 +68,16 @@ Optimized production target:
 - do not regenerate UAT-011 assets/masks
 - do not edit landscape background behavior
 - do not modify business logic
-- do not rewrite staged chunks `00–10`
-- do not create another UAT-013 repair trigger yet
-- do not rerun workflow `36100717195` yet
-- do not trust bot commit `1206cfc9…` without exact asset verification
+- do not rewrite good chunks `00–07`, `09`, `10`
+- do not trust run 1 as successful mapping
+- do not touch portrait CSS before exact production asset mapping is verified
 
 ## EXACT NEXT ACTION
 NEXT SHORT SESSION ONLY:
-1. Fetch jobs/steps for failed repair run `36100717195`.
-2. Inspect only the failed repair step/log and identify exact failure point.
-3. Fetch bot commit `1206cfc98b041676e42f17e164e4039d7597dbbe` and verify changed paths.
-4. Fetch `assets/background-portrait-garden-v1.webp` metadata/blob from current `main` and verify exact size/hash if possible.
-5. Persist either VERIFIED BINARY MAPPING or exact blocker before any CSS change.
-6. STOP before portrait CSS integration.
+1. Restore `repair-staging/uat013/portrait-08.b64` from `/mnt/data/uat013_chunks/portrait-08.b64`, using the exact normalized 16,000-character payload.
+2. Verify remote chunk 08 blob SHA exactly `788cd6ab47119fc35da10a6e52f3c420ed0fdb76` and size 16,000.
+3. Verify full normalized staging aggregate is 167,884 chars with chunks `00–10` and no extra `08a/08b` files on remote.
+4. Persist a corrected-staging checkpoint.
+5. STOP before retriggering repair.
 
-After binary mapping is verified, a later short session may update portrait-only CSS to use the new asset, keep landscape unchanged/backmost, then run UI QA/Pages and targeted phone-portrait local/live review.
+Following short session: modify existing `RUN_EXACT_REPAIR` marker content to create a new push trigger, observe the new repair run once, and checkpoint result. Only after exact production blob verification may portrait-only CSS integration begin.
