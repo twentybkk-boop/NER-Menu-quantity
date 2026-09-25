@@ -19,56 +19,85 @@
   - UI QA run `36129243341` / run 159 success
   - permanent transactional regression/browser coverage remains in repo
 
-## CURRENT WORK HEAD — MATRIX NUMERIC EDIT VALIDATION REPRO SETUP COMPLETE / TRIGGER PENDING
+## CURRENT WORK HEAD — MATRIX NUMERIC EDIT VALIDATION ROOT GAP REPRODUCED
 
-### Verified production gap candidate
-Current `editMatrixCell(rowIndex, ingredient, currentValue)` uses permissive `parseFloat(newVal)` as its only numeric gate, then writes the parsed result directly into `row.replace[ingredient]`.
+### Production code under test
+Current `editMatrixCell(rowIndex, ingredient, currentValue)` uses `parseFloat(newVal)` as its numeric gate and then stores the parsed value directly into `row.replace[ingredient]`.
 
-Potential invalid behaviors pinned for reproduction:
-- `1abc` can be accepted as `1`
-- `-5` can be stored as a negative replacement quantity
-- `Infinity` can be stored as a non-finite replacement quantity
-- whitespace-only input is expected to remain rejected
+No production behavior was changed in the reproduction chunk.
 
-Valid behavior that must remain supported:
-- integer input
-- decimal input with raw decimal precision preserved
-- no rounding during Matrix editing
-
-### Targeted reproduction contract — DURABLE
+### Targeted reproduction contract
 File:
 - `qa/matrix-edit-validation-contract.mjs`
 
 Commit:
 - `b09c13e58aa29b48713a5ca145e6dafbad229b4c`
 
-Contract design:
-- reads production `index.html`
-- extracts the actual current `editMatrixCell()` function body
-- executes that exact function in a Node `vm` with controlled `prompt()`, `replaceUseRules`, and `renderMatrixTable()` globals
-- verifies valid integer `3` stores `3`
-- verifies valid decimal `0.75` stores raw `0.75`
-- requires invalid `1abc`, `-5`, `Infinity`, and whitespace to leave prior value `2.5` unchanged and not re-render
-- logs all observed results before assertions so a failing run preserves exact behavior evidence
+The contract reads `index.html`, extracts the actual production `editMatrixCell()` function, and executes that exact function inside Node `vm` with controlled `prompt()`, `replaceUseRules`, and `renderMatrixTable()` globals.
 
-### One-shot read-only repro workflow — DURABLE
+### One-shot repro workflow
 File:
 - `.github/workflows/audit-matrix-edit-validation.yml`
 
-Commit:
+Setup commit:
 - `cd5ba6b60cf15c51a6f2c6aaa2a5da04ad1d2c28`
 
-Trigger path:
+Trigger:
 - `repair-staging/matrix-edit-validation/RUN_REPRO`
+- trigger commit `0ec7b81e6be55ec6a1b9a97f56e357ca143de36b`
 
-Workflow is read-only and only runs:
-- `node qa/matrix-edit-validation-contract.mjs`
+Run:
+- workflow `Audit Matrix numeric edit validation`
+- run ID `36131405557`
+- run number 1
+- status completed
+- conclusion failure
+- job ID `108059265181`
+- failed step: `Run Matrix numeric edit validation contract`
 
-Production `index.html` and `recipe_master.json` have NOT been modified in this reproduction chunk.
+### Exact runtime observations from the failing run
+The contract logged all cases before asserting:
+- valid integer `3` -> stored value `3`, `renders=1`
+- valid decimal `0.75` -> stored value `0.75`, `renders=1`
+- mixed text `1abc` -> stored value `1`, `renders=1` **DEFECT**
+- negative `-5` -> stored value `-5`, `renders=1` **DEFECT**
+- `Infinity` -> accepted and `renders=1` **DEFECT**
+  - the observation log serializes that non-finite value as `null` because `JSON.stringify(Infinity)` is `null`; the render count confirms the production edit path accepted the input
+- whitespace-only input -> prior value `2.5` preserved, `renders=0` (already rejected correctly)
+
+Exact first failing assertion:
+- `mixedText: invalid Matrix numeric edit must leave the previous value unchanged`
+- actual `1`
+- expected `2.5`
+
+Conclusion: this is a reproduced production validation defect, not a test-harness/setup failure.
+
+## IMPLEMENTATION CONTRACT FOR NEXT CHUNK
+Fix only direct Matrix numeric edit parsing/validation.
+
+Required behavior:
+- valid integer remains accepted and stored exactly
+- valid decimal remains accepted and raw decimal precision is preserved
+- invalid input leaves previous value unchanged
+- rejected input does not call `renderMatrixTable()`
+- reject partial numeric strings such as `1abc`
+- reject negative values
+- reject non-finite values such as `Infinity`
+- whitespace-only input remains rejected
+- do not round during editing
+
+Preferred minimal validation semantics:
+1. trim prompt string
+2. require a complete numeric representation, not a numeric prefix
+3. convert with strict numeric conversion
+4. require `Number.isFinite(value)`
+5. require `value >= 0`
+6. only then write to `row.replace[ingredient]` and re-render
+
+Preserve cancel behavior (`prompt()` returns `null` => no mutation).
 
 ## SCOPE BOUNDARY
-This item is only direct Matrix cell numeric edit validation.
-Do not broaden into:
+Do not broaden this item into:
 - PIN behavior
 - Excel import behavior
 - JSON export behavior
@@ -76,15 +105,19 @@ Do not broaden into:
 - replacement business-rule changes
 - Phase 1 visual work
 - raw shrimp-credit recovery
+- `recipe_master.json` modification
 
 ## DO NOT REPEAT
+- do not rerun run `36131405557` merely to reconfirm the defect
+- do not recreate the reproduction setup
 - do not reopen accepted Phase 1 / shrimp pooling / transactional import work
-- do not modify `recipe_master.json`
-- do not implement the Matrix fix before exact repro evidence is persisted
+- do not modify bundled production data
 
-## EXACT NEXT ACTION — THIS SHORT CHUNK
-1. Create `repair-staging/matrix-edit-validation/RUN_REPRO` as the final setup write.
-2. Identify the resulting `Audit Matrix numeric edit validation` run.
-3. Read the run once; if failed, inspect only the failed contract job/log.
-4. Persist exact observed mutation(s) and failing assertion/root gap.
-5. STOP before production implementation.
+## EXACT NEXT ACTION — NEXT SHORT CHUNK ONLY
+Implement the minimal Matrix numeric edit validation fix:
+1. Re-read current `main` + this handoff.
+2. Patch only the Matrix numeric edit parsing/validation path in `index.html`.
+3. Make `qa/matrix-edit-validation-contract.mjs` pass without weakening its invalid-input assertions.
+4. Add the contract to permanent UI QA if the production fix passes targeted verification.
+5. Run fresh QA as a separate milestone if needed; do not broaden scope.
+6. Persist implementation result/checkpoint and STOP before unrelated backlog discovery.
