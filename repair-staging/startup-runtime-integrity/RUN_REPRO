@@ -1,3 +1,0 @@
-NER Menu Quantity startup recipe runtime integrity repro
-contract=qa/startup-runtime-integrity-contract.mjs
-expected=current loadData accepts integrity-invalid startup payload before validation
