@@ -3,11 +3,37 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — READY FOR USER FINAL REVIEW
+## CURRENT WORK HEAD — UAT-014 LANDSCAPE BACKGROUND REPLACEMENT APPROVED; INTEGRATION NEXT
 
-UAT-013 portrait background defect has been repaired, automation-verified, visually verified against local/live evidence, and its temporary repair staging has been removed with deletion-only scope verification.
+UAT-013 portrait background remains accepted and must not be reopened.
 
-No further code/product/QA edits are warranted unless user final hands-on review provides a concrete regression.
+Latest user final hands-on review found one new concrete defect only: **landscape background still does not look right**. User approved a new cleaner landscape-native sunset terrace / hot-pot background generated in the current session and asked to use that exact approved image as the landscape background.
+
+No business/runtime/recipe/quantity/character behavior change is requested.
+
+## UAT-014 USER-APPROVED LANDSCAPE ASSET — READY TO MAP
+Approved source image from current session:
+- generated image selected by user before integration request
+- dimensions: 1672x941 RGB
+- source PNG SHA256: `51977e153672715fca9b82b8844c0a442756ec0cc7fc8b4b46267f4fdf80bc58`
+
+Prepared production WebP candidate:
+- target path: `assets/background-landscape-garden-v1.webp`
+- dimensions: 1672x941 RGB
+- size: 185,146 bytes
+- SHA256: `d61b6f6ea01b8c673b903c3098391742c852d3c8191c4d3e98f65efa4564c39d`
+
+Evidence / root cause:
+- current `assets/visual-uat-v4-chunk1.css` landscape media query still maps `body::before` to legacy `background-master.webp`
+- portrait media query correctly maps accepted `background-portrait-garden-v1.webp`
+- therefore the new defect is isolated to the landscape art source, not portrait, character binaries, layout, business logic, or calculator semantics
+
+Minimum intended change:
+1. add the approved binary as `assets/background-landscape-garden-v1.webp`
+2. map only landscape `body::before` image layer to that new asset using `cover`
+3. keep portrait mapping unchanged
+4. update only orientation/layering QA assumptions that explicitly require `background-master.webp` for landscape
+5. preserve all previously accepted landscape layout, masthead protection, character placement, calculator behavior, and interaction behavior
 
 ## APPROVED UAT-013 ASSET — VERIFIED MAPPED
 - production path: `assets/background-portrait-garden-v1.webp`
@@ -22,7 +48,6 @@ No further code/product/QA edits are warranted unless user final hands-on review
 - `assets/visual-uat-v4-chunk1.css` commit `7abe32e8a4147ab2b7b5763a98e31a8bb93dbd19`
   - portrait uses `background-portrait-garden-v1.webp`
   - portrait image layer uses `cover`, centered top
-  - landscape remains on accepted `background-master.webp`
 - dedicated contract `qa/uat013-portrait-background-contract.mjs` commit `d7879675cc58f111bb5390b5d10c606d6b98581a`
 - orientation regression contract commit `6d3a25434e97588af7bc6e1509e0280978b5b339`
 - workflow wiring commit `33c9f26cb49dc1ce27dfadccd2151956d2acc26f`
@@ -86,7 +111,7 @@ Manual visual verification:
 - protected center content remains readable and unobstructed
 - all three approved characters are present together: upper-left, lower-left, lower-right
 - approved upper-left character remains without glasses
-- no concrete visual regression found
+- no concrete portrait regression found
 
 Visual-acceptance checkpoint:
 - `9e9e13675f100726bf708aeb3fc207ec8ac9d56b` — `Checkpoint UAT-013 visual evidence accepted`
@@ -105,24 +130,6 @@ Pre-merge compare verification:
 - zero modified paths outside deletion set
 - no production asset/CSS/runtime/business/QA contract changed
 
-Removed exactly:
-- `.github/workflows/repair-uat013-portrait-background.yml`
-- `repair-staging/uat013/RUN_EXACT_REPAIR`
-- `repair-staging/uat013/portrait-00.b64`
-- `repair-staging/uat013/portrait-01.b64`
-- `repair-staging/uat013/portrait-02.b64`
-- `repair-staging/uat013/portrait-03.b64`
-- `repair-staging/uat013/portrait-04.b64`
-- `repair-staging/uat013/portrait-05.b64`
-- `repair-staging/uat013/portrait-06.b64`
-- `repair-staging/uat013/portrait-07.b64`
-- `repair-staging/uat013/portrait-08a.b64`
-- `repair-staging/uat013/portrait-08b.b64`
-- `repair-staging/uat013/portrait-08c.b64`
-- `repair-staging/uat013/portrait-08d.b64`
-- `repair-staging/uat013/portrait-09.b64`
-- `repair-staging/uat013/portrait-10.b64`
-
 Post-cleanup tree verification:
 - `repair-staging/uat013` is gone
 - `repair-staging/` contains only the separate accepted UAT-011 staging
@@ -130,40 +137,32 @@ Post-cleanup tree verification:
 - `.github/workflows/` retains the separate UAT-011 repair workflow and durable `ui-qa.yml`
 - UAT-011 staging/workflow were not touched
 
-## LATEST PAGES / ACTIONS BOUNDED STATUS AFTER CLEANUP
-Bounded Actions read after cleanup found:
-- Pages build/deployment run `36104277804`
-- run number 503
-- head SHA `775b628b32810b83b1ccee785eddf5153abd2bfd`
-- status at bounded read: `queued`
-- conclusion at bounded read: not final
-- no polling loop was performed
-- no cleanup-head UI QA run was visible in the same top-10 bounded Actions listing at that moment; do not invent one
-
-The cleanup commit is deletion-only and does not modify production behavior. The previously accepted UAT-013 UI QA run 150 and local/live pixel-identical visual evidence remain the acceptance evidence for product behavior.
+Final UAT-013 handoff checkpoint before new landscape feedback:
+- `4def958bc18f6950c085a78d8111dfb5a0b64831` — `Checkpoint UAT-013 ready for user final review`
 
 ## ACCEPTED / DO NOT REOPEN
 - UAT-011 character cutout cleanup
-- V4 Chunk 1–4 acceptance
+- V4 Chunk 1–4 acceptance except landscape art source now explicitly reopened by user feedback
 - UAT-013 portrait-native background integration and visual evidence
-- landscape background/layout/interaction
+- landscape layout/interaction/masthead protection/character placement/calculator behavior (art source only is reopened)
 - P0-A/P0-B/P0-D/layering/sharpness/tap-safety/phone-landscape calculator behavior
 - business/runtime/recipe/quantity/exclusion/replacement/Matrix/PIN/import-export semantics
 
 ## DO NOT REPEAT
-- do not regenerate UAT-013 art
-- do not rebuild/remap the verified UAT-013 binary
+- do not regenerate UAT-013 portrait art
+- do not rebuild/remap the verified UAT-013 portrait binary
 - do not recreate removed UAT-013 repair staging/chunks/workflow
-- do not alter landscape behavior without concrete regression evidence
+- do not alter landscape layout/interaction beyond the user-reported background art source without concrete regression evidence
 - do not touch accepted character binaries
 - do not rerun failed runs `36101969064`, `36102366681`, or `36102894216`
-- do not reopen `qa/ui-qa-runner.mjs`, `qa/top-composition-v1-contract.mjs`, or `qa/long-list-rhythm-v1-contract.mjs` without new regression evidence
+- do not reopen portrait QA fixes without new portrait regression evidence
 - do not rerun successful UAT-013 UI QA run `36103333988`
-- do not repeat UAT-013 artifact review unless new regression evidence appears
-- do not touch UAT-011 staging/workflow as part of UAT-013 work
+- do not repeat UAT-013 portrait artifact review unless new portrait regression evidence appears
+- do not touch UAT-011 staging/workflow as part of UAT-014 work
 
 ## EXACT NEXT ACTION
-USER FINAL HANDS-ON REVIEW ONLY:
-1. User reviews the current deployed UI on the actual target device(s), especially phone portrait UAT-013 composition.
-2. If no concrete defect is observed, UAT-013 is complete and no further repository modification is required.
-3. If a concrete defect is observed, capture exact device/orientation/screenshot/behavior evidence first, persist the new blocker in `CURRENT_HANDOFF.md`, then change only the implicated scope.
+1. Add the user-approved prepared WebP binary at `assets/background-landscape-garden-v1.webp` and verify exact size/hash after repository mapping.
+2. Change only the landscape background image source in `assets/visual-uat-v4-chunk1.css` to `background-landscape-garden-v1.webp`; keep portrait mapping unchanged.
+3. Update only QA assertions/deployment readiness checks that explicitly require the legacy `background-master.webp` for landscape.
+4. Trigger resulting UI QA naturally via the commit; inspect the first resulting run once, no polling loop.
+5. If automation passes, inspect targeted phone/iPad landscape local/live screenshots before declaring UAT-014 ready for user review.
