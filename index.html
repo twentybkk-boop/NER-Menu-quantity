@@ -353,6 +353,13 @@
     .upload-label input { display: none; }
     .download-btn { background: #cfb26f; color: #352a22; }
     .matrix-close { background: #6c584d; color: #fff; }
+    .import-status {
+      margin: 10px 12px 0; padding: 12px 14px; border-radius: 14px;
+      white-space: pre-line; font-size: 12px; line-height: 1.5; font-weight: 700;
+      border: 1px solid transparent;
+    }
+    .import-status.error { background: #fff0f2; border-color: #e5aeb5; color: #8d3642; }
+    .import-status.success { background: #edf3e9; border-color: #b9c9aa; color: #4d653f; }
     #tableContainer {
       --matrix-col-1: 108px;
       --matrix-col-2: 112px;
@@ -638,6 +645,7 @@ body{isolation:isolate}
           <button id="closeMatrixButton" class="matrix-close" type="button">ปิดหน้าต่าง</button>
         </div>
       </header>
+      <div id="importStatus" class="import-status is-hidden" role="status" aria-live="polite"></div>
       <div id="tableContainer"></div>
     </div>
   </div>
@@ -1024,9 +1032,82 @@ body{isolation:isolate}
     function openMatrix() { renderMatrixTable(); showModal('matrixModal'); }
     function closeMatrix() { hideModal('matrixModal'); }
 
+    function validateImportedRecipeData(baseMenu, replaceRules) {
+      const mismatchedMenus = [];
+      const invalidExcludes = [];
+      const duplicateRules = [];
+      const noOptions = [];
+      const ruleMap = new Map();
+
+      (replaceRules || []).forEach((rawRule, index) => {
+        const menu = String(rawRule?.menu || '').trim();
+        const exclude = String(rawRule?.exclude || '').trim();
+        const key = `${menu}\u0000${exclude}`;
+        if (ruleMap.has(key)) duplicateRules.push({ menu, exclude, firstIndex: ruleMap.get(key).index, duplicateIndex: index });
+        else ruleMap.set(key, { ...rawRule, menu, exclude, index });
+
+        if (!Object.prototype.hasOwnProperty.call(baseMenu || {}, menu)) {
+          mismatchedMenus.push({ menu, exclude, index });
+          return;
+        }
+        if (!Object.prototype.hasOwnProperty.call(baseMenu[menu] || {}, exclude)) invalidExcludes.push({ menu, exclude, index });
+      });
+
+      Object.entries(baseMenu || {}).forEach(([menu, recipe]) => {
+        const ingredients = Object.keys(recipe || {});
+        if (ingredients.length <= 1) return;
+        const ingredientSet = new Set(ingredients);
+        ingredients.forEach(exclude => {
+          const rule = ruleMap.get(`${menu}\u0000${exclude}`);
+          if (!rule) {
+            noOptions.push({ menu, exclude, reason: 'missing-rule' });
+            return;
+          }
+          const visibleOptions = Object.keys(rule.replace || {}).filter(rep => rep !== exclude && ingredientSet.has(rep));
+          if (!visibleOptions.length) noOptions.push({ menu, exclude, reason: 'no-base-overlap' });
+        });
+      });
+
+      return { mismatchedMenus, invalidExcludes, duplicateRules, noOptions };
+    }
+
+    function hasImportValidationErrors(result) {
+      return Object.values(result || {}).some(rows => Array.isArray(rows) && rows.length > 0);
+    }
+
+    function formatImportValidationSummary(result) {
+      const labels = {
+        mismatchedMenus: 'เมนูใน Replace Use ไม่พบใน Original menu',
+        invalidExcludes: 'รายการที่หักไม่อยู่ในสูตรเมนู',
+        duplicateRules: 'มีแถวเมนู/รายการหักซ้ำ',
+        noOptions: 'ไม่มีวัตถุดิบทดแทนที่ใช้ได้'
+      };
+      const lines = ['นำเข้าไม่สำเร็จ — ตรวจพบข้อมูลไม่สอดคล้อง'];
+      Object.entries(labels).forEach(([key, label]) => {
+        const rows = result?.[key] || [];
+        if (!rows.length) return;
+        const examples = rows.slice(0, 2).map(row => `${row.menu || 'ไม่ระบุเมนู'} / ${row.exclude || 'ไม่ระบุรายการ'}`).join(', ');
+        lines.push(`• ${label} ${rows.length} จุด${examples ? `: ${examples}` : ''}`);
+      });
+      lines.push('แก้ไฟล์ Excel แล้วอัปโหลดใหม่ — ข้อมูลเดิมยังไม่ถูกเปลี่ยน');
+      return lines.join('\n');
+    }
+
+    function setImportStatus(kind, message) {
+      const status = el('importStatus');
+      if (!status) return;
+      if (!message) {
+        status.textContent = '';
+        status.className = 'import-status is-hidden';
+        return;
+      }
+      status.textContent = message;
+      status.className = `import-status ${kind === 'success' ? 'success' : 'error'}`;
+    }
     function importExcelData(event) {
       const file = event.target.files?.[0];
       if (!file) return;
+      setImportStatus('', '');
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
@@ -1097,14 +1178,22 @@ body{isolation:isolate}
             if (Object.keys(reps).length) newReplaceRules.push({ menu: menuName, exclude: excludeName, replace: reps });
           }
 
+          const validationResult = validateImportedRecipeData(newOriginalMenu, newReplaceRules);
+          if (hasImportValidationErrors(validationResult)) {
+            setImportStatus('error', formatImportValidationSummary(validationResult));
+            return;
+          }
+
           originalMenu = newOriginalMenu;
           menuCategories = newMenuCategories;
           replaceUseRules = newReplaceRules;
           allIngredientsList = repIngredientsList;
           initMenus();
           renderMatrixTable();
+          setImportStatus('success', `นำเข้าสำเร็จ • ${Object.keys(newOriginalMenu).length} เมนู • ${newReplaceRules.length} กฎการแทนที่`);
           alert('อัปโหลดและแปลงข้อมูลสำเร็จ!');
         } catch (err) {
+          setImportStatus('error', `นำเข้าไม่สำเร็จ — ${err.message}`);
           alert('Error: ' + err.message);
         } finally {
           event.target.value = '';
