@@ -20,22 +20,85 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
+
+      - name: Install exact Pillow encoder
+        run: python -m pip install --disable-pip-version-check Pillow==12.3.0
 
       - name: Reconstruct and verify exact cleaned overlays
         shell: bash
         run: |
           set -euo pipefail
 
-          cat repair-staging/uat011/top-*.b64 > /tmp/top.b64
-          cat repair-staging/uat011/bottom-*.b64 > /tmp/bottom.b64
+          git cat-file blob 990c6b3523f79a483f41f17032f03f880f97f461 > /tmp/original-top.webp
+          git cat-file blob cf1f98efe9c9f67cb48e3bd80f512b0f9adece45 > /tmp/original-bottom.webp
 
-          base64 --decode /tmp/top.b64 > /tmp/overlay-top-left-hires.webp
-          base64 --decode /tmp/bottom.b64 > /tmp/overlay-bottom-left-hires.webp
+          test "$(wc -c < /tmp/original-top.webp | tr -d ' ')" = "31174"
+          test "$(wc -c < /tmp/original-bottom.webp | tr -d ' ')" = "39712"
+          echo "6d70ae5b226ff6b7f92b04853c702401da71e7d03ef9fbf94a8fd46bb01574ca  /tmp/original-top.webp" | sha256sum -c -
+          echo "9d27c16f9185a4cac32a16f3415b4d60c392fcede32f877a863cad515b4baae8  /tmp/original-bottom.webp" | sha256sum -c -
+
+          python - <<'PY'
+          from PIL import Image
+
+          TOP = {
+              486: [(298,304)],
+              487: [(294,305)],
+              488: [(290,306)],
+              489: [(287,303),(305,305)],
+              490: [(283,295),(297,307)],
+              491: [(279,297),(303,308)],
+              492: [(276,308)],
+              493: [(273,309)],
+              494: [(271,311)],
+              495: [(259,312)],
+              496: [(252,312)],
+              497: [(247,313)],
+              498: [(243,314),(359,359)],
+              499: [(239,315),(356,361)],
+          }
+
+          BOTTOM = {
+              0:[(118,213),(302,370)], 1:[(119,208),(303,369)],
+              2:[(120,202),(303,369)], 3:[(121,196),(304,368)],
+              4:[(122,193),(304,368)], 5:[(123,193),(303,303),(305,367)],
+              6:[(124,193),(303,367)], 7:[(125,194),(297,366)],
+              8:[(126,194),(293,366)], 9:[(127,195),(308,365)],
+              10:[(128,195),(308,365)], 11:[(129,196),(309,364)],
+              12:[(131,196),(309,363)], 13:[(132,197),(309,362)],
+              14:[(134,197),(310,361)], 15:[(136,197),(312,360)],
+              16:[(139,197),(313,359)], 17:[(141,197),(313,358)],
+              18:[(143,196),(314,358)], 19:[(146,196),(315,358)],
+              20:[(148,195),(316,355)], 21:[(150,195),(319,355)],
+              22:[(152,194),(325,354)], 23:[(153,194),(330,353)],
+              24:[(157,193),(331,352)], 25:[(161,193),(331,351)],
+              26:[(165,192),(331,351)], 27:[(169,192),(334,350)],
+              28:[(172,191),(336,350)], 29:[(175,191),(339,350)],
+              30:[(178,190),(344,350)], 31:[(182,190),(344,350)],
+              32:[(185,189),(344,350)],
+          }
+
+          def reconstruct(src, dst, spans, expected_size):
+              im = Image.open(src).convert('RGBA')
+              assert im.size == expected_size, (im.size, expected_size)
+              px = im.load()
+              changed = 0
+              for y, ranges in spans.items():
+                  for x0, x1 in ranges:
+                      for x in range(x0, x1 + 1):
+                          r, g, b, a = px[x, y]
+                          assert a > 0, (x, y, a)
+                          px[x, y] = (r, g, b, 0)
+                          changed += 1
+              im.save(dst, format='WEBP', lossless=True, quality=80, method=6, exact=False)
+              return changed
+
+          assert reconstruct('/tmp/original-top.webp', '/tmp/overlay-top-left-hires.webp', TOP, (518,500)) == 552
+          assert reconstruct('/tmp/original-bottom.webp', '/tmp/overlay-bottom-left-hires.webp', BOTTOM, (655,524)) == 3176
+          PY
 
           test "$(wc -c < /tmp/overlay-top-left-hires.webp | tr -d ' ')" = "180814"
           test "$(wc -c < /tmp/overlay-bottom-left-hires.webp | tr -d ' ')" = "233136"
-
           echo "f0ffd24fdde830d06b0d715c7c6ba8c2e81402c9e93731524a3dfa724915d393  /tmp/overlay-top-left-hires.webp" | sha256sum -c -
           echo "bd645b4744270e221fe0eae8fe08eabf2771269391ddfc4650492e6da831ad31  /tmp/overlay-bottom-left-hires.webp" | sha256sum -c -
 
