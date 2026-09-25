@@ -125,8 +125,10 @@ function assertContract(c, browserName) {
   assert.equal(c.sections.length, 6, `${scope}: expected six later category chapters`);
   assert.ok(c.menus.width >= 285 && c.menus.width <= 302, `${scope}: protected center frame drifted to ${c.menus.width}px`);
 
-  /* Ambient round shapes are now explicitly backmost per new device feedback. */
-  assert.match(c.bodyBg, /background-master\.webp/, `${scope}: backmost illustrated environment missing`);
+  /* UAT-013 portrait-native art is the accepted backmost environment for this
+     fixed 390x844 phone portrait contract. */
+  assert.match(c.bodyBg, /background-portrait-garden-v1\.webp/, `${scope}: portrait-native backmost illustrated environment missing`);
+  assert.doesNotMatch(c.bodyBg, /background-master\.webp/, `${scope}: stale landscape background active in portrait`);
   assert.match(c.bodyBg, /radial-gradient/, `${scope}: backmost ambient bubbles missing`);
   assert.doesNotMatch(c.first.bg, /radial-gradient/, `${scope}: round ambient bubble leaked into verified first category layer`);
   assert.match(c.first.bg, /linear-gradient/, `${scope}: verified first-screen category paper wash regressed`);
