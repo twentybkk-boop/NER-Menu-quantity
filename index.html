@@ -1220,10 +1220,13 @@ body{isolation:isolate}
       const row = replaceUseRules[rowIndex];
       if (!row) return;
       const newVal = prompt(`แก้ไขปริมาณแทนที่:\nเมนู: ${row.menu}\nหัก: ${row.exclude}\nแทนด้วย: ${ingredient}\n\nกรอกตัวเลขใหม่:`, currentValue);
-      if (newVal !== null && !Number.isNaN(parseFloat(newVal))) {
-        row.replace[ingredient] = parseFloat(newVal);
-        renderMatrixTable();
-      }
+      if (newVal === null) return;
+      const normalized = String(newVal).trim();
+      if (!/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(normalized)) return;
+      const numericValue = Number(normalized);
+      if (!Number.isFinite(numericValue) || numericValue < 0) return;
+      row.replace[ingredient] = numericValue;
+      renderMatrixTable();
     }
 
     function renderMatrixTable() {
