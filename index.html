@@ -727,11 +727,18 @@ body{isolation:isolate}
       return Number.isNaN(num) ? 0 : Math.round(num);
     }
 
+    function floorPooledShrimpCredit(rawTotal) {
+      const num = Number(rawTotal);
+      if (!Number.isFinite(num) || num <= 0) return 0;
+      return Math.floor(num);
+    }
+
     function calculateNetRecipe(menuName) {
       const baseRecipe = originalMenu[menuName];
       if (!baseRecipe) return [];
       const netRecipeMap = { ...baseRecipe };
       const modifiedFlags = {};
+      let pooledShrimpCredit = 0;
 
       Object.keys(excludedItemsMap).forEach(ex => delete netRecipeMap[ex]);
 
@@ -740,10 +747,20 @@ body{isolation:isolate}
         const rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(ex).trim());
         if (rule?.replace?.[rep] !== undefined) {
           const addAmt = Number(rule.replace[rep]) || 0;
-          netRecipeMap[rep] = (Number(netRecipeMap[rep]) || 0) + addAmt;
-          modifiedFlags[rep] = true;
+          if (rep === 'กุ้ง') {
+            pooledShrimpCredit += addAmt;
+          } else {
+            netRecipeMap[rep] = (Number(netRecipeMap[rep]) || 0) + addAmt;
+            modifiedFlags[rep] = true;
+          }
         }
       });
+
+      const pooledShrimpAddition = floorPooledShrimpCredit(pooledShrimpCredit);
+      if (pooledShrimpAddition > 0) {
+        netRecipeMap['กุ้ง'] = (Number(netRecipeMap['กุ้ง']) || 0) + pooledShrimpAddition;
+        modifiedFlags['กุ้ง'] = true;
+      }
 
       return Object.entries(netRecipeMap).flatMap(([item, rawTotal]) => {
         const unit = getUnit(item);
