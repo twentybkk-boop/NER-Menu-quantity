@@ -1,0 +1,5 @@
+UAT-014 fresh UI QA visual review trigger
+product_repair_commit=3d6e50aba15dd862101996e1dc9afaefa6109c3e
+landscape_asset_blob=6183aecb8d4469b137edaa3ffb95d8cf7e8ec2bc
+landscape_asset_size=41838
+purpose=fresh local/live landscape screenshot evidence after exact binary repair
