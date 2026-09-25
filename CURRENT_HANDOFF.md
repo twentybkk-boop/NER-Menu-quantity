@@ -3,7 +3,7 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — UAT-011 + UAT-012 CODE DURABLE; EXTERNAL QA RUNNING
+## CURRENT WORK HEAD — UAT-011 + UAT-012 CODE DURABLE; FIRST COMBINED QA FAILURE ISOLATED
 
 ## UAT-011 — FIX DURABLE
 - production cleanup commit `be16bd5979546218bbbca81a0d46c1da33e3ac5c`
@@ -30,7 +30,7 @@ Regression gate:
 - existing layering contract now records `body::before.backgroundSize` and requires portrait to retain the `160%` image layer sizing.
 - no existing gate weakened.
 
-## FINAL COMBINED ACTIONS — ONE BOUNDED READ RECORDED
+## FINAL COMBINED ACTIONS — VERIFIED FINAL RESULT
 Relevant app/test head: `f28893b255f41ff70643c4e406d4de003909eddb`.
 
 Pages:
@@ -40,10 +40,37 @@ Pages:
 UI QA:
 - run `36093279114`
 - run number `141`
-- status at bounded read: **in_progress**
-- conclusion: not yet available
+- job `107940026638`
+- **completed / failure**
 
-Per crash-safe external-wait rule, no polling loop was started after observing this running state.
+### Gates that passed before the failure
+- base Chromium + WebKit UI QA — PASS
+- P0-A complete character composition — PASS
+- P0-B protected center frame — PASS
+- P0-D top composition — PASS
+- P0-D long-list rhythm — PASS
+- V4 thumbnail semantics/density — PASS
+- V4 Chunk 4 scale/detail/safety — PASS
+- orientation layering/backmost environment — PASS in Chromium + WebKit for phone portrait, phone landscape, iPad portrait, iPad landscape and wide iPad landscape
+
+This proves the new UAT-012 `160% auto` portrait crop contract is active and the backmost/layering regression suite accepts it.
+
+### FIRST FAILED REQUIRED STEP — VERIFIED
+Step 15: `Verify V3 character high-res sharpness locally`
+
+Exact log failure:
+`page.evaluate: Error: failed to load http://127.0.0.1:8000/assets/overlay-top-left-hires.webp?v=20260924-v3-recovered1`
+
+Source:
+- `qa/character-sampling-v1-contract.mjs`
+- failure occurs while directly loading the top-left high-resolution production asset.
+- process exits before calculator/deployed gates, so those later steps were skipped.
+
+Artifact upload still succeeded:
+- `ui-qa-screenshots`
+- artifact ID `10845589504`
+- size `29,236,200` bytes
+- digest `sha256:dcad54fa1a5757ba9706cb751aeaf16f3de394e76ceff8de2c346eef091e578e`
 
 ## VERIFIED DIFF SCOPE
 - UAT-011 changed only two high-res character binaries.
@@ -51,24 +78,29 @@ Per crash-safe external-wait rule, no polling loop was started after observing t
 - QA change only `qa/layering-orientation-v1-contract.mjs` background-size capture/assertion.
 - no business/runtime/recipe/quantity/exclusion/replacement/Matrix/PIN/import-export changes.
 
+## HYPOTHESES ELIMINATED
+- UAT-012 layering/crop regression is NOT the cause of this QA failure; its contract passed in both engines/all targeted orientations.
+- generic P0-A/P0-B composition geometry is NOT the first blocker; both passed.
+- do not change portrait background presentation in response to this failure.
+
+## OPEN BLOCKER
+Determine why the cleaned production `assets/overlay-top-left-hires.webp` cannot be decoded/loaded by the direct sharpness contract after the UAT-011 binary cleanup. Do not assume whether the issue is binary encoding vs serving/query-string behavior until inspected.
+
 ## VERIFIED BASELINE — DO NOT REOPEN
 - V4 Chunk 1–4 pre-delta acceptance remains baseline.
 - preserve P0-A/P0-B/P0-D/layering/sharpness/tap-safety and phone-landscape interaction/modal behavior.
+- UAT-012 presentation fix is currently accepted by its dedicated local regression gate.
 
 ## DO NOT REPEAT
-- do not redo UAT-011 cleanup.
+- do not redo UAT-011 contamination discovery/alpha-mask cleanup.
 - do not redo UAT-012 root-cause derivation/fix.
-- do not rerun the same QA while run `36093279114` is active.
-- do not poll `36093279114` in a loop.
+- do not rerun failed run `36093279114` unchanged.
+- do not modify portrait background rules while resolving the asset-load blocker.
 
-## EXACT NEXT ACTION — WHEN CONTINUING
-1. Fresh-read current `main` + this handoff.
-2. Read UI QA run `36093279114` **once** for its final/current state.
-3. If still running: persist status and stop again.
-4. If failed: read only the first failed required step/log, checkpoint exact evidence before edits.
-5. If completed/success:
-   - fetch job steps and artifact metadata once;
-   - persist automation success;
-   - inspect only targeted final evidence: phone portrait layering screenshot for environment visibility and phone portrait page/character evidence for clean top/bottom-left cutouts;
-   - use local/live byte equivalence when available.
-6. If both defects visually PASS, persist `READY FOR USER RE-REVIEW` and hand back `https://twentybkk-boop.github.io/NER-Menu-quantity/`.
+## EXACT NEXT ACTION
+1. Fresh-confirm this failure checkpoint is durable on `main`.
+2. Inspect ONLY `assets/overlay-top-left-hires.webp` and, as control, `assets/overlay-bottom-left-hires.webp` / `assets/overlay-right-hires.webp` for WebP validity/decodability and the exact direct-load URL used by `qa/character-sampling-v1-contract.mjs`.
+3. Determine whether the blocker is malformed cleaned binary or test/server URL behavior.
+4. Persist verified root cause BEFORE editing.
+5. Apply the smallest fix, checkpoint, then run one combined UI QA + Pages verification for UAT-011/UAT-012.
+6. If automation passes, inspect only targeted phone-portrait environment + character cutout evidence, then persist `READY FOR USER RE-REVIEW` and hand back `https://twentybkk-boop.github.io/NER-Menu-quantity/`.
