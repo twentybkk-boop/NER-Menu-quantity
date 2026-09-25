@@ -1,0 +1,17 @@
+name: Audit transactional import validation
+
+on:
+  push:
+    paths:
+      - 'repair-staging/import-transaction/RUN_REPRO'
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce-transactional-import-gap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run transactional import validation contract
+        run: node qa/transactional-import-validation-contract.mjs
