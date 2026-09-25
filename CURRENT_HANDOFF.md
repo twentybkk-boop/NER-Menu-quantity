@@ -3,40 +3,24 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — UAT-013 EXACT REPAIR RUNNING
+## CURRENT WORK HEAD — UAT-013 EXACT PORTRAIT ASSET MAPPED; CSS INTEGRATION NEXT
 
 User-approved remaining fix: replace only the portrait background art with the approved portrait-native garden/hot-pot backdrop; landscape and all accepted runtime/business behavior remain unchanged.
 
-## APPROVED UAT-013 ASSET
-- local `/mnt/data/portrait-background-garden-v1.webp`
-- 941x1672 RGB
-- 125,912 bytes
+## APPROVED UAT-013 ASSET — VERIFIED MAPPED
+- source candidate 941x1672 RGB
+- exact bytes: 125,912
 - SHA256 `050777632f5fcd1c9217777e4925041633699f52ad37636aeb100a08226ad823`
-- target `assets/background-portrait-garden-v1.webp`
+- production path `assets/background-portrait-garden-v1.webp`
+- successful repair run `36101535008` — completed/success
+- bot mapping commit `1d7a134e8cfc595f5633bc3a7cb7614cdb1bf4a4` — `Map exact approved UAT-013 portrait background`
+- bot commit changed exactly one path: `assets/background-portrait-garden-v1.webp`
+- current Git tree verifies production blob `30437127857f50d217f12451f9ecff8ec61a9ef9`, size 125,912 bytes
 
-## EXACT STAGING — VERIFIED
-- chunks `01–07`, `09`, `10` match their local exact Git blob SHAs.
-- chunk `00` differs only by one trailing newline; workflow strips whitespace.
-- malformed old `portrait-08.b64` was removed.
-- exact chunk 08 is represented by four 4,000-char ordered quarters:
-  - `08a` blob `d82f87a5dabc52b23ef8b0f16fa85a28f9579f0c`
-  - `08b` blob `2a16e50a9db28cc0eb6dcd70fb6d964ebe5c1c41`
-  - `08c` blob `b4c7c06a27b4e94ca8f2384a6d4a6f74353439a6`
-  - `08d` blob `0fe1a087282245689a79de4a6b9efd996410499a`
-- normalized aggregate is the approved 167,884-char base64 payload.
-
-## REPAIR WORKFLOW
-- `.github/workflows/repair-uat013-portrait-background.yml`
-- verifies decoded size 125,912 bytes and SHA256 `050777632f5fcd1c9217777e4925041633699f52ad37636aeb100a08226ad823`
-- on success commits exactly `assets/background-portrait-garden-v1.webp`.
-
-## CURRENT REPAIR RUN
-- retrigger commit `6f88e4891fe1d6c1be96097fd4c99d2ac55712e1`
-- workflow `Repair exact UAT-013 portrait background`
-- run ID `36101535008`
-- run number 2
-- latest bounded status: `in_progress`
-- prior run `36100717195` failed before mapping because of malformed old chunk 08; DO NOT USE.
+## STAGING / REPAIR HISTORY
+- failed repair run `36100717195` is obsolete; failure was malformed old chunk 08 before any production mapping.
+- exact staging was repaired using quarter chunks `08a–08d`; current successful run passed the workflow's exact size + SHA256 gate.
+- do not rebuild or remap the portrait binary unless later evidence proves corruption.
 
 ## ACCEPTED / DO NOT REOPEN
 - UAT-011 character cutout cleanup
@@ -47,12 +31,15 @@ User-approved remaining fix: replace only the portrait background art with the a
 
 ## DO NOT REPEAT
 - do not regenerate UAT-013 art
-- do not rewrite exact staged chunks
-- do not modify portrait CSS before exact asset mapping succeeds
+- do not rewrite repair staging
+- do not rerun successful repair `36101535008`
 - do not change landscape background behavior
+- do not touch accepted character binaries
 
 ## EXACT NEXT ACTION
-1. Read repair run `36101535008` once.
-2. If success: fresh-read `main`, verify bot commit `Map exact approved UAT-013 portrait background` changes only `assets/background-portrait-garden-v1.webp`, then persist binary-mapped checkpoint BEFORE CSS.
-3. If failed: read only failed repair step/log and checkpoint exact blocker before edits.
-4. After verified mapping only: integrate the new asset portrait-only, update targeted QA, deploy, manually inspect phone portrait, cleanup staging/marker if appropriate, and persist READY FOR USER FINAL REVIEW.
+1. Inspect only current effective portrait background CSS and its orientation regression contract.
+2. Integrate `assets/background-portrait-garden-v1.webp` for portrait only; keep landscape on the existing accepted background path.
+3. Add/adjust a targeted QA assertion that portrait uses the new asset while landscape does not.
+4. Persist code-change checkpoint before waiting for Actions.
+5. Verify Pages + UI QA, then manually inspect phone-portrait local/live evidence for integrated/non-cut-and-paste appearance and no foreground regressions.
+6. Cleanup temporary UAT-013 staging/trigger only after verification, then persist READY FOR USER FINAL REVIEW.
