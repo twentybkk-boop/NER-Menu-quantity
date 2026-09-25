@@ -27,66 +27,88 @@
 - durable diagnostic `qa/import-data-integrity-audit.mjs`
 - run `36125886778`: `mismatchedMenus=0`, `invalidExcludes=0`, `duplicateRules=0`, `noOptions=0`.
 
-## TRANSACTIONAL EXCEL IMPORT VALIDATION — ACCEPTED / CLEANUP COMPLETE
-User reviewed the deployed/live desktop + phone error/success screenshots from run 159 and accepted the feature (`โอเค ทำต่อ`) on 2026-09-25.
+### Transactional Excel import validation
+- ACCEPTED / CLEANUP COMPLETE.
+- production commit `e0de978f7a71f2b12dfb07c60ba4988a7e8d6dc6`
+- permanent contracts:
+  - `qa/transactional-import-validation-contract.mjs`
+  - `qa/transactional-import-ui-contract.mjs`
+- permanent local/deployed steps remain in `.github/workflows/ui-qa.yml`
+- UI QA run `36129243341` / run 159 completed/success
+- user accepted deployed/live phone + desktop error/success evidence on 2026-09-25
 
-### Production implementation
-- commit `e0de978f7a71f2b12dfb07c60ba4988a7e8d6dc6` — `Add transactional Excel import validation`
-- production diff changed exactly `index.html`
-- `recipe_master.json` unchanged
+## CURRENT WORK HEAD — NEXT BACKLOG IDENTIFIED: MATRIX NUMERIC EDIT VALIDATION
 
-Behavior now protected:
-- parsed workbook candidates are validated before any live-state assignment
-- invalid workbook is rejected before replacing `originalMenu`, `menuCategories`, `replaceUseRules`, or `allIngredientsList`
-- invalid import shows an actionable Thai Matrix status banner
-- previous live Matrix remains intact after rejection
-- valid workbook commits only after validation and preserves the existing success alert
-- known ingredient alias normalization remains unchanged
+### Discovery evidence
+Current production `editMatrixCell(rowIndex, ingredient, currentValue)` uses:
+- `prompt(...)`
+- then only checks `!Number.isNaN(parseFloat(newVal))`
+- then stores `parseFloat(newVal)` directly into `row.replace[ingredient]`
 
-### Permanent regression / browser acceptance
-Keep permanently:
-- `qa/transactional-import-validation-contract.mjs`
-- `qa/transactional-import-ui-contract.mjs`
-- permanent local/deployed transactional steps in `.github/workflows/ui-qa.yml`
+This means the Matrix editor can accept malformed or invalid quantity input that should not become recipe data, including examples such as:
+- `1abc` -> silently becomes `1`
+- `-5` -> negative replacement quantity is stored
+- `Infinity` -> non-finite quantity is stored because `parseFloat('Infinity')` is not `NaN`
 
-Fresh accepted QA:
-- UI QA run `36129243341` / run 159
-- head `41a975495c759ff3e9f41fa6439e654df1b772e2`
-- completed/success
-- transactional structure step: success
-- transactional local actual-XLSX browser step: success
-- transactional deployed/live actual-XLSX browser step: success
-- all previously accepted local/deployed gates: success
-- artifact `ui-qa-screenshots` ID `10861246503`
+This is concrete bug evidence in current business runtime and therefore qualifies for work without changing accepted Matrix semantics by guesswork.
 
-### Accepted real-screen evidence
-Local/live pairs were byte-identical.
-- error desktop: 1280x900, SHA256 `03e699d20fc2576eeb6eed87684b508ead4fe100d1df1d59de95ad40e9733f32`
-- error phone: 390x844, SHA256 `a659a33ed4a3ede3c4694412f6d085dc8f0b94c7f4b32d63073917b7183db3ac`
-- success desktop: 1280x900, SHA256 `e8809082aca407b5497e89be2121490c257d9f6323e53beac5e4b099e41b5057`
-- success phone: 390x844, SHA256 `e3fbfbb272494a3a91f17be2657622eb08eeeb3c8c3a8aa4d303d896b0e8b2c8`
+### Existing QA gap
+Permanent `qa/ui-qa.mjs` currently verifies the manager/PIN/Matrix path only at the level of:
+- open PIN
+- authenticate
+- Matrix visible
+- horizontal scroll geometry
+- JSON download
+- close Matrix
 
-### Temporary repro/repair cleanup — COMPLETE
-Removed after user acceptance:
-- `.github/workflows/audit-transactional-import-validation.yml` — cleanup commit `9711fa5f0db519c066f874911df5cbe0eec1997b`
-- `.github/workflows/repair-transactional-import-validation.yml` — cleanup commit `39cde1ea25f94fec160b5a67b8b4125bd03114b7`
-- `repair-staging/import-transaction/RUN_REPRO` — cleanup commit `f822f9a2b47f42d8aba01f5dcbf770759a0f7b2d`
-- `repair-staging/import-transaction/RUN_FIX` — cleanup commit `56bc8037fc2b07068eeccc17e48b6c38c0e7b413`
+It does NOT exercise Matrix cell editing or reject invalid numeric prompt input.
+No open GitHub issue currently provides a competing higher-priority durable item.
 
-Do not recreate those temporary workflows/triggers unless a future independent reproduction explicitly requires a new one.
+### Scope boundary
+This item is specifically **validation of direct Matrix numeric cell edits**.
+It is NOT:
+- a Phase 1 visual change
+- a raw shrimp-credit recovery task
+- an Excel import change
+- a change to recipe/base quantities
+- a change to accepted replacement semantics
+- a change to PIN or JSON export behavior
+- a modification of bundled `recipe_master.json`
+
+### Initial acceptance contract for reproduction/implementation
+Valid Matrix edit input should continue to update the selected replacement quantity exactly as intended.
+Invalid input must leave the previous cell value unchanged.
+At minimum reject:
+- empty/whitespace-only numeric text if it does not represent an intentional numeric edit
+- mixed numeric/text strings such as `1abc`
+- negative values
+- non-finite values such as `Infinity`
+- other values that are not a complete finite number
+
+Preserve decimal support because raw replacement credits may legitimately be decimal values.
+Do not round during editing; store the validated numeric value as raw numeric data exactly as current Matrix semantics require.
+
+### Preferred validation shape to prove next
+Use strict full-string numeric parsing rather than permissive `parseFloat()` prefix parsing, then require:
+- finite number
+- value >= 0
+
+The next chunk must reproduce current bad acceptance before production change and pin the exact valid/invalid examples in a regression contract.
 
 ## DO NOT REPEAT
 - do not reopen Phase 1 visual work
 - do not revisit blocked raw shrimp credits without new authoritative evidence
-- do not rerun old transactional repro/repair runs merely to reconfirm accepted behavior
-- do not modify `recipe_master.json` for the accepted transactional import item
-- do not remove permanent transactional regression/browser tests
+- do not rerun old transactional repro/repair runs
+- do not recreate deleted transactional temporary workflows/triggers
+- do not modify `recipe_master.json` for this item
+- do not remove permanent accepted regression/browser tests
+- do not broaden this Matrix edit item into other Matrix/PIN/import/export changes without separate bug evidence
 
 ## EXACT NEXT ACTION — NEXT SHORT CHUNK ONLY
-Discover the next independent durable backlog/product item from current repo source of truth.
+Do a targeted **Matrix Numeric Edit Validation reproduction/QA chunk**:
 1. Re-read current `main` + this handoff.
-2. Inspect only durable repo context: recent commits, README/docs, permanent QA inventory, business/runtime markers, and open issues if any.
-3. Exclude all locked/accepted/blocked work listed above.
-4. Identify one concrete item with durable evidence; do not invent scope.
-5. Do NOT modify production in the discovery chunk.
-6. Persist scope + evidence + exact next action, then STOP.
+2. Inspect only `editMatrixCell()` and the existing Matrix QA path.
+3. Add a targeted regression/reproduction contract that demonstrates current bad behavior for at least `1abc`, `-5`, and `Infinity`, while preserving valid integers and decimals.
+4. Prefer browser-level prompt interaction if practical; otherwise add a structural/pure validation contract first.
+5. Do NOT change production behavior in the reproduction chunk if the failing contract can be added independently.
+6. Persist the exact failing assertion/root gap and STOP before implementation.
