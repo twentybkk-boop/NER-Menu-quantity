@@ -3,7 +3,7 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — UAT-014 LANDSCAPE BACKGROUND INTEGRATED; UI QA RUN 151 QUEUED
+## CURRENT WORK HEAD — UAT-014 LANDSCAPE BACKGROUND INTEGRATED; UI QA RUN 151 IN PROGRESS
 
 UAT-013 portrait background remains accepted and must not be reopened.
 
@@ -30,29 +30,27 @@ Actual integration commit on `main`:
 - tree: `4dc24662f96f530a29854849ba6a4db123e88443`
 - fast-forwarded to `main` with `force=false`
 
-Historical note:
+Historical sequencing note:
 - detached staging commit `3376af34f12adf33b41c6e91297321e1e6bc49b7` contained the same four intended integration paths but was never the production branch head.
-- a checkpoint sequencing mistake temporarily wrote handoff claims as though that detached commit had been fast-forwarded. This was detected by re-reading current `main`; history was not rewritten. The same verified four blobs were then committed on top of the real checkpoint as `19e526d6...`.
+- a checkpoint sequencing mistake was detected by re-reading current `main`; history was not rewritten. The same verified four blobs were committed on top of the real checkpoint as `19e526d6...`.
 
-Verified integration diff from parent contains exactly four paths:
+Verified integration diff contains exactly four paths:
 1. `assets/background-landscape-garden-v1.webp` — added
 2. `assets/visual-uat-v4-chunk1.css` — landscape art source + lighter landscape veil / center positioning
 3. `qa/ui-qa-runner.mjs` — orientation-aware background assertions updated
 4. `qa/layering-orientation-v1-contract.mjs` — landscape asset/deployment readiness assertions updated
 
-No other path changed in the integration commit.
-
-Current CSS verification on `main`:
+Current CSS behavior on `main`:
 - portrait still maps `background-portrait-garden-v1.webp`
-- portrait image layer remains `cover`
+- portrait remains `cover`
 - landscape maps `background-landscape-garden-v1.webp`
-- landscape image layer uses `cover`, positioned center/center
-- accepted landscape masthead protection remains present
+- landscape uses `cover`, positioned center/center
+- accepted masthead protection remains present
 
 QA intent:
 - portrait rejects landscape asset and legacy master
 - landscape requires `background-landscape-garden-v1.webp` and rejects portrait asset + legacy `background-master.webp`
-- orientation/layering live readiness now verifies both portrait and landscape assets are deployed
+- orientation/layering live readiness verifies both portrait and landscape assets are deployed
 - accepted character rails, center-frame geometry, business/runtime/recipe/quantity/Matrix/PIN/calculator semantics were not changed
 
 ## UAT-014 RESULTING UI QA — BOUNDED READ
@@ -62,12 +60,13 @@ Actual resulting UI QA:
 - head SHA: `19e526d618373839a571d7cd0872ce8d18831757`
 - display title: `Integrate approved UAT-014 landscape background`
 - event: `push`
-- status at the single bounded read in this session: `queued`
+- status at the single bounded read in this continuation session: `in_progress`
 - conclusion: not final
-- created/started timestamp reported: `2026-09-25T07:14:56Z`
+- created/started: `2026-09-25T07:14:56Z`
+- updated at bounded read: `2026-09-25T07:15:36Z`
 - do not poll this run again in the same session
 
-Incorrect provisional run IDs `36110104415` / `36110104256` from the sequencing-error handoff are invalid for UAT-014 production state and must not be reused.
+Incorrect provisional run IDs `36110104415` / `36110104256` are invalid for UAT-014 production state and must not be reused.
 
 ## UAT-013 PORTRAIT — VERIFIED DURABLE / DO NOT REOPEN
 - production path: `assets/background-portrait-garden-v1.webp`
