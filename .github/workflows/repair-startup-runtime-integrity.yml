@@ -18,48 +18,8 @@ jobs:
           fetch-depth: 0
       - name: Patch startup runtime validation gate
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          path = Path('index.html')
-          source = path.read_text(encoding='utf-8')
-          old = """        if (!data.baseMenu || !data.replaceRules) throw new Error('Invalid recipe_master.json');
-          originalMenu = data.baseMenu;
-          menuCategories = data.categories || {};
-          replaceUseRules = data.replaceRules;
-          allIngredientsList = data.ingredients || [];
-          initMenus();
-          renderMatrixTable();
-        } catch (err) {
-          console.error(err);
-          el('app-menus').innerHTML = '<div class=\"empty-state\">❌ ไม่พบไฟล์ข้อมูลกลาง (recipe_master.json)<br><small>กรุณาเข้าหลังบ้านเพื่ออัปโหลด Excel ใหม่</small></div>';
-        }
-"""
-          new = """        if (!data.baseMenu || !data.replaceRules) throw new Error('Invalid recipe_master.json');
-        const startupValidationResult = validateImportedRecipeData(data.baseMenu, data.replaceRules);
-        if (hasImportValidationErrors(startupValidationResult)) {
-          const integrityError = new Error('Invalid recipe_master.json integrity');
-          integrityError.code = 'RECIPE_INTEGRITY';
-          throw integrityError;
-        }
-        originalMenu = data.baseMenu;
-        menuCategories = data.categories || {};
-        replaceUseRules = data.replaceRules;
-        allIngredientsList = data.ingredients || [];
-        initMenus();
-        renderMatrixTable();
-      } catch (err) {
-        console.error(err);
-        const startupErrorHtml = err?.code === 'RECIPE_INTEGRITY'
-          ? '<div class=\"empty-state\">❌ ข้อมูลกลางไม่สอดคล้อง (recipe_master.json)<br><small>กรุณาตรวจสอบข้อมูลหลังบ้านก่อนใช้งาน</small></div>'
-          : '<div class=\"empty-state\">❌ ไม่พบไฟล์ข้อมูลกลาง (recipe_master.json)<br><small>กรุณาเข้าหลังบ้านเพื่ออัปโหลด Excel ใหม่</small></div>';
-        el('app-menus').innerHTML = startupErrorHtml;
-      }
-"""
-          if source.count(old) != 1:
-              raise SystemExit(f'Expected exact loadData block once, found {source.count(old)}')
-          path.write_text(source.replace(old, new, 1), encoding='utf-8')
-          PY
+          echo 'ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCnBhdGggPSBQYXRoKCJpbmRleC5odG1sIikKc291cmNlID0gcGF0aC5yZWFkX3RleHQoZW5jb2Rpbmc9InV0Zi04IikKb2xkID0gIiIiICAgICAgICBpZiAoIWRhdGEuYmFzZU1lbnUgfHwgIWRhdGEucmVwbGFjZVJ1bGVzKSB0aHJvdyBuZXcgRXJyb3IoJ0ludmFsaWQgcmVjaXBlX21hc3Rlci5qc29uJyk7CiAgICAgICAgb3JpZ2luYWxNZW51ID0gZGF0YS5iYXNlTWVudTsKICAgICAgICBtZW51Q2F0ZWdvcmllcyA9IGRhdGEuY2F0ZWdvcmllcyB8fCB7fTsKICAgICAgICByZXBsYWNlVXNlUnVsZXMgPSBkYXRhLnJlcGxhY2VSdWxlczsKICAgICAgICBhbGxJbmdyZWRpZW50c0xpc3QgPSBkYXRhLmluZ3JlZGllbnRzIHx8IFtdOwogICAgICAgIGluaXRNZW51cygpOwogICAgICAgIHJlbmRlck1hdHJpeFRhYmxlKCk7CiAgICAgIH0gY2F0Y2ggKGVycikgewogICAgICAgIGNvbnNvbGUuZXJyb3IoZXJyKTsKICAgICAgICBlbCgnYXBwLW1lbnVzJykuaW5uZXJIVE1MID0gJzxkaXYgY2xhc3M9ImVtcHR5LXN0YXRlIj7inYwg4LmE4Lih4LmI4Lie4Lia4LmE4Lif4Lil4LmM4LiC4LmJ4Lit4Lih4Li54Lil4LiB4Lil4Liy4LiHIChyZWNpcGVfbWFzdGVyLmpzb24pPGJyPjxzbWFsbD7guIHguKPguLjguJPguLLguYDguILguYnguLLguKvguKXguLHguIfguJrguYnguLLguJnguYDguJ7guLfguYjguK3guK3guLHguJvguYLguKvguKXguJQgRXhjZWwg4LmD4Lir4Lih4LmIPC9zbWFsbD48L2Rpdj4nOwogICAgICB9CiIiIgpuZXcgPSAiIiIgICAgICAgIGlmICghZGF0YS5iYXNlTWVudSB8fCAhZGF0YS5yZXBsYWNlUnVsZXMpIHRocm93IG5ldyBFcnJvcignSW52YWxpZCByZWNpcGVfbWFzdGVyLmpzb24nKTsKICAgICAgICBjb25zdCBzdGFydHVwVmFsaWRhdGlvblJlc3VsdCA9IHZhbGlkYXRlSW1wb3J0ZWRSZWNpcGVEYXRhKGRhdGEuYmFzZU1lbnUsIGRhdGEucmVwbGFjZVJ1bGVzKTsKICAgICAgICBpZiAoaGFzSW1wb3J0VmFsaWRhdGlvbkVycm9ycyhzdGFydHVwVmFsaWRhdGlvblJlc3VsdCkpIHsKICAgICAgICAgIGNvbnN0IGludGVncml0eUVycm9yID0gbmV3IEVycm9yKCdJbnZhbGlkIHJlY2lwZV9tYXN0ZXIuanNvbiBpbnRlZ3JpdHknKTsKICAgICAgICAgIGludGVncml0eUVycm9yLmNvZGUgPSAnUkVDSVBFX0lOVEVHUklUWSc7CiAgICAgICAgICB0aHJvdyBpbnRlZ3JpdHlFcnJvcjsKICAgICAgICB9CiAgICAgICAgb3JpZ2luYWxNZW51ID0gZGF0YS5iYXNlTWVudTsKICAgICAgICBtZW51Q2F0ZWdvcmllcyA9IGRhdGEuY2F0ZWdvcmllcyB8fCB7fTsKICAgICAgICByZXBsYWNlVXNlUnVsZXMgPSBkYXRhLnJlcGxhY2VSdWxlczsKICAgICAgICBhbGxJbmdyZWRpZW50c0xpc3QgPSBkYXRhLmluZ3JlZGllbnRzIHx8IFtdOwogICAgICAgIGluaXRNZW51cygpOwogICAgICAgIHJlbmRlck1hdHJpeFRhYmxlKCk7CiAgICAgIH0gY2F0Y2ggKGVycikgewogICAgICAgIGNvbnNvbGUuZXJyb3IoZXJyKTsKICAgICAgICBjb25zdCBzdGFydHVwRXJyb3JIdG1sID0gZXJyPy5jb2RlID09PSAnUkVDSVBFX0lOVEVHUklUWScKICAgICAgICAgID8gJzxkaXYgY2xhc3M9ImVtcHR5LXN0YXRlIj7inYwg4LiC4LmJ4Lit4Lih4Li54Lil4LiB4Lil4Liy4LiH4LmE4Lih4LmI4Liq4Lit4LiU4LiE4Lil4LmJ4Lit4LiHIChyZWNpcGVfbWFzdGVyLmpzb24pPGJyPjxzbWFsbD7guIHguKPguLjguJPguLLguJXguKPguKfguIjguKrguK3guJrguILguYnguK3guKHguLnguKXguKvguKXguLHguIfguJrguYnguLLguJnguIHguYjguK3guJnguYPguIrguYnguIfguLLguJk8L3NtYWxsPjwvZGl2PicKICAgICAgICAgIDogJzxkaXYgY2xhc3M9ImVtcHR5LXN0YXRlIj7inYwg4LmE4Lih4LmI4Lie4Lia4LmE4Lif4Lil4LmM4LiC4LmJ4Lit4Lih4Li54Lil4LiB4Lil4Liy4LiHIChyZWNpcGVfbWFzdGVyLmpzb24pPGJyPjxzbWFsbD7guIHguKPguLjguJPguLLguYDguILguYnguLLguKvguKXguLHguIfguJrguYnguLLguJnguYDguJ7guLfguYjguK3guK3guLHguJvguYLguKvguKXguJQgRXhjZWwg4LmD4Lir4Lih4LmIPC9zbWFsbD48L2Rpdj4nOwogICAgICAgIGVsKCdhcHAtbWVudXMnKS5pbm5lckhUTUwgPSBzdGFydHVwRXJyb3JIdG1sOwogICAgICB9CiIiIgpjb3VudCA9IHNvdXJjZS5jb3VudChvbGQpCmlmIGNvdW50ICE9IDE6CiAgICByYWlzZSBTeXN0ZW1FeGl0KGYiRXhwZWN0ZWQgZXhhY3QgbG9hZERhdGEgYmxvY2sgb25jZSwgZm91bmQge2NvdW50fSIpCnBhdGgud3JpdGVfdGV4dChzb3VyY2UucmVwbGFjZShvbGQsIG5ldywgMSksIGVuY29kaW5nPSJ1dGYtOCIpCg==' | base64 -d > /tmp/patch_startup.py
+          python3 /tmp/patch_startup.py
       - name: Run startup runtime integrity contract
         run: node qa/startup-runtime-integrity-contract.mjs
       - name: Guard one-file production diff
