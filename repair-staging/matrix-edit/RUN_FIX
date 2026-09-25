@@ -1,3 +1,0 @@
-NER Menu Quantity Matrix numeric edit validation fix
-contract=qa/matrix-edit-validation-contract.mjs
-scope=index.html editMatrixCell only
