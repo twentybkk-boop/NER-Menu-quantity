@@ -56,6 +56,8 @@ jobs:
         run: node qa/chunk4-polish-v4-contract.mjs
       - name: Verify orientation layering and backmost environment locally
         run: node qa/layering-orientation-v1-contract.mjs
+      - name: Verify UAT-013 portrait-native background locally
+        run: node qa/uat013-portrait-background-contract.mjs
       - name: Verify V3 character high-res sharpness locally
         run: node qa/character-sampling-v1-contract.mjs
       - name: Verify calculator visual hierarchy contract
@@ -84,6 +86,10 @@ jobs:
         env:
           LAYERING_BASE: https://twentybkk-boop.github.io/NER-Menu-quantity/
         run: node qa/layering-orientation-v1-contract.mjs
+      - name: Verify deployed UAT-013 portrait-native background
+        env:
+          UAT013_BASE: https://twentybkk-boop.github.io/NER-Menu-quantity/
+        run: node qa/uat013-portrait-background-contract.mjs
       - name: Verify deployed V4 phone-landscape calculator interaction
         env:
           LANDSCAPE_BASE: https://twentybkk-boop.github.io/NER-Menu-quantity/
