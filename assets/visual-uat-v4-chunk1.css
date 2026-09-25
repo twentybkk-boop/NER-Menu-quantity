@@ -1,5 +1,5 @@
 /* V4 HANDS-ON UAT — Chunk 1: background + layering system, 2026-09-25.
-   Scope: UAT-001 / UAT-002 / UAT-003 only.
+   Scope: UAT-001 / UAT-002 / UAT-003 + UAT-013 portrait art replacement only.
    Preserve verified character sources, menu/business semantics and modal behavior. */
 
 /* UAT-001: historical ambient circles were painted by pseudo-elements inside
@@ -14,9 +14,7 @@
   pointer-events:none!important;
 }
 
-/* One true backmost environmental plane. Keep it fixed and non-interactive,
-   but reduce the ivory wash so background-master remains visible on portrait
-   instead of being cropped/masked into near-flat cream. */
+/* One true backmost environmental plane. Keep it fixed and non-interactive. */
 body::before{
   z-index:0!important;
   opacity:1!important;
@@ -33,26 +31,27 @@ body::before{
   background-size:auto,auto,auto,100% 100%,auto 100dvh!important;
 }
 
-/* Portrait master is landscape (440x293). Scaling it to 100dvh enlarged it to
-   ~1267px wide on a 390x844 phone, exposing only ~31% of the source width.
-   Keep the aspect ratio but use a viewport-width-driven presentation so more of
-   the actual environment is visible, and soften the ivory veil only in portrait. */
+/* UAT-013: the user approved a portrait-native 941x1672 garden/hot-pot scene
+   because the old landscape master looked composited/cut-and-paste when forced
+   into a tall viewport. Use that dedicated art only in portrait. `cover` keeps
+   the native portrait composition coherent; a very light ivory veil preserves
+   text/card readability without flattening the scene. */
 @media (orientation:portrait){
   body::before{
     background-image:
-      radial-gradient(circle at 92% 12%,rgba(189,210,160,.24) 0 40px,transparent 41px),
-      radial-gradient(circle at 97% 21%,rgba(216,229,194,.18) 0 58px,transparent 59px),
-      radial-gradient(circle at 6% 58%,rgba(231,190,166,.13) 0 46px,transparent 47px),
-      linear-gradient(180deg,rgba(255,251,244,.18),rgba(255,253,249,.06) 44%,rgba(250,244,232,.16)),
-      url("background-master.webp")!important;
+      radial-gradient(circle at 92% 12%,rgba(189,210,160,.14) 0 40px,transparent 41px),
+      radial-gradient(circle at 97% 21%,rgba(216,229,194,.10) 0 58px,transparent 59px),
+      radial-gradient(circle at 6% 58%,rgba(231,190,166,.08) 0 46px,transparent 47px),
+      linear-gradient(180deg,rgba(255,251,244,.10),rgba(255,253,249,.03) 44%,rgba(250,244,232,.08)),
+      url("background-portrait-garden-v1.webp")!important;
+    background-repeat:no-repeat,no-repeat,no-repeat,no-repeat,no-repeat!important;
     background-position:center top,center top,center top,center top,center top!important;
-    background-size:auto,auto,auto,100% 100%,160% auto!important;
+    background-size:auto,auto,auto,100% 100%,cover!important;
   }
 }
 
-/* UAT-003: landscape may use cover for a fuller scene, but the NER masthead is
-   a protected reading zone. The opaque-enough editorial plate prevents the
-   background artwork from visually colliding with the system identity. */
+/* UAT-003: landscape keeps the already accepted landscape master and masthead
+   protection. UAT-013 must not alter landscape behavior. */
 @media (orientation:landscape){
   body::before{
     background-image:
