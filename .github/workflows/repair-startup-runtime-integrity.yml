@@ -1,0 +1,76 @@
+name: Repair startup recipe runtime integrity
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'repair-staging/startup-runtime-integrity/RUN_FIX'
+
+permissions:
+  contents: write
+
+jobs:
+  repair-startup-runtime-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch startup runtime validation gate
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('index.html')
+          source = path.read_text(encoding='utf-8')
+          old = """        if (!data.baseMenu || !data.replaceRules) throw new Error('Invalid recipe_master.json');
+          originalMenu = data.baseMenu;
+          menuCategories = data.categories || {};
+          replaceUseRules = data.replaceRules;
+          allIngredientsList = data.ingredients || [];
+          initMenus();
+          renderMatrixTable();
+        } catch (err) {
+          console.error(err);
+          el('app-menus').innerHTML = '<div class=\"empty-state\">❌ ไม่พบไฟล์ข้อมูลกลาง (recipe_master.json)<br><small>กรุณาเข้าหลังบ้านเพื่ออัปโหลด Excel ใหม่</small></div>';
+        }
+"""
+          new = """        if (!data.baseMenu || !data.replaceRules) throw new Error('Invalid recipe_master.json');
+        const startupValidationResult = validateImportedRecipeData(data.baseMenu, data.replaceRules);
+        if (hasImportValidationErrors(startupValidationResult)) {
+          const integrityError = new Error('Invalid recipe_master.json integrity');
+          integrityError.code = 'RECIPE_INTEGRITY';
+          throw integrityError;
+        }
+        originalMenu = data.baseMenu;
+        menuCategories = data.categories || {};
+        replaceUseRules = data.replaceRules;
+        allIngredientsList = data.ingredients || [];
+        initMenus();
+        renderMatrixTable();
+      } catch (err) {
+        console.error(err);
+        const startupErrorHtml = err?.code === 'RECIPE_INTEGRITY'
+          ? '<div class=\"empty-state\">❌ ข้อมูลกลางไม่สอดคล้อง (recipe_master.json)<br><small>กรุณาตรวจสอบข้อมูลหลังบ้านก่อนใช้งาน</small></div>'
+          : '<div class=\"empty-state\">❌ ไม่พบไฟล์ข้อมูลกลาง (recipe_master.json)<br><small>กรุณาเข้าหลังบ้านเพื่ออัปโหลด Excel ใหม่</small></div>';
+        el('app-menus').innerHTML = startupErrorHtml;
+      }
+"""
+          if source.count(old) != 1:
+              raise SystemExit(f'Expected exact loadData block once, found {source.count(old)}')
+          path.write_text(source.replace(old, new, 1), encoding='utf-8')
+          PY
+      - name: Run startup runtime integrity contract
+        run: node qa/startup-runtime-integrity-contract.mjs
+      - name: Guard one-file production diff
+        run: |
+          changed="$(git diff --name-only)"
+          test "$changed" = "index.html"
+          git diff --check
+      - name: Commit startup runtime validation fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Validate startup recipe data before commit"
+          git push origin HEAD:main
