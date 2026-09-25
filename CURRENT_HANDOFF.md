@@ -27,23 +27,36 @@
 - one-shot workflow removed at `e9f78028fee57dd11d2a26a075939995c2ec0e51`
 - trigger removed at `040c3c3ed02fe103a3316056ade56ffbcce56699`
 
-## CURRENT WORK HEAD — TRANSACTIONAL EXCEL IMPORT VALIDATION REPRO RUNNING
+## CURRENT WORK HEAD — TRANSACTIONAL EXCEL IMPORT VALIDATION REPRODUCED
 
 ### Backlog scope
 Protect runtime Excel import from integrity/linkage errors before parsed workbook data replaces the currently loaded live state.
 
-### Verified current gap
-Current `index.html` already canonicalizes known aliases during Excel import:
+### Existing behavior already present
+Current `index.html` canonicalizes known aliases during Excel import:
 - `ปลากหมึก` -> `ปลาหมึก`
 - `เนื้อเสื้อร้องให้สไลซ์` -> `เนื้อเสือร้องไห้สไลซ์`
 
-Current import flow parses `newOriginalMenu`, `newMenuCategories`, `newReplaceRules`, and `repIngredientsList`, then directly assigns them to live state and shows success. No integrity validation call exists between parse and the first live-state assignment.
+### Verified production gap
+Current import flow parses candidate data into:
+- `newOriginalMenu`
+- `newMenuCategories`
+- `newReplaceRules`
+- `repIngredientsList`
+
+Then it directly assigns those candidates into live state:
+- `originalMenu = newOriginalMenu`
+- `menuCategories = newMenuCategories`
+- `replaceUseRules = newReplaceRules`
+- `allIngredientsList = repIngredientsList`
+
+There is no integrity-validation gate before the first live-state assignment.
 
 ### Regression contract
 - `qa/transactional-import-validation-contract.mjs`
 - commit `9c8665c3217254803fc312d3d5e79add3179e76e`
 
-Contract verifies reusable integrity logic on:
+The contract verifies reusable audit behavior for:
 - valid parsed data -> clean
 - mismatched menu -> detected
 - invalid exclude -> detected
@@ -51,29 +64,38 @@ Contract verifies reusable integrity logic on:
 - no base-overlap replacement options -> detected
 
 Structural transaction requirement:
-- planned integration point: `validateImportedRecipeData(newOriginalMenu, newReplaceRules)`
+- intended integration point: `validateImportedRecipeData(newOriginalMenu, newReplaceRules)`
 - validation must occur before the first live-state assignment
-- expected current structural failure: `transactional import validation gate is missing before live-state replacement`
 
-### One-shot repro setup
-- workflow: `.github/workflows/audit-transactional-import-validation.yml`
-- workflow commit: `36cb05b99fe150d52ddea518010e84246195a898`
-- setup checkpoint: `6339fa36edbf9bf29f97c47ceab1e2e10b330e3e`
-- trigger: `repair-staging/import-transaction/RUN_REPRO`
-- trigger commit: `3f518522fb5cdad0eaa648f6b0ce2cd45e52cca7`
-- permissions: read-only
-- production behavior/data has NOT been modified
+### Reproduction run — COMPLETE / EXPECTED FAILURE
+One-shot setup:
+- workflow `.github/workflows/audit-transactional-import-validation.yml`
+- workflow commit `36cb05b99fe150d52ddea518010e84246195a898`
+- trigger `repair-staging/import-transaction/RUN_REPRO`
+- trigger commit `3f518522fb5cdad0eaa648f6b0ce2cd45e52cca7`
+- permissions read-only
 
-### Repro run
-- run ID: `36128207165`
-- workflow: `Audit transactional import validation`
-- head: `3f518522fb5cdad0eaa648f6b0ce2cd45e52cca7`
-- first and only status read in this chunk: `in_progress`
-- conclusion: not yet available
+Run:
+- run ID `36128207165`
+- job ID `108049130583`
+- workflow `Audit transactional import validation`
+- head `3f518522fb5cdad0eaa648f6b0ce2cd45e52cca7`
+- status `completed`
+- conclusion `failure`
 
-Do NOT poll this run again in the same chunk.
+Failed required step:
+- `Run transactional import validation contract`
 
-## ACCEPTANCE CONTRACT FOR FUTURE IMPLEMENTATION
+Exact assertion from job log:
+- `AssertionError [ERR_ASSERTION]: transactional import validation gate is missing before live-state replacement`
+- contract location: `qa/transactional-import-validation-contract.mjs:61:8`
+- exit code `1`
+
+This is the intended reproduction and confirms the harness is reaching the structural transaction assertion. Checkout/setup passed; failure is not a workflow/setup error.
+
+Production behavior/data has NOT been modified by this reproduction work.
+
+## ACCEPTANCE CONTRACT FOR IMPLEMENTATION
 A valid workbook must preserve current successful import behavior.
 An invalid workbook must be rejected BEFORE live-state replacement when any of these are found:
 - mismatched menu
@@ -83,9 +105,9 @@ An invalid workbook must be rejected BEFORE live-state replacement when any of t
 
 On rejection:
 - preserve prior `originalMenu`, `menuCategories`, `replaceUseRules`, `allIngredientsList`
-- no partial commit
-- show concise actionable error summary instead of success
-- reuse `qa/import-data-integrity-audit.mjs` rules rather than inventing new integrity semantics
+- do not partially commit parsed import state
+- show a concise actionable error summary instead of success
+- reuse the existing integrity semantics from `qa/import-data-integrity-audit.mjs`
 - do not modify `recipe_master.json`
 
 ## DO NOT REPEAT
@@ -93,13 +115,15 @@ On rejection:
 - do not revisit blocked raw shrimp credit provenance without new authoritative evidence
 - do not recreate shrimp repair workflow/staging
 - do not recreate/rerun the closed bundled-data import audit
+- do not create another transactional repro run merely to reconfirm this failure
 - do not modify bundled production data for this runtime import-safety item
-- do not create another transactional repro run while `36128207165` exists
-- do not add the new transactional contract to permanent UI QA until production implementation makes it pass
+- do not add the new transactional contract to permanent UI QA until implementation makes it pass
 
 ## EXACT NEXT ACTION — NEXT SHORT CHUNK ONLY
+Do one implementation-design chunk for **Transactional Excel Import Validation**:
 1. Re-read current `main` + this handoff.
-2. Read run `36128207165` status exactly once.
-3. If still queued/in-progress: persist status and STOP.
-4. If failure: inspect only the failed contract step/log, record exact assertion/root-gap evidence, checkpoint, and STOP before production implementation.
-5. If unexpectedly success: inspect why the structural gate contract passed before making any production decision, checkpoint, and STOP.
+2. Inspect only `importExcelData()` and `qa/import-data-integrity-audit.mjs`.
+3. Define the minimal production interface that can reuse the existing audit semantics inside browser runtime without duplicating/inventing rules.
+4. Preserve transactional behavior: validate candidates first, assign live state only after a clean result.
+5. Define the concise error-summary format for the four finding classes.
+6. Persist the exact patch plan/interface and STOP before editing production.
