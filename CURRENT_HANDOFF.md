@@ -1,81 +1,62 @@
 # CURRENT HANDOFF — NER Menu Quantity
 
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
-> Source of truth: current GitHub `main` + actual code/assets + GitHub Actions + persisted artifacts + latest user hands-on evidence.
+> Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + persisted artifacts + latest user hands-on evidence.
 
-## CURRENT WORK HEAD — PHASE 1 ACCEPTED / COMPLETE
+## CURRENT WORK HEAD — MULTI-ITEM SHRIMP POOLING / CALCULATION CONTRACT
 
-The user accepted the fresh UAT-014 run-153 landscape evidence on 2026-09-25. Do not reopen Phase 1 visual/UAT work absent concrete regression evidence or explicit new user feedback.
+Phase 1 visual/UAT work is ACCEPTED / COMPLETE and remains frozen. The user accepted UAT-014 run-153 evidence (`โอเค`) on 2026-09-25. Do not reopen visual assets/layout/characters absent concrete regression evidence or explicit new feedback.
 
-## UAT-014 — ACCEPTED
-Approved production asset:
-- path: `assets/background-landscape-garden-v1.webp`
-- exact size: 41,838 bytes
-- SHA256: `b6e84af07f0d51c0f9a68a7dc0471c8bdd121f0ec0cc78cb1b0abbff86f10819`
-- Git blob SHA: `6183aecb8d4469b137edaa3ffb95d8cf7e8ec2bc`
+### New business workstream
+Recovered prior product requirement: when several excluded items are replaced by the same shrimp target, preserve their RAW decimal shrimp credits, aggregate them first, then floor the pooled shrimp credit exactly once.
 
-Repair evidence:
-- workflow fix `f96a657159a8e6dcf56422bde808b89bd9f56418`
-- final retrigger `efaf059593d0a2477408a8c4d3867f1e04b75c8b`
-- repair run `36112565127`: completed/success
-- production repair commit `3d6e50aba15dd862101996e1dc9afaefa6109c3e` — `Repair UAT-014 approved landscape binary`
-- GitHub Pages deployment for repair head completed/success
+Acceptance examples:
+- `0.4 + 0.7 = 1.1` => pooled shrimp addition `1`
+- a pooled raw credit such as `0.8 + 0.8 = 1.6` must add `1`, not `2`
+- do not round each source row before aggregation
+- current single-item `qty = 0` UX remains `แทนไม่ได้` / disabled
+- do not invent replacement quantities
 
-Fresh UI QA evidence:
-- trigger commit `6b02afdf4987c1d08094de717d31109972a1cff5`
-- run ID `36113051938`
-- run number 153
-- status completed
-- conclusion success
-- all required local and deployed/live gates passed
-- artifact `ui-qa-screenshots`, ID `10854126924`
-- artifact digest `sha256:f11625dd227a6707f22c9f7b08ca89710293126698b1626cad06bf68f526e940`
+## VERIFIED CURRENT ROOT CAUSE
+Current `index.html` behavior:
+- `calculateNetRecipe()` starts from base recipe quantities.
+- selected replacement raw values are added directly into the same `netRecipeMap` entries as the base quantities.
+- the final combined total is passed through `applySmartRounding()` (`Math.round`).
 
-Manual visual acceptance evidence:
-- approved warm sunset terrace/hot-pot landscape is visibly active
-- phone / iPad / iPad-wide landscape local/live pairs were byte-identical and pixel-identical
-- content/card readability preserved
-- masthead protected
-- all three recurring characters remain together
-- accepted character story details preserved
-- landscape calculator remains readable
-- portrait remained frozen
+Therefore shrimp base quantity and pooled replacement credit are rounded together. Example: base shrimp `3` + pooled credit `1.6` => current code rounds `4.6` to `5`, but the pooled-credit contract requires base `3` + `floor(1.6)` = `4`.
 
-User response after review: accepted (`โอเค`).
+This is a reproduced calculation defect independent of the data-provenance issue.
 
-## PHASE 1 ACCEPTANCE COVERAGE
-Current durable evidence shows no remaining open Phase 1 UAT item.
+## DATA-PRECISION FINDING / BLOCKER
+- Excel/Matrix import path uses `parseFloat()` and preserves raw decimals in `replaceUseRules`.
+- Matrix display rounds for presentation only.
+- current bundled `recipe_master.json` stores many shrimp replacement rows as integer `0`/`1`, so some raw precision has already been lost in the bundled snapshot.
+- historical decimal `recipe_master.json` at `f9dad2255a32514d3e19a8cd482756cbdfbd8d45` proves decimals existed, but that historical matrix differs materially from the current business matrix and MUST NOT be migrated wholesale.
+- current-style integer matrix was re-uploaded as a whole file at `24771d0e28577ed0f4fb386f055bde437d422b18`; its tree contains only README/data/index/recipe JSON and no source workbook/CSV/generator.
+- Project/Library spreadsheet search found no authoritative workbook.
 
-Accepted/frozen coverage includes:
-- V4 UAT-001–UAT-010 via completed Chunk 1–4 responsive/layering/interaction/thumbnail/character/detail work and current green QA contracts
-- UAT-011 character overlay cleanup
-- UAT-012 visual acceptance
-  - prior joint acceptance checkpoint: `c8da0558949193de8b8915ef1d106c2269b68154` — `Checkpoint UAT-011 and UAT-012 visual acceptance`
-- UAT-013 portrait-native background + visual evidence
-- UAT-014 landscape-native background + run-153 visual evidence
-- P0-A / P0-B / P0-C / P0-D presentation direction as represented by current production + QA contracts
-- orientation layering / sharpness / tap-safety
-- phone-landscape calculator behavior
-- thumbnail semantics/density and long-list rhythm
+Do not fabricate raw shrimp credits. Calculation support can be fixed now; bundled data activation remains blocked until authoritative raw credits are available.
 
-No `UAT-015` or later open Phase 1 item exists in the current durable repo planning/acceptance sources checked on 2026-09-25. Do not invent one.
+## PHASE 1 ACCEPTED / DO NOT REOPEN
+- V4 UAT-001–UAT-010 / Chunk 1–4
+- UAT-011 / UAT-012 acceptance checkpoint `c8da0558949193de8b8915ef1d106c2269b68154`
+- UAT-013 portrait-native background
+- UAT-014 landscape-native background
+- UAT-014 repair commit `3d6e50aba15dd862101996e1dc9afaefa6109c3e`
+- UI QA run `36113051938` / run 153 completed/success
+- artifact `ui-qa-screenshots` ID `10854126924`
+- P0-A / P0-B / P0-C / P0-D, orientation/layering/sharpness/tap-safety, calculator landscape, thumbnail semantics/density
 
-## LOCKED / DO NOT REOPEN
-- UAT-011 / UAT-012 / UAT-013 / UAT-014 accepted visual assets and mappings
-- landscape CSS/orientation mapping
-- landscape layout / interaction / masthead / character placement / calculator behavior
-- portrait accepted background
-- approved character binaries/story details
-- P0-A / P0-B / P0-C / P0-D / layering / sharpness / tap-safety
-- business/runtime/recipe/quantity/exclusion/replacement/Matrix/PIN/import-export semantics
-
-## DO NOT REPEAT
-- do not regenerate approved portrait or landscape art
-- do not recreate UAT-011/UAT-013/UAT-014 repair staging/workflows
-- do not rerun historical failed repair/QA runs merely to reconfirm accepted work
-- do not modify accepted character binaries without concrete regression evidence
-- do not start a fabricated `UAT-015`
-- do not restart the V4 UAT defect investigation from `docs/UAT_DEFECTS_2026-09-25_V4.md`; its historical `Start Chunk 1 only` exact-next-action is superseded by later accepted implementation/evidence
+## LOCKED BUSINESS INVARIANTS
+- do not change recipe/base quantities
+- do not invent replacement Matrix values
+- do not alter exclusion/replacement selection semantics except where a separately reproduced pooling defect requires calculation handling
+- qty=0 remains disabled / `แทนไม่ได้`
+- Matrix/PIN/import-export behavior remains unchanged unless directly required by this defect
 
 ## EXACT NEXT ACTION
-Phase 1 is complete. Preserve this checkpoint. The next implementation scope must come from an explicit Phase 2 / product goal / newly reproduced defect in current GitHub source of truth or from new user instruction. Until such scope exists, do not make speculative production changes.
+1. Implement the calculation fix only: keep base quantities separate from replacement contributions; for shrimp replacement contribution, aggregate raw values first and `Math.floor()` exactly once before adding to base shrimp.
+2. Preserve existing rounding behavior for non-shrimp targets and existing integer bundled data behavior.
+3. Add a regression contract covering `0.4+0.7 -> 1` and `0.8+0.8 -> 1`, plus no-change behavior for non-shrimp replacement totals.
+4. Run/trigger targeted QA and persist the result.
+5. Do NOT populate missing raw shrimp credits in `recipe_master.json` without an authoritative source.
