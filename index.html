@@ -817,6 +817,12 @@ body{isolation:isolate}
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (!data.baseMenu || !data.replaceRules) throw new Error('Invalid recipe_master.json');
+        const startupValidationResult = validateImportedRecipeData(data.baseMenu, data.replaceRules);
+        if (hasImportValidationErrors(startupValidationResult)) {
+          const integrityError = new Error('Invalid recipe_master.json integrity');
+          integrityError.code = 'RECIPE_INTEGRITY';
+          throw integrityError;
+        }
         originalMenu = data.baseMenu;
         menuCategories = data.categories || {};
         replaceUseRules = data.replaceRules;
@@ -825,7 +831,10 @@ body{isolation:isolate}
         renderMatrixTable();
       } catch (err) {
         console.error(err);
-        el('app-menus').innerHTML = '<div class="empty-state">❌ ไม่พบไฟล์ข้อมูลกลาง (recipe_master.json)<br><small>กรุณาเข้าหลังบ้านเพื่ออัปโหลด Excel ใหม่</small></div>';
+        const startupErrorHtml = err?.code === 'RECIPE_INTEGRITY'
+          ? '<div class="empty-state">❌ ข้อมูลกลางไม่สอดคล้อง (recipe_master.json)<br><small>กรุณาตรวจสอบข้อมูลหลังบ้านก่อนใช้งาน</small></div>'
+          : '<div class="empty-state">❌ ไม่พบไฟล์ข้อมูลกลาง (recipe_master.json)<br><small>กรุณาเข้าหลังบ้านเพื่ออัปโหลด Excel ใหม่</small></div>';
+        el('app-menus').innerHTML = startupErrorHtml;
       }
     }
 
