@@ -1,4 +1,4 @@
-// V3 Session 1 final gate + V4 UAT Chunk 1/UAT-013 regression checks:
+// V3 Session 1 final gate + V4 UAT Chunk 1/UAT-013/UAT-014 regression checks:
 // layering/orientation/background depth across phone + iPad states.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -31,13 +31,20 @@ async function waitForDeployment(page) {
     const layer = await page.request.get(`${root}assets/visual-layering-orientation-v1.css?layer=${Date.now()}`, { headers: {'cache-control':'no-cache'} });
     const v4 = await page.request.get(`${root}assets/visual-uat-v4-chunk1.css?layer=${Date.now()}`, { headers: {'cache-control':'no-cache'} });
     const portrait = await page.request.get(`${root}assets/background-portrait-garden-v1.webp?layer=${Date.now()}`, { headers: {'cache-control':'no-cache'} });
-    if (polish.ok() && layer.ok() && v4.ok() && portrait.ok()) {
+    const landscape = await page.request.get(`${root}assets/background-landscape-garden-v1.webp?layer=${Date.now()}`, { headers: {'cache-control':'no-cache'} });
+    if (polish.ok() && layer.ok() && v4.ok() && portrait.ok() && landscape.ok()) {
       const [p,l,v] = await Promise.all([polish.text(), layer.text(), v4.text()]);
-      if (p.includes('visual-layering-orientation-v1.css') && p.includes('visual-uat-v4-chunk1.css') && l.includes('layering/orientation/background V1') && v.includes('background-portrait-garden-v1.webp')) return;
+      if (
+        p.includes('visual-layering-orientation-v1.css') &&
+        p.includes('visual-uat-v4-chunk1.css') &&
+        l.includes('layering/orientation/background V1') &&
+        v.includes('background-portrait-garden-v1.webp') &&
+        v.includes('background-landscape-garden-v1.webp')
+      ) return;
     }
     await sleep(8_000);
   }
-  throw new Error('GitHub Pages did not expose UAT-013 layering assets before timeout');
+  throw new Error('GitHub Pages did not expose UAT-013/UAT-014 layering assets before timeout');
 }
 
 const CASES = [
@@ -104,12 +111,16 @@ async function inspect(browserType, browserName, c) {
 
     if (c.name.endsWith('portrait')) {
       assert.match(r.bodyBg, /background-portrait-garden-v1\.webp/, `${scope}: approved portrait-native environment missing`);
-      assert.doesNotMatch(r.bodyBg, /background-master\.webp/, `${scope}: legacy landscape master leaked into portrait`);
+      assert.doesNotMatch(r.bodyBg, /background-landscape-garden-v1\.webp/, `${scope}: landscape art leaked into portrait`);
+      assert.doesNotMatch(r.bodyBg, /background-master\.webp/, `${scope}: legacy master leaked into portrait`);
       const imageLayerSize = r.bodyBgSize.split(',').at(-1)?.trim() || '';
       assert.equal(imageLayerSize, 'cover', `${scope}: portrait-native environment must use cover (${r.bodyBgSize})`);
     } else {
-      assert.match(r.bodyBg, /background-master\.webp/, `${scope}: accepted landscape background missing`);
+      assert.match(r.bodyBg, /background-landscape-garden-v1\.webp/, `${scope}: approved landscape-native environment missing`);
       assert.doesNotMatch(r.bodyBg, /background-portrait-garden-v1\.webp/, `${scope}: portrait-only art leaked into landscape`);
+      assert.doesNotMatch(r.bodyBg, /background-master\.webp/, `${scope}: legacy master still active in landscape`);
+      const imageLayerSize = r.bodyBgSize.split(',').at(-1)?.trim() || '';
+      assert.equal(imageLayerSize, 'cover', `${scope}: landscape-native environment must use cover (${r.bodyBgSize})`);
     }
 
     /* V4 UAT-001: no round ambient shape may remain inside the foreground
@@ -161,4 +172,4 @@ for (const c of CASES) {
   await inspect(chromium,'chromium',c);
   await inspect(webkit,'webkit',c);
 }
-console.log(`LAYERING ORIENTATION V1/V4/UAT-013 ${LIVE?'LIVE':'LOCAL'} PASS`);
+console.log(`LAYERING ORIENTATION V1/V4/UAT-013/UAT-014 ${LIVE?'LIVE':'LOCAL'} PASS`);

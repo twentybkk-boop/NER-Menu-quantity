@@ -1,5 +1,5 @@
 /* V4 HANDS-ON UAT — Chunk 1: background + layering system, 2026-09-25.
-   Scope: UAT-001 / UAT-002 / UAT-003 + UAT-013 portrait art replacement only.
+   Scope: UAT-001 / UAT-002 / UAT-003 + UAT-013 portrait art + UAT-014 landscape art.
    Preserve verified character sources, menu/business semantics and modal behavior. */
 
 /* UAT-001: historical ambient circles were painted by pseudo-elements inside
@@ -31,11 +31,7 @@ body::before{
   background-size:auto,auto,auto,100% 100%,auto 100dvh!important;
 }
 
-/* UAT-013: the user approved a portrait-native 941x1672 garden/hot-pot scene
-   because the old landscape master looked composited/cut-and-paste when forced
-   into a tall viewport. Use that dedicated art only in portrait. `cover` keeps
-   the native portrait composition coherent; a very light ivory veil preserves
-   text/card readability without flattening the scene. */
+/* UAT-013: approved portrait-native 941x1672 garden/hot-pot scene. */
 @media (orientation:portrait){
   body::before{
     background-image:
@@ -50,18 +46,19 @@ body::before{
   }
 }
 
-/* UAT-003: landscape keeps the already accepted landscape master and masthead
-   protection. UAT-013 must not alter landscape behavior. */
+/* UAT-014: user-approved landscape-native sunset terrace / hot-pot scene.
+   Change only the landscape art source; keep the accepted masthead protection,
+   rails, character geometry and interaction behavior unchanged. */
 @media (orientation:landscape){
   body::before{
     background-image:
-      radial-gradient(circle at 92% 16%,rgba(189,210,160,.22) 0 36px,transparent 37px),
-      radial-gradient(circle at 97% 30%,rgba(216,229,194,.16) 0 52px,transparent 53px),
-      radial-gradient(circle at 6% 72%,rgba(231,190,166,.12) 0 42px,transparent 43px),
-      linear-gradient(180deg,rgba(255,251,244,.34),rgba(255,253,249,.10) 46%,rgba(250,244,232,.28)),
-      url("background-master.webp")!important;
+      radial-gradient(circle at 92% 16%,rgba(189,210,160,.16) 0 36px,transparent 37px),
+      radial-gradient(circle at 97% 30%,rgba(216,229,194,.11) 0 52px,transparent 53px),
+      radial-gradient(circle at 6% 72%,rgba(231,190,166,.08) 0 42px,transparent 43px),
+      linear-gradient(180deg,rgba(255,251,244,.20),rgba(255,253,249,.06) 46%,rgba(250,244,232,.16)),
+      url("background-landscape-garden-v1.webp")!important;
     background-repeat:no-repeat,no-repeat,no-repeat,no-repeat,no-repeat!important;
-    background-position:center top,center top,center top,center top,center top!important;
+    background-position:center top,center top,center top,center top,center center!important;
     background-size:auto,auto,auto,100% 100%,cover!important;
   }
 

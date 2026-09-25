@@ -23,10 +23,12 @@ const newBackgroundBlock = `  const background = await page.evaluate(() => getCo
   const isPortrait = deviceName.endsWith('/iphone') || deviceName.endsWith('/ipad-portrait');
   if (isPortrait) {
     assert.match(background, /background-portrait-garden-v1\\.webp/, \`${'${deviceName}'}: approved portrait background not active\`);
-    assert.doesNotMatch(background, /background-master\\.webp/, \`${'${deviceName}'}: legacy landscape master leaked into portrait\`);
+    assert.doesNotMatch(background, /background-landscape-garden-v1\\.webp/, \`${'${deviceName}'}: landscape background leaked into portrait\`);
+    assert.doesNotMatch(background, /background-master\\.webp/, \`${'${deviceName}'}: legacy master leaked into portrait\`);
   } else {
-    assert.match(background, /background-master\\.webp/, \`${'${deviceName}'}: accepted landscape background master not active\`);
+    assert.match(background, /background-landscape-garden-v1\\.webp/, \`${'${deviceName}'}: approved landscape background not active\`);
     assert.doesNotMatch(background, /background-portrait-garden-v1\\.webp/, \`${'${deviceName}'}: portrait background leaked into landscape\`);
+    assert.doesNotMatch(background, /background-master\\.webp/, \`${'${deviceName}'}: legacy master still active in landscape\`);
   }
   assert.match(background, /radial-gradient/, \`${'${deviceName}'}: central readability veil not active\`);`;
 
