@@ -82,7 +82,7 @@ async function run(browserType, browserName) {
     await assertPickerClosed(page, `${scope}/first-exclusion`);
     let state = await readReplacementState(page);
     assert.equal(state.open, null, `${scope}: openReplacementPicker must remain null after auto assignment`);
-    assert.equal(state.excluded[fixture.meats[0]], fixture.meats[1], `${scope}: first auto replacement must choose the next eligible meat in menu order`);
+    assert.equal(state.excluded[fixture.meats[0]], fixture.meats[1], `${scope}: first auto replacement must choose the first still-eligible same-category meat in menu order`);
     assert.notEqual(state.excluded[fixture.meats[0]], fixture.outside, `${scope}: auto replacement escaped the current set`);
 
     // Manual picker still exists, but opens only on an explicit trigger tap.
@@ -93,8 +93,8 @@ async function run(browserType, browserName) {
     await firstTrigger.click();
     await assertPickerClosed(page, `${scope}/manual-close`);
 
-    // Next-order policy: excluding a middle item must move forward, not jump back to
-    // the first candidate; excluding the last item wraps to the first eligible meat.
+    // First-eligible policy: position of the excluded item does not bias selection.
+    // A middle exclusion must choose the first still-included same-category item in menu order.
     await page.evaluate(menu => {
       currentActiveMenu = null;
       excludedItemsMap = {};
@@ -103,9 +103,17 @@ async function run(browserType, browserName) {
       openCalculator(menu);
     }, fixture.menu);
     await exclusionButton(page, fixture.meats[2]).click();
-    await assertPickerClosed(page, `${scope}/next-order-middle`);
+    await assertPickerClosed(page, `${scope}/first-eligible-middle`);
     state = await readReplacementState(page);
-    assert.equal(state.excluded[fixture.meats[2]], fixture.meats[3], `${scope}: middle exclusion must choose the next eligible meat`);
+    assert.equal(state.excluded[fixture.meats[2]], fixture.meats[0], `${scope}: middle exclusion must choose the first still-eligible same-category meat`);
+
+    // Once that first candidate is also excluded, automatic mappings must advance to
+    // the next earliest same-category candidate that is still included.
+    await exclusionButton(page, fixture.meats[0]).click();
+    await assertPickerClosed(page, `${scope}/first-eligible-after-first-excluded`);
+    state = await readReplacementState(page);
+    assert.equal(state.excluded[fixture.meats[2]], fixture.meats[1], `${scope}: mapping must advance to the earliest same-category meat that is still included`);
+    assert.equal(state.excluded[fixture.meats[0]], fixture.meats[1], `${scope}: newly excluded first meat must map to the earliest remaining same-category meat`);
 
     await page.evaluate(menu => {
       currentActiveMenu = null;
@@ -115,9 +123,9 @@ async function run(browserType, browserName) {
       openCalculator(menu);
     }, fixture.menu);
     await exclusionButton(page, fixture.meats[4]).click();
-    await assertPickerClosed(page, `${scope}/next-order-wrap`);
+    await assertPickerClosed(page, `${scope}/first-eligible-last`);
     state = await readReplacementState(page);
-    assert.equal(state.excluded[fixture.meats[4]], fixture.meats[0], `${scope}: last meat exclusion must wrap to the first eligible meat`);
+    assert.equal(state.excluded[fixture.meats[4]], fixture.meats[0], `${scope}: last meat exclusion must still choose the first eligible same-category meat`);
 
     // Reset and reproduce the real kitchen flow: reject 4 of 5 meats in sequence.
     await page.evaluate(menu => {

@@ -817,20 +817,12 @@ body{isolation:isolate}
       return sameCategory.length ? sameCategory : valid;
     }
 
-    function pickNextEligibleReplacement(menuName, excludedItem, items) {
+    function pickFirstEligibleReplacement(menuName, items) {
       if (!items.length) return '';
 
-      const menuOrder = Object.keys(originalMenu[menuName] || {});
       const eligible = new Set(items);
-      const excludedIndex = menuOrder.indexOf(excludedItem);
-
-      if (excludedIndex >= 0 && menuOrder.length) {
-        for (let offset = 1; offset <= menuOrder.length; offset += 1) {
-          const candidate = menuOrder[(excludedIndex + offset) % menuOrder.length];
-          if (eligible.has(candidate)) return candidate;
-        }
-      }
-      return items[0] || '';
+      const firstInMenuOrder = Object.keys(originalMenu[menuName] || {}).find(name => eligible.has(name));
+      return firstInMenuOrder || items[0] || '';
     }
 
     function checkAndFixFallbacks() {
@@ -841,7 +833,7 @@ body{isolation:isolate}
 
         const autoPool = getAutoReplacementPool(currentActiveMenu, ex);
         if (!autoPool.includes(currentRep)) {
-          excludedItemsMap[ex] = pickNextEligibleReplacement(currentActiveMenu, ex, autoPool);
+          excludedItemsMap[ex] = pickFirstEligibleReplacement(currentActiveMenu, autoPool);
           manualReplacementOverrides.delete(ex);
         }
       });

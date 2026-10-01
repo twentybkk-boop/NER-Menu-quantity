@@ -3,6 +3,23 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + durable artifacts + latest user review.
 
+
+## ACTIVE SUPERSESSION — FIRST-ELIGIBLE SAME-CATEGORY AUTO PICK
+
+Latest user feedback supersedes only the automatic ordering policy from the prior next-order checkpoint:
+- `ไม่เอา` remains non-blocking
+- same-category/current-menu/non-excluded filtering remains unchanged
+- automatic replacement must choose the **first eligible item still included in the same category** according to `Object.keys(originalMenu[menuName])` order
+- it does not scan forward from the excluded item and does not use wrap semantics
+- manual replacement remains an optional explicit override
+- quantity aggregation, reopen persistence, recipe ratios, and `recipe_master.json` remain unchanged
+
+Exact next action for this active supersession:
+1. verify first-eligible regression locally
+2. run permanent UI QA local/deployed automatic replacement + landscape gates
+3. remove temporary first-eligible repair infrastructure
+4. run clean-tree UI QA and persist final READY checkpoint
+
 ## CURRENT WORK HEAD — READY FOR USER REAL-USAGE RE-REVIEW
 
 Latest hands-on feedback is implemented and verified:
