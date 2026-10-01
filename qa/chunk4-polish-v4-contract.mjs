@@ -190,9 +190,14 @@ async function interactionSafety(page, candidate, scope) {
   await target.click();
   assert.ok(await target.evaluate(el => el.classList.contains('is-excluded')), `${scope}: exclusion click failed`);
 
-  const trigger = page.locator('.replacement-trigger').filter({hasText:candidate.replacement}).first();
-  assert.equal(await trigger.count(), 1, `${scope}: replacement trigger missing (${candidate.replacement})`);
+  const trigger = target.locator('..').locator('.replacement-trigger');
+  assert.equal(await trigger.count(), 1, `${scope}: replacement trigger missing for exclusion row (` + candidate.exclude + `)`);
+  assert.equal(await trigger.getAttribute('aria-expanded'), 'false', `${scope}: replacement picker auto-opened after exclusion`);
+  assert.equal(await page.locator('.replacement-menu').count(), 0, `${scope}: replacement menu must stay closed until explicitly requested`);
   await hitCheck(trigger, `${scope}/replacement-trigger`);
+  await trigger.click();
+  assert.equal(await trigger.getAttribute('aria-expanded'), 'true', `${scope}: explicit replacement trigger did not open picker`);
+  assert.ok(await target.locator('..').locator('.replacement-menu').count() > 0, `${scope}: explicit replacement picker missing from exclusion row`);
 
   const visibleControls = await page.evaluate(() => {
     const selectors = ['#closeCalculatorButton','#excludeOptions .exclude-btn','.replacement-trigger'];
