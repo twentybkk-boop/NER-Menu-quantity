@@ -3,17 +3,23 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + durable artifacts + latest user review.
 
-## CURRENT WORK HEAD — NEXT-ORDER AUTO PICK IMPLEMENTED; QA REQUIRED
+## CURRENT WORK HEAD — READY FOR USER REAL-USAGE RE-REVIEW
 
-New hands-on feedback about `ไม่เอา / replacement` is implemented, regression-covered, deployed, and verified on a clean repository tree.
+Latest hands-on feedback is implemented and verified:
+- `ไม่เอา` remains non-blocking
+- automatic replacement is **not random**
+- automatic replacement chooses the **next eligible item** in the current menu ingredient order
+- if no later eligible candidate exists, selection wraps to the start of the menu order
 
-Latest clean-tree acceptance head before this handoff-only checkpoint:
-- `27bd3cf5b487ccbc19213cc83b661d7a5818f592`
-- cleanup commit: `Remove temporary auto replacement QA trigger`
+Permanent next-order implementation:
+- `11f70cb7e85435e73f113ac3e83ff53cf95ddcb6` — `Make automatic replacement choose next eligible item`
+
+Final clean-tree acceptance head before this handoff-only checkpoint:
+- `2789c677211f648eefb1a554d01b5bce1e4f2620` — `Remove temporary next-order QA trigger`
 
 Final clean-tree UI QA:
-- run `36840381648` / UI QA #172
-- head `27bd3cf5b487ccbc19213cc83b661d7a5818f592`
+- run `36842361171` / UI QA #174
+- head `2789c677211f648eefb1a554d01b5bce1e4f2620`
 - conclusion: `success`
 - local automatic replacement step #23: PASS
 - local phone-landscape interaction step #24: PASS
@@ -21,11 +27,11 @@ Final clean-tree UI QA:
 - deployed phone-landscape interaction step #34: PASS
 - entire UI QA job: PASS
 
-Pre-cleanup full acceptance run:
-- run `36839655974` / UI QA #171
-- head `472c933de7ff21064d05566a890f472b510303ed`
+Pre-cleanup full acceptance:
+- run `36841637718` / UI QA #173
+- head `7f86588606351837cb66f36caa3c83ac8ec3644a`
 - conclusion: `success`
-- local + deployed automatic replacement and landscape interaction all PASS
+- local + deployed automatic replacement and landscape interaction: PASS
 
 ## VERIFIED PRODUCT BEHAVIOR
 
@@ -33,41 +39,62 @@ When the user taps `ไม่เอา`:
 - the item is excluded immediately
 - no mandatory replacement dropdown/picker is auto-opened
 - repeated exclusions can continue without interruption
-- automatic replacement stays in the same logical category while an eligible same-category candidate remains in the current menu/set
-- excluded candidates and items outside the current set are never selected
-- cross-category fallback is used only after the excluded item's category is exhausted under the existing mapping semantics
-- when one eligible same-category candidate remains, excluded mappings converge to that survivor automatically
-- when several eligible candidates remain, automatic selection chooses the next eligible item in the current menu order and wraps to the start when needed
-- explicit manual replacement remains available as an optional override and opens only on explicit user action
+- automatic replacement first uses eligible items in the same logical category/group under the existing business mapping
+- excluded candidates and items outside the current menu/set are never selected
+- after eligibility filtering, the system scans forward from the excluded item in `Object.keys(originalMenu[menuName])` order
+- the first eligible candidate encountered is selected
+- scan wraps to the start of the menu when needed
+- cross-category fallback is used only after the same-category pool is exhausted under existing mapping semantics
+- when one eligible same-category candidate remains, excluded mappings converge to that survivor
+- explicit manual replacement remains available only as an optional user-triggered override
 
-Same-menu modal state:
+Examples of deterministic order behavior covered by regression:
+- first item -> next eligible same-category item
+- middle item -> following eligible item, not the first item in the pool
+- last item -> wraps to the first eligible same-category item
+
+There is no RNG dependency in the current automatic-replacement selection policy or its regression contract.
+
+## STATE / QUANTITY INVARIANTS PRESERVED
+
+Same-menu state:
 - closing and reopening the same menu preserves exclusion/replacement/manual-override state
 - reopening does not auto-open the replacement picker
-- switching to a different menu resets this modal selection state, preventing cross-menu leakage
+- switching to a different menu resets modal selection state and prevents cross-menu leakage
 
 Quantity behavior:
-- existing `calculateNetRecipe()` aggregation semantics were preserved
-- multiple replacement credits converging to one surviving ingredient aggregate into that ingredient exactly once per exclusion according to existing `replaceUseRules`
-- no recipe ratio or authoritative quantity data was changed
-- `recipe_master.json` remains unchanged by this fix
+- existing `calculateNetRecipe()` aggregation semantics are unchanged
+- multiple replacement credits converging to one surviving ingredient aggregate once per exclusion according to existing `replaceUseRules`
+- no recipe ratio or authoritative quantity data changed
+- `recipe_master.json` is unchanged by this work
 
-## DURABLE IMPLEMENTATION / REGRESSION COMMITS
+Other preserved behavior:
+- Matrix behavior
+- PIN/admin behavior
+- import/export behavior
+- menu quantities
+- accepted visual/layout behavior
+- portrait/landscape interaction
 
-Core automatic replacement behavior:
+## DURABLE IMPLEMENTATION / REGRESSION HISTORY
+
+Core non-blocking category-first automatic replacement:
 - `c36488a27d51e9fb7169fd4dd834a822c25eeebc` — `Restore category-first automatic replacements`
 
-Same-menu state persistence + quantity/reopen regression:
+Same-menu persistence + quantity/reopen coverage:
 - `e98cabdc6982eb1ee655d50e37d0cb5cd83c2094` — `Preserve automatic replacement state across reopen`
 
-Historical random-policy test coverage (superseded by next-order selection):
+Historical random-policy deterministic test commit — superseded by next-order policy:
 - `91a462b48a3cec22ec60b02a6d2e7082f8277d9e` — `Make auto replacement regression deterministic`
-- this prior RNG-specific contract is retained only as history; current selection no longer depends on randomness
+- retained only as history; current production selection no longer uses randomness and current regression no longer stubs `Math.random()`
 
 Landscape reopen regression correction:
 - `98f863fbad381a200459d99c637f9fde8b727b3b` — `Align landscape regression with preserved replacement state`
-- verifies persisted exclusion across close/reopen + portrait→landscape rotation, then excludes a different still-eligible item without opening the picker
 
-Permanent coverage remains in:
+Current next-order policy:
+- `11f70cb7e85435e73f113ac3e83ff53cf95ddcb6` — `Make automatic replacement choose next eligible item`
+
+Permanent coverage:
 - `qa/auto-replacement-flow-contract.mjs`
 - `qa/landscape-calculator-v4-contract.mjs`
 - `qa/chunk4-polish-v4-contract.mjs`
@@ -79,68 +106,56 @@ A — sequential exclusions:
 - repeated `ไม่เอา` works without a mandatory picker
 
 B — one candidate remains:
-- 5-candidate synthetic group, exclude 4, remaining candidate becomes the automatic replacement
+- 5-candidate synthetic group, exclude 4, remaining same-category candidate becomes the replacement
 - excluded candidates do not return
 
-C — multiple candidates remain:
-- automatic selection uses same-category eligible candidates
+C — multiple candidates remain / deterministic next-order:
+- same-category eligible pool is used first
 - excluded/out-of-set candidates are rejected
-- test RNG is deterministic and non-flaky
+- first, middle, and wrap-around next-order selection are asserted directly
+- no RNG/stub/seed is required because production selection is deterministic
 
 D — quantities:
-- resulting quantity is checked against existing business-rule replacement quantities
+- resulting quantity is checked against existing replacement quantities
 - converging replacement quantities aggregate correctly
 
 E — state / interaction:
 - close/reopen same menu preserves exclusion + replacement + result state
-- picker remains closed unless explicitly requested
-- portrait→landscape interaction preserves prior exclusion and permits a new non-blocking exclusion
-- local and deployed contracts PASS in the final clean-tree UI QA
+- picker stays closed unless explicitly requested
+- portrait->landscape preserves prior exclusion and permits another non-blocking exclusion
+- local and deployed contracts PASS in final clean-tree UI QA #174
 
-## TEMPORARY REPAIR INFRASTRUCTURE — REMOVED
+## TEMPORARY NEXT-ORDER REPAIR INFRASTRUCTURE — REMOVED
 
 Removed after successful full QA:
-- `.github/workflows/repair-auto-replacement-flow.yml`
-- `repair-staging/auto-replacement/RUN_FIX`
-- `.github/workflows/repair-auto-replacement-qa-contract.yml`
-- `repair-staging/auto-replacement/RUN_QA_FIX`
-- `.github/workflows/repair-auto-replacement-qa-contract-v2.yml`
-- `repair-staging/auto-replacement/RUN_QA_FIX_V2`
-- `repair-staging/auto-replacement/patch_state_coverage.py`
-- `qa/RUN_AUTO_REPLACEMENT_FINAL_QA`
+- `.github/workflows/repair-auto-replacement-next.yml`
+- `repair-staging/auto-replacement-next/patch_next_policy.py`
+- `repair-staging/auto-replacement-next/RUN_FIX`
+- `qa/RUN_AUTO_REPLACEMENT_NEXT_QA`
+
+Earlier temporary auto-replacement repair infrastructure also remains removed.
 
 ## ACCEPTED / DO NOT REOPEN WITHOUT NEW EVIDENCE
 
-- automatic replacement implementation and same-category semantics above
-- quantity/reopen regression coverage above
-- manual replacement optional override behavior
-- existing V4 visual/UAT work unrelated to this hands-on feedback
+- non-blocking `ไม่เอา` workflow
+- deterministic next-eligible selection + wrap semantics
+- same-category/current-set/excluded filtering
+- quantity/reopen persistence coverage
+- manual replacement optional override
+- landscape interaction behavior
+- unrelated accepted visual/UAT work
 - multi-item shrimp pooling
 - transactional Excel import validation
 - Matrix numeric edit validation
 - startup recipe master runtime integrity
 - authoritative recipe data
 
-## NEW HANDS-ON FEEDBACK — DETERMINISTIC NEXT-ORDER AUTO PICK
-
-Latest user feedback supersedes random automatic selection only:
-- `ไม่เอา` remains non-blocking
-- same-category/current-set/excluded filtering remains unchanged
-- after filtering, automatic replacement now scans forward from the excluded item in the current menu ingredient order
-- the first eligible candidate found is selected; scan wraps to the start of the menu when needed
-- manual replacement remains an optional explicit override
-- quantity/replacement ratios and `recipe_master.json` are unchanged
-
-Permanent regression contract now additionally verifies:
-- first item selects the next eligible same-category item
-- a middle item selects the following eligible item instead of jumping backward
-- the last item wraps to the first eligible same-category item
-- existing sequential exclusion, survivor convergence, quantity aggregation, reopen persistence, and landscape coverage remain in place
-
 ## EXACT NEXT ACTION
 
-1. Run scoped verification for the next-order product/test change.
-2. Trigger permanent UI QA on the resulting durable commit.
-3. Require local automatic replacement + landscape and deployed automatic replacement + landscape to PASS.
-4. Remove temporary next-order repair infrastructure and run clean-tree UI QA.
-5. Persist `READY FOR USER REAL-USAGE RE-REVIEW` with the final clean SHA/run.
+User hands-on re-review on the deployed app:
+1. Tap `ไม่เอา` on an item with multiple eligible same-category candidates and confirm it selects the next eligible item in menu order.
+2. Tap `ไม่เอา` on a middle item and confirm it moves forward rather than jumping back to the first candidate.
+3. Test the last eligible item in the order and confirm wrap-around to the first eligible same-category candidate.
+4. Repeat several `ไม่เอา` taps and confirm no mandatory replacement picker interrupts the flow.
+5. Confirm resulting quantity and close/reopen persistence remain correct.
+6. If new concrete hands-on feedback appears, resume from current GitHub `main` and inspect only the affected path.
