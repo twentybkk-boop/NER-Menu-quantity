@@ -72,6 +72,8 @@ jobs:
         run: node qa/startup-runtime-integrity-contract.mjs
       - name: Verify Matrix numeric edit validation
         run: node qa/matrix-edit-validation-contract.mjs
+      - name: Verify automatic replacement workflow locally
+        run: node qa/auto-replacement-flow-contract.mjs
       - name: Verify V4 phone-landscape calculator interaction locally
         run: node qa/landscape-calculator-v4-contract.mjs
       - name: Verify deployed GitHub Pages P0-A/P0-B acceptance
@@ -105,6 +107,10 @@ jobs:
           TRANSACTIONAL_IMPORT_BASE: https://twentybkk-boop.github.io/NER-Menu-quantity/
           TRANSACTIONAL_IMPORT_PREFIX: live
         run: node qa/transactional-import-ui-contract.mjs
+      - name: Verify deployed automatic replacement workflow
+        env:
+          AUTO_REPLACE_BASE: https://twentybkk-boop.github.io/NER-Menu-quantity/
+        run: node qa/auto-replacement-flow-contract.mjs
       - name: Verify deployed V4 phone-landscape calculator interaction
         env:
           LANDSCAPE_BASE: https://twentybkk-boop.github.io/NER-Menu-quantity/
