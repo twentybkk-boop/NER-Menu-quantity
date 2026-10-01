@@ -98,6 +98,12 @@ QA-only correction:
   - replacement quantities aggregate correctly when multiple exclusions converge
   - close/reopen of the same menu preserves exclusion/replacement/result state and does not auto-open the picker
 
+## DETERMINISTIC RNG COVERAGE — IMPLEMENTED
+- production automatic replacement remains randomized within the eligible preferred pool
+- the synthetic auto-replacement contract now stubs browser `Math.random()` with a fixed repeating sequence
+- Scenario C therefore exercises multiple-candidate automatic selection deterministically while still asserting same-category membership and exclusion/out-of-set safety
+- no production selection semantics were changed for test determinism
+
 ## EXACT NEXT ACTION
 1. Read the permanent UI QA run for the commit containing this state/coverage correction once.
 2. If it fails, inspect only the first failed required step and make the minimum correction in this auto-replacement scope.

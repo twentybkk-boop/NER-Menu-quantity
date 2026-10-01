@@ -77,6 +77,14 @@ async function run(browserType, browserName) {
     const fixture = await installSyntheticSet(page);
     const scope = `${browserName}/${LIVE ? 'live' : 'local'}`;
 
+    // Product selection is intentionally random in production. Stub Math.random in this
+    // synthetic contract so multiple-candidate coverage is deterministic and non-flaky.
+    const rngSequence = [0.01, 0.74, 0.38, 0.92, 0.21, 0.57];
+    await page.evaluate(sequence => {
+      let rngIndex = 0;
+      Math.random = () => sequence[(rngIndex++) % sequence.length];
+    }, rngSequence);
+
     // One exclusion must auto-assign silently, without interrupting the operator.
     await exclusionButton(page, fixture.meats[0]).click();
     await assertPickerClosed(page, `${scope}/first-exclusion`);
