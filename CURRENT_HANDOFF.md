@@ -3,116 +3,130 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + durable artifacts + latest user review.
 
-## CURRENT WORK HEAD — AUTO REPLACEMENT FIX DURABLE; FINAL FULL QA RUNNING
+## CURRENT WORK HEAD — READY FOR USER REAL-USAGE RE-REVIEW
 
-User real-usage requirement:
-- repeated `ไม่เอา` taps must not be interrupted by an auto-open replacement dropdown
-- automatic replacement stays in the same category while any eligible same-category item remains in the current set
-- cross-category fallback is allowed only after the excluded item's category is exhausted
-- automatic replacement never leaves the current menu/set
-- explicit manual replacement remains available
+New hands-on feedback about `ไม่เอา / replacement` is implemented, regression-covered, deployed, and verified on a clean repository tree.
 
-## VERIFIED PRODUCT FIX — DURABLE
-- repair run `36837106598` — completed/success
-- product commit `c36488a27d51e9fb7169fd4dd834a822c25eeebc` — `Restore category-first automatic replacements`
-- product diff changed exactly `index.html`
-- `recipe_master.json` unchanged
+Latest clean-tree acceptance head before this handoff-only checkpoint:
+- `27bd3cf5b487ccbc19213cc83b661d7a5818f592`
+- cleanup commit: `Remove temporary auto replacement QA trigger`
 
-Implemented behavior:
-- automatic/manual mapping state separated via `manualReplacementOverrides`
-- existing `menuBaseIngredients.includes(repItem)` preserves no-outside-set invariant
-- same-category automatic pool preferred first
-- cross-category valid in-set fallback only when same-category pool is empty
-- automatic choice randomized within preferred pool
-- auto mappings return to same category if one becomes available again
-- `toggleExclude()` no longer opens picker automatically
-- explicit manual picker/selection remains available
+Final clean-tree UI QA:
+- run `36840381648` / UI QA #172
+- head `27bd3cf5b487ccbc19213cc83b661d7a5818f592`
+- conclusion: `success`
+- local automatic replacement step #23: PASS
+- local phone-landscape interaction step #24: PASS
+- deployed automatic replacement step #33: PASS
+- deployed phone-landscape interaction step #34: PASS
+- entire UI QA job: PASS
 
-## PERMANENT REGRESSION COVERAGE — DURABLE
+Pre-cleanup full acceptance run:
+- run `36839655974` / UI QA #171
+- head `472c933de7ff21064d05566a890f472b510303ed`
+- conclusion: `success`
+- local + deployed automatic replacement and landscape interaction all PASS
+
+## VERIFIED PRODUCT BEHAVIOR
+
+When the user taps `ไม่เอา`:
+- the item is excluded immediately
+- no mandatory replacement dropdown/picker is auto-opened
+- repeated exclusions can continue without interruption
+- automatic replacement stays in the same logical category while an eligible same-category candidate remains in the current menu/set
+- excluded candidates and items outside the current set are never selected
+- cross-category fallback is used only after the excluded item's category is exhausted under the existing mapping semantics
+- when one eligible same-category candidate remains, excluded mappings converge to that survivor automatically
+- when several eligible candidates remain, production selection remains randomized within the eligible preferred pool
+- explicit manual replacement remains available as an optional override and opens only on explicit user action
+
+Same-menu modal state:
+- closing and reopening the same menu preserves exclusion/replacement/manual-override state
+- reopening does not auto-open the replacement picker
+- switching to a different menu resets this modal selection state, preventing cross-menu leakage
+
+Quantity behavior:
+- existing `calculateNetRecipe()` aggregation semantics were preserved
+- multiple replacement credits converging to one surviving ingredient aggregate into that ingredient exactly once per exclusion according to existing `replaceUseRules`
+- no recipe ratio or authoritative quantity data was changed
+- `recipe_master.json` remains unchanged by this fix
+
+## DURABLE IMPLEMENTATION / REGRESSION COMMITS
+
+Core automatic replacement behavior:
+- `c36488a27d51e9fb7169fd4dd834a822c25eeebc` — `Restore category-first automatic replacements`
+
+Same-menu state persistence + quantity/reopen regression:
+- `e98cabdc6982eb1ee655d50e37d0cb5cd83c2094` — `Preserve automatic replacement state across reopen`
+
+Deterministic RNG test coverage:
+- `91a462b48a3cec22ec60b02a6d2e7082f8277d9e` — `Make auto replacement regression deterministic`
+- synthetic browser contract stubs `Math.random()` with a fixed sequence; production randomness is unchanged
+
+Landscape reopen regression correction:
+- `98f863fbad381a200459d99c637f9fde8b727b3b` — `Align landscape regression with preserved replacement state`
+- verifies persisted exclusion across close/reopen + portrait→landscape rotation, then excludes a different still-eligible item without opening the picker
+
+Permanent coverage remains in:
 - `qa/auto-replacement-flow-contract.mjs`
-  - commit `ce0908c8b3a47ca55b60d06a979b556a61bd8291`
-  - covers silent repeated exclusions, 4-of-5 convergence, category exhaustion, return to same category, explicit manual picker, no-outside-set
 - `qa/landscape-calculator-v4-contract.mjs`
-  - commit `d9906fa652137640947d4635df36882342101d02`
-  - updated for silent auto replacement while preserving landscape tap/scroll/rotation gates
+- `qa/chunk4-polish-v4-contract.mjs`
 - `.github/workflows/ui-qa.yml`
-  - commit `d1a47e02c064c51ed60c09028e7c8611f7c2d54e`
-  - wires automatic replacement contract LOCAL + DEPLOYED
 
-## FIRST FULL QA FALSE-FAIL — CLOSED
-UI QA run `36837389765` failed only because `qa/chunk4-polish-v4-contract.mjs` located the replacement trigger by a fixed replacement label, which is no longer deterministic because accepted auto replacement is randomized within the same-category pool.
+## REQUIRED SCENARIOS — VERIFIED
 
-QA-only correction:
-- bot commit `e720043666ca4831fac0e749cdbbac1373de0500` — `Align Chunk 4 safety with silent auto replacement`
-- changed exactly `qa/chunk4-polish-v4-contract.mjs`
-- trigger is now located from the actual excluded row
-- contract asserts picker is initially closed after exclusion
-- contract explicitly opens picker before the existing interaction-safety sweep, preserving old safety intent
+A — sequential exclusions:
+- repeated `ไม่เอา` works without a mandatory picker
 
-## FINAL FULL QA TRIGGER
-- marker `qa/RUN_AUTO_REPLACEMENT_FINAL_QA`
-- commit `6edaf35080e3ff617c1035e8a50e6843d6aca036`
-- UI QA run `36838266125`
-  - run number 168
-  - bounded-read status: `in_progress`
-  - conclusion: none yet
-- Pages run `36838264227`
-  - bounded-read status from same trigger head was `pending`
-- no tight polling performed after this checkpoint
+B — one candidate remains:
+- 5-candidate synthetic group, exclude 4, remaining candidate becomes the automatic replacement
+- excluded candidates do not return
 
-## TEMPORARY REPAIR INFRASTRUCTURE — REMOVE ONLY AFTER FULL QA SUCCESS
+C — multiple candidates remain:
+- automatic selection uses same-category eligible candidates
+- excluded/out-of-set candidates are rejected
+- test RNG is deterministic and non-flaky
+
+D — quantities:
+- resulting quantity is checked against existing business-rule replacement quantities
+- converging replacement quantities aggregate correctly
+
+E — state / interaction:
+- close/reopen same menu preserves exclusion + replacement + result state
+- picker remains closed unless explicitly requested
+- portrait→landscape interaction preserves prior exclusion and permits a new non-blocking exclusion
+- local and deployed contracts PASS in the final clean-tree UI QA
+
+## TEMPORARY REPAIR INFRASTRUCTURE — REMOVED
+
+Removed after successful full QA:
 - `.github/workflows/repair-auto-replacement-flow.yml`
 - `repair-staging/auto-replacement/RUN_FIX`
-- `.github/workflows/repair-auto-replacement-qa-contract.yml` (first invalid repair workflow; no target changes)
+- `.github/workflows/repair-auto-replacement-qa-contract.yml`
 - `repair-staging/auto-replacement/RUN_QA_FIX`
 - `.github/workflows/repair-auto-replacement-qa-contract-v2.yml`
 - `repair-staging/auto-replacement/RUN_QA_FIX_V2`
+- `repair-staging/auto-replacement/patch_state_coverage.py`
 - `qa/RUN_AUTO_REPLACEMENT_FINAL_QA`
 
-## ACCEPTED / DO NOT REOPEN
-- product auto replacement implementation above unless new concrete evidence contradicts it
-- V4 UAT-001–UAT-014 visual work
+## ACCEPTED / DO NOT REOPEN WITHOUT NEW EVIDENCE
+
+- automatic replacement implementation and same-category semantics above
+- quantity/reopen regression coverage above
+- manual replacement optional override behavior
+- existing V4 visual/UAT work unrelated to this hands-on feedback
 - multi-item shrimp pooling
-- bundled import integrity
 - transactional Excel import validation
 - Matrix numeric edit validation
 - startup recipe master runtime integrity
 - authoritative recipe data
 
-## DO NOT REPEAT
-- do not rerun product repair
-- do not change `recipe_master.json`
-- do not reopen visual/background work
-- do not perform repo-wide investigation
-- do not poll UI QA `36838266125` in a tight loop
-
-## QUANTITY / REOPEN STATE COVERAGE — IMPLEMENTED
-- verified existing `calculateNetRecipe()` already aggregates multiple replacement credits into the same surviving item using the current `replaceUseRules`; no recipe/business ratio change was needed
-- verified prior `openCalculator()` reset `excludedItemsMap` + manual override state on every open, so close/reopen of the same menu lost the active exclusion/replacement state
-- minimum product correction: preserve state only when reopening the same active menu; switching to a different menu still resets, so state cannot leak across menus
-- `qa/auto-replacement-flow-contract.mjs` now verifies:
-  - sequential non-blocking exclusions
-  - same-category survivor convergence
-  - automatic selection never leaves the current set
-  - explicit manual picker remains optional
-  - replacement quantities aggregate correctly when multiple exclusions converge
-  - close/reopen of the same menu preserves exclusion/replacement/result state and does not auto-open the picker
-
-## DETERMINISTIC RNG COVERAGE — IMPLEMENTED
-- production automatic replacement remains randomized within the eligible preferred pool
-- the synthetic auto-replacement contract now stubs browser `Math.random()` with a fixed repeating sequence
-- Scenario C therefore exercises multiple-candidate automatic selection deterministically while still asserting same-category membership and exclusion/out-of-set safety
-- no production selection semantics were changed for test determinism
-
-## LANDSCAPE REOPEN CONTRACT CORRECTION — IMPLEMENTED
-- UI QA run `36838859184` proved the expanded auto-replacement contract PASS in Chromium + WebKit before failing the phone-landscape interaction contract
-- root cause was a stale test assumption, not a product click defect: the landscape test excluded an item in `tapFlow()`, closed/reopened the same menu, then clicked that already-excluded item again and expected it to remain excluded
-- same-menu reopen now intentionally preserves exclusion/replacement state, so that second click correctly un-excluded the item
-- landscape regression now first asserts the prior exclusion persists after close/reopen and portrait→landscape rotation, then excludes a different still-eligible item and asserts the picker remains closed and the prior exclusion remains intact
-- no production behavior or recipe data changed in this correction
-
 ## EXACT NEXT ACTION
-1. Read the permanent UI QA run for the commit containing this state/coverage correction once.
-2. If it fails, inspect only the first failed required step and make the minimum correction in this auto-replacement scope.
-3. If it succeeds, confirm the deployed automatic-replacement contract and same-menu reopen persistence.
-4. Remove all temporary auto-replacement repair workflows/trigger markers and persist `READY FOR USER REAL-USAGE RE-REVIEW`.
+
+User real-usage re-review on the deployed app:
+1. Open a menu/set with several ingredients in the same logical category.
+2. Tap `ไม่เอา` on several items consecutively; verify no replacement picker interrupts the sequence.
+3. Exclude all but one item in that category; verify automatic mappings converge to the sole remaining eligible item and displayed quantities remain correct.
+4. Close and reopen the same menu; verify exclusion/replacement/result state is unchanged and no picker auto-opens.
+5. Optionally rotate portrait ↔ landscape and repeat one additional exclusion; verify interaction remains non-blocking.
+6. Report only new concrete hands-on behavior if anything differs from the verified contract; do not restart the closed repair/recovery work without such evidence.
