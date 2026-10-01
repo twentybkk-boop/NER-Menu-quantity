@@ -16,27 +16,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Patch deterministic auto-replacement regression coverage
+      - name: Patch landscape reopen regression contract
         run: |
           python3 repair-staging/auto-replacement/patch_state_coverage.py
           git diff --check
-          test "$(git diff --name-only | sort | tr '\n' ' ')" = "CURRENT_HANDOFF.md qa/auto-replacement-flow-contract.mjs "
+          test "$(git diff --name-only | sort | tr '\n' ' ')" = "CURRENT_HANDOFF.md qa/landscape-calculator-v4-contract.mjs "
 
       - name: Verify scoped invariants
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          q = Path('qa/auto-replacement-flow-contract.mjs').read_text(encoding='utf-8')
+          q = Path('qa/landscape-calculator-v4-contract.mjs').read_text(encoding='utf-8')
           h = Path('CURRENT_HANDOFF.md').read_text(encoding='utf-8')
-          assert 'const rngSequence = [0.01, 0.74, 0.38, 0.92, 0.21, 0.57];' in q
-          assert 'Math.random = () => sequence[(rngIndex++) % sequence.length];' in q
-          assert '## DETERMINISTIC RNG COVERAGE — IMPLEMENTED' in h
+          assert 'exclusion state was lost after close/reopen' in q
+          assert 'new exclusion is blocked after portrait→landscape rotation' in q
+          assert 'prior exclusion changed while excluding another item after rotation' in q
+          assert '## LANDSCAPE REOPEN CONTRACT CORRECTION — IMPLEMENTED' in h
           PY
 
-      - name: Commit permanent deterministic contract
+      - name: Commit permanent landscape regression correction
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add qa/auto-replacement-flow-contract.mjs CURRENT_HANDOFF.md
-          git commit -m 'Make auto replacement regression deterministic'
+          git add qa/landscape-calculator-v4-contract.mjs CURRENT_HANDOFF.md
+          git commit -m 'Align landscape regression with preserved replacement state'
           git push origin HEAD:main
