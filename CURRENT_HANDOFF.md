@@ -3,40 +3,27 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + durable artifacts + latest user review.
 
-
-## ACTIVE SUPERSESSION — FIRST-ELIGIBLE SAME-CATEGORY AUTO PICK
-
-Latest user feedback supersedes only the automatic ordering policy from the prior next-order checkpoint:
-- `ไม่เอา` remains non-blocking
-- same-category/current-menu/non-excluded filtering remains unchanged
-- automatic replacement must choose the **first eligible item still included in the same category** according to `Object.keys(originalMenu[menuName])` order
-- it does not scan forward from the excluded item and does not use wrap semantics
-- manual replacement remains an optional explicit override
-- quantity aggregation, reopen persistence, recipe ratios, and `recipe_master.json` remain unchanged
-
-Exact next action for this active supersession:
-1. verify first-eligible regression locally
-2. run permanent UI QA local/deployed automatic replacement + landscape gates
-3. remove temporary first-eligible repair infrastructure
-4. run clean-tree UI QA and persist final READY checkpoint
-
 ## CURRENT WORK HEAD — READY FOR USER REAL-USAGE RE-REVIEW
 
 Latest hands-on feedback is implemented and verified:
-- `ไม่เอา` remains non-blocking
-- automatic replacement is **not random**
-- automatic replacement chooses the **next eligible item** in the current menu ingredient order
-- if no later eligible candidate exists, selection wraps to the start of the menu order
+- tapping `ไม่เอา` remains non-blocking
+- automatic replacement is deterministic; it does not use randomness
+- automatic replacement first restricts candidates to eligible items in the same logical category/group and current menu/set
+- after that filtering, it chooses the **first eligible item still included in that category according to `Object.keys(originalMenu[menuName])` order**
+- it does **not** scan forward from the excluded item and does **not** use wrap semantics
+- excluded candidates and items outside the current menu/set cannot be selected
+- cross-category fallback remains allowed only after the same-category pool is exhausted under existing mapping semantics
+- manual replacement remains an optional explicit override only
 
-Permanent next-order implementation:
-- `11f70cb7e85435e73f113ac3e83ff53cf95ddcb6` — `Make automatic replacement choose next eligible item`
+Permanent first-eligible implementation:
+- `32944e8a7f3582c27215b16a34ddcdfd1420b057` — `Choose first eligible automatic replacement`
 
 Final clean-tree acceptance head before this handoff-only checkpoint:
-- `2789c677211f648eefb1a554d01b5bce1e4f2620` — `Remove temporary next-order QA trigger`
+- `cdbd7055a18b787aa14ee8a9db08e20bd4fe7894` — `Remove temporary first-eligible QA trigger`
 
 Final clean-tree UI QA:
-- run `36842361171` / UI QA #174
-- head `2789c677211f648eefb1a554d01b5bce1e4f2620`
+- run `36848476342` / UI QA #176
+- head `cdbd7055a18b787aa14ee8a9db08e20bd4fe7894`
 - conclusion: `success`
 - local automatic replacement step #23: PASS
 - local phone-landscape interaction step #24: PASS
@@ -45,8 +32,8 @@ Final clean-tree UI QA:
 - entire UI QA job: PASS
 
 Pre-cleanup full acceptance:
-- run `36841637718` / UI QA #173
-- head `7f86588606351837cb66f36caa3c83ac8ec3644a`
+- run `36847895817` / UI QA #175
+- head `672e140ac555df2f0b524d2d875c83864c7962f0`
 - conclusion: `success`
 - local + deployed automatic replacement and landscape interaction: PASS
 
@@ -54,21 +41,16 @@ Pre-cleanup full acceptance:
 
 When the user taps `ไม่เอา`:
 - the item is excluded immediately
-- no mandatory replacement dropdown/picker is auto-opened
+- no mandatory replacement picker is auto-opened
 - repeated exclusions can continue without interruption
-- automatic replacement first uses eligible items in the same logical category/group under the existing business mapping
-- excluded candidates and items outside the current menu/set are never selected
-- after eligibility filtering, the system scans forward from the excluded item in `Object.keys(originalMenu[menuName])` order
-- the first eligible candidate encountered is selected
-- scan wraps to the start of the menu when needed
-- cross-category fallback is used only after the same-category pool is exhausted under existing mapping semantics
-- when one eligible same-category candidate remains, excluded mappings converge to that survivor
-- explicit manual replacement remains available only as an optional user-triggered override
+- same-category/current-menu/non-excluded filtering is preserved
+- the selected automatic replacement is the earliest still-eligible item in current menu ingredient order
 
-Examples of deterministic order behavior covered by regression:
-- first item -> next eligible same-category item
-- middle item -> following eligible item, not the first item in the pool
-- last item -> wraps to the first eligible same-category item
+Examples covered by permanent regression:
+- group order `A, B, C, D, E`; exclude `C` while all others remain -> automatic replacement is `A`
+- then exclude `A` too -> mappings that need an automatic replacement move to `B`
+- exclude the last item while `A` is still available -> replacement is still `A`; excluded-item position does not bias selection
+- exclude four of five same-category items -> all automatic mappings converge to the sole remaining candidate
 
 There is no RNG dependency in the current automatic-replacement selection policy or its regression contract.
 
@@ -101,15 +83,18 @@ Core non-blocking category-first automatic replacement:
 Same-menu persistence + quantity/reopen coverage:
 - `e98cabdc6982eb1ee655d50e37d0cb5cd83c2094` — `Preserve automatic replacement state across reopen`
 
-Historical random-policy deterministic test commit — superseded by next-order policy:
+Historical random-policy test commit — superseded:
 - `91a462b48a3cec22ec60b02a6d2e7082f8277d9e` — `Make auto replacement regression deterministic`
-- retained only as history; current production selection no longer uses randomness and current regression no longer stubs `Math.random()`
 
 Landscape reopen regression correction:
 - `98f863fbad381a200459d99c637f9fde8b727b3b` — `Align landscape regression with preserved replacement state`
 
-Current next-order policy:
+Historical next-order policy — superseded by latest user feedback:
 - `11f70cb7e85435e73f113ac3e83ff53cf95ddcb6` — `Make automatic replacement choose next eligible item`
+- do not restore next-order/wrap semantics unless new explicit user feedback requires it
+
+Current authoritative first-eligible policy:
+- `32944e8a7f3582c27215b16a34ddcdfd1420b057` — `Choose first eligible automatic replacement`
 
 Permanent coverage:
 - `qa/auto-replacement-flow-contract.mjs`
@@ -123,14 +108,15 @@ A — sequential exclusions:
 - repeated `ไม่เอา` works without a mandatory picker
 
 B — one candidate remains:
-- 5-candidate synthetic group, exclude 4, remaining same-category candidate becomes the replacement
+- exclude four of five same-category candidates; the sole remaining candidate becomes the automatic replacement
 - excluded candidates do not return
 
-C — multiple candidates remain / deterministic next-order:
+C — multiple candidates remain / deterministic first-eligible:
 - same-category eligible pool is used first
 - excluded/out-of-set candidates are rejected
-- first, middle, and wrap-around next-order selection are asserted directly
-- no RNG/stub/seed is required because production selection is deterministic
+- middle-item exclusion chooses the earliest still-included same-category candidate in menu order
+- when that earliest candidate is then excluded, mappings advance to the next earliest remaining candidate
+- excluded-item position has no effect on automatic ordering
 
 D — quantities:
 - resulting quantity is checked against existing replacement quantities
@@ -140,23 +126,23 @@ E — state / interaction:
 - close/reopen same menu preserves exclusion + replacement + result state
 - picker stays closed unless explicitly requested
 - portrait->landscape preserves prior exclusion and permits another non-blocking exclusion
-- local and deployed contracts PASS in final clean-tree UI QA #174
+- local and deployed contracts PASS in final clean-tree UI QA #176
 
-## TEMPORARY NEXT-ORDER REPAIR INFRASTRUCTURE — REMOVED
+## TEMPORARY FIRST-ELIGIBLE REPAIR INFRASTRUCTURE — REMOVED
 
 Removed after successful full QA:
-- `.github/workflows/repair-auto-replacement-next.yml`
-- `repair-staging/auto-replacement-next/patch_next_policy.py`
-- `repair-staging/auto-replacement-next/RUN_FIX`
-- `qa/RUN_AUTO_REPLACEMENT_NEXT_QA`
+- `.github/workflows/repair-auto-replacement-first.yml`
+- `repair-staging/auto-replacement-first/patch_first_policy.py`
+- `repair-staging/auto-replacement-first/RUN_FIX`
+- `qa/RUN_AUTO_REPLACEMENT_FIRST_QA`
 
-Earlier temporary auto-replacement repair infrastructure also remains removed.
+Earlier temporary auto-replacement and next-order repair infrastructure also remains removed.
 
 ## ACCEPTED / DO NOT REOPEN WITHOUT NEW EVIDENCE
 
 - non-blocking `ไม่เอา` workflow
-- deterministic next-eligible selection + wrap semantics
-- same-category/current-set/excluded filtering
+- deterministic first-eligible same-category/current-menu selection semantics
+- excluded/out-of-set filtering
 - quantity/reopen persistence coverage
 - manual replacement optional override
 - landscape interaction behavior
@@ -169,10 +155,10 @@ Earlier temporary auto-replacement repair infrastructure also remains removed.
 
 ## EXACT NEXT ACTION
 
-User hands-on re-review on the deployed app:
-1. Tap `ไม่เอา` on an item with multiple eligible same-category candidates and confirm it selects the next eligible item in menu order.
-2. Tap `ไม่เอา` on a middle item and confirm it moves forward rather than jumping back to the first candidate.
-3. Test the last eligible item in the order and confirm wrap-around to the first eligible same-category candidate.
-4. Repeat several `ไม่เอา` taps and confirm no mandatory replacement picker interrupts the flow.
-5. Confirm resulting quantity and close/reopen persistence remain correct.
-6. If new concrete hands-on feedback appears, resume from current GitHub `main` and inspect only the affected path.
+User real-usage re-review on the deployed app:
+1. Use a category with several items still included.
+2. Tap `ไม่เอา` on a middle or later item and confirm the automatic replacement is the first still-included item in the same category, not the next item after the excluded one.
+3. Exclude that first candidate too and confirm the mapping advances to the next earliest still-included same-category item.
+4. Repeat several exclusions and confirm no mandatory picker interrupts the flow.
+5. Confirm resulting quantities and close/reopen persistence remain correct.
+6. If a new concrete mismatch appears, resume from current GitHub `main` and inspect only the affected path; do not reopen the superseded random or next-order investigations without new evidence.
