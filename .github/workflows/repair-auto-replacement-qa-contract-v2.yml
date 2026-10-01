@@ -1,0 +1,57 @@
+name: Repair Chunk 4 auto replacement QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'repair-staging/auto-replacement/RUN_QA_FIX_V2'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Patch stale replacement trigger lookup
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('qa/chunk4-polish-v4-contract.mjs')
+          lines = p.read_text(encoding='utf-8').splitlines()
+          start = [i for i, line in enumerate(lines) if "const trigger = page.locator('.replacement-trigger').filter" in line]
+          if len(start) != 1:
+              raise SystemExit(f'expected one stale trigger lookup, found {len(start)}')
+          i = start[0]
+          if 'candidate.replacement' not in lines[i] or 'candidate.replacement' not in lines[i + 1] or 'await hitCheck(trigger' not in lines[i + 2]:
+              raise SystemExit('stale three-line block shape changed')
+
+          d = '$'
+          new = [
+              "  const trigger = target.locator('..').locator('.replacement-trigger');",
+              "  assert.equal(await trigger.count(), 1, `" + d + "{scope}: replacement trigger missing for exclusion row (` + candidate.exclude + `)`);",
+              "  assert.equal(await trigger.getAttribute('aria-expanded'), 'false', `" + d + "{scope}: replacement picker auto-opened after exclusion`);",
+              "  assert.equal(await page.locator('.replacement-menu').count(), 0, `" + d + "{scope}: replacement menu must stay closed until explicitly requested`);",
+              "  await hitCheck(trigger, `" + d + "{scope}/replacement-trigger`);",
+              "  await trigger.click();",
+              "  assert.equal(await trigger.getAttribute('aria-expanded'), 'true', `" + d + "{scope}: explicit replacement trigger did not open picker`);",
+              "  assert.ok(await target.locator('..').locator('.replacement-menu').count() > 0, `" + d + "{scope}: explicit replacement picker missing from exclusion row`);",
+          ]
+          lines[i:i + 3] = new
+          p.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          PY
+
+          git diff --check
+          test "$(git diff --name-only)" = "qa/chunk4-polish-v4-contract.mjs"
+
+      - name: Commit QA-only fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add qa/chunk4-polish-v4-contract.mjs
+          git commit -m 'Align Chunk 4 safety with silent auto replacement'
+          git push origin HEAD:main
