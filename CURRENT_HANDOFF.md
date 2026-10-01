@@ -3,7 +3,7 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + durable artifacts + latest user review.
 
-## CURRENT WORK HEAD — READY FOR USER REAL-USAGE RE-REVIEW
+## CURRENT WORK HEAD — NEXT-ORDER AUTO PICK IMPLEMENTED; QA REQUIRED
 
 New hands-on feedback about `ไม่เอา / replacement` is implemented, regression-covered, deployed, and verified on a clean repository tree.
 
@@ -37,7 +37,7 @@ When the user taps `ไม่เอา`:
 - excluded candidates and items outside the current set are never selected
 - cross-category fallback is used only after the excluded item's category is exhausted under the existing mapping semantics
 - when one eligible same-category candidate remains, excluded mappings converge to that survivor automatically
-- when several eligible candidates remain, production selection remains randomized within the eligible preferred pool
+- when several eligible candidates remain, automatic selection chooses the next eligible item in the current menu order and wraps to the start when needed
 - explicit manual replacement remains available as an optional override and opens only on explicit user action
 
 Same-menu modal state:
@@ -59,9 +59,9 @@ Core automatic replacement behavior:
 Same-menu state persistence + quantity/reopen regression:
 - `e98cabdc6982eb1ee655d50e37d0cb5cd83c2094` — `Preserve automatic replacement state across reopen`
 
-Deterministic RNG test coverage:
+Historical random-policy test coverage (superseded by next-order selection):
 - `91a462b48a3cec22ec60b02a6d2e7082f8277d9e` — `Make auto replacement regression deterministic`
-- synthetic browser contract stubs `Math.random()` with a fixed sequence; production randomness is unchanged
+- this prior RNG-specific contract is retained only as history; current selection no longer depends on randomness
 
 Landscape reopen regression correction:
 - `98f863fbad381a200459d99c637f9fde8b727b3b` — `Align landscape regression with preserved replacement state`
@@ -121,12 +121,26 @@ Removed after successful full QA:
 - startup recipe master runtime integrity
 - authoritative recipe data
 
+## NEW HANDS-ON FEEDBACK — DETERMINISTIC NEXT-ORDER AUTO PICK
+
+Latest user feedback supersedes random automatic selection only:
+- `ไม่เอา` remains non-blocking
+- same-category/current-set/excluded filtering remains unchanged
+- after filtering, automatic replacement now scans forward from the excluded item in the current menu ingredient order
+- the first eligible candidate found is selected; scan wraps to the start of the menu when needed
+- manual replacement remains an optional explicit override
+- quantity/replacement ratios and `recipe_master.json` are unchanged
+
+Permanent regression contract now additionally verifies:
+- first item selects the next eligible same-category item
+- a middle item selects the following eligible item instead of jumping backward
+- the last item wraps to the first eligible same-category item
+- existing sequential exclusion, survivor convergence, quantity aggregation, reopen persistence, and landscape coverage remain in place
+
 ## EXACT NEXT ACTION
 
-User real-usage re-review on the deployed app:
-1. Open a menu/set with several ingredients in the same logical category.
-2. Tap `ไม่เอา` on several items consecutively; verify no replacement picker interrupts the sequence.
-3. Exclude all but one item in that category; verify automatic mappings converge to the sole remaining eligible item and displayed quantities remain correct.
-4. Close and reopen the same menu; verify exclusion/replacement/result state is unchanged and no picker auto-opens.
-5. Optionally rotate portrait ↔ landscape and repeat one additional exclusion; verify interaction remains non-blocking.
-6. Report only new concrete hands-on behavior if anything differs from the verified contract; do not restart the closed repair/recovery work without such evidence.
+1. Run scoped verification for the next-order product/test change.
+2. Trigger permanent UI QA on the resulting durable commit.
+3. Require local automatic replacement + landscape and deployed automatic replacement + landscape to PASS.
+4. Remove temporary next-order repair infrastructure and run clean-tree UI QA.
+5. Persist `READY FOR USER REAL-USAGE RE-REVIEW` with the final clean SHA/run.

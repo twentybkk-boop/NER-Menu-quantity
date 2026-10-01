@@ -77,20 +77,12 @@ async function run(browserType, browserName) {
     const fixture = await installSyntheticSet(page);
     const scope = `${browserName}/${LIVE ? 'live' : 'local'}`;
 
-    // Product selection is intentionally random in production. Stub Math.random in this
-    // synthetic contract so multiple-candidate coverage is deterministic and non-flaky.
-    const rngSequence = [0.01, 0.74, 0.38, 0.92, 0.21, 0.57];
-    await page.evaluate(sequence => {
-      let rngIndex = 0;
-      Math.random = () => sequence[(rngIndex++) % sequence.length];
-    }, rngSequence);
-
     // One exclusion must auto-assign silently, without interrupting the operator.
     await exclusionButton(page, fixture.meats[0]).click();
     await assertPickerClosed(page, `${scope}/first-exclusion`);
     let state = await readReplacementState(page);
     assert.equal(state.open, null, `${scope}: openReplacementPicker must remain null after auto assignment`);
-    assert.ok(fixture.meats.slice(1).includes(state.excluded[fixture.meats[0]]), `${scope}: first auto replacement must stay in meat category while meat remains`);
+    assert.equal(state.excluded[fixture.meats[0]], fixture.meats[1], `${scope}: first auto replacement must choose the next eligible meat in menu order`);
     assert.notEqual(state.excluded[fixture.meats[0]], fixture.outside, `${scope}: auto replacement escaped the current set`);
 
     // Manual picker still exists, but opens only on an explicit trigger tap.
@@ -100,6 +92,32 @@ async function run(browserType, browserName) {
     assert.ok(await page.locator('.replacement-menu').count() > 0, `${scope}: manual replacement picker no longer opens explicitly`);
     await firstTrigger.click();
     await assertPickerClosed(page, `${scope}/manual-close`);
+
+    // Next-order policy: excluding a middle item must move forward, not jump back to
+    // the first candidate; excluding the last item wraps to the first eligible meat.
+    await page.evaluate(menu => {
+      currentActiveMenu = null;
+      excludedItemsMap = {};
+      openReplacementPicker = null;
+      manualReplacementOverrides = new Set();
+      openCalculator(menu);
+    }, fixture.menu);
+    await exclusionButton(page, fixture.meats[2]).click();
+    await assertPickerClosed(page, `${scope}/next-order-middle`);
+    state = await readReplacementState(page);
+    assert.equal(state.excluded[fixture.meats[2]], fixture.meats[3], `${scope}: middle exclusion must choose the next eligible meat`);
+
+    await page.evaluate(menu => {
+      currentActiveMenu = null;
+      excludedItemsMap = {};
+      openReplacementPicker = null;
+      manualReplacementOverrides = new Set();
+      openCalculator(menu);
+    }, fixture.menu);
+    await exclusionButton(page, fixture.meats[4]).click();
+    await assertPickerClosed(page, `${scope}/next-order-wrap`);
+    state = await readReplacementState(page);
+    assert.equal(state.excluded[fixture.meats[4]], fixture.meats[0], `${scope}: last meat exclusion must wrap to the first eligible meat`);
 
     // Reset and reproduce the real kitchen flow: reject 4 of 5 meats in sequence.
     await page.evaluate(menu => {

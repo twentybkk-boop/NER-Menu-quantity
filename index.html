@@ -817,9 +817,20 @@ body{isolation:isolate}
       return sameCategory.length ? sameCategory : valid;
     }
 
-    function pickRandomReplacement(items) {
+    function pickNextEligibleReplacement(menuName, excludedItem, items) {
       if (!items.length) return '';
-      return items[Math.floor(Math.random() * items.length)] || '';
+
+      const menuOrder = Object.keys(originalMenu[menuName] || {});
+      const eligible = new Set(items);
+      const excludedIndex = menuOrder.indexOf(excludedItem);
+
+      if (excludedIndex >= 0 && menuOrder.length) {
+        for (let offset = 1; offset <= menuOrder.length; offset += 1) {
+          const candidate = menuOrder[(excludedIndex + offset) % menuOrder.length];
+          if (eligible.has(candidate)) return candidate;
+        }
+      }
+      return items[0] || '';
     }
 
     function checkAndFixFallbacks() {
@@ -830,7 +841,7 @@ body{isolation:isolate}
 
         const autoPool = getAutoReplacementPool(currentActiveMenu, ex);
         if (!autoPool.includes(currentRep)) {
-          excludedItemsMap[ex] = pickRandomReplacement(autoPool);
+          excludedItemsMap[ex] = pickNextEligibleReplacement(currentActiveMenu, ex, autoPool);
           manualReplacementOverrides.delete(ex);
         }
       });
