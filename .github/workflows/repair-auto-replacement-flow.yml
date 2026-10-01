@@ -1,0 +1,96 @@
+name: Repair auto replacement flow
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'repair-staging/auto-replacement/RUN_FIX'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Apply exact auto-replacement behavior patch
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('index.html')
+          src = path.read_text(encoding='utf-8')
+
+          replacements = []
+
+          replacements.append((
+          """    let currentActiveMenu = null;\n    let excludedItemsMap = {};\n    let openReplacementPicker = null;\n""",
+          """    let currentActiveMenu = null;\n    let excludedItemsMap = {};\n    let openReplacementPicker = null;\n    let manualReplacementOverrides = new Set();\n"""))
+
+          replacements.append((
+          """          <p class=\"modal-subtitle\">ติ๊กเลือกสิ่งที่ไม่รับ และเลือกวัตถุดิบทดแทน</p>""",
+          """          <p class=\"modal-subtitle\">ติ๊กสิ่งที่ไม่รับ ระบบจะเลือกวัตถุดิบทดแทนให้อัตโนมัติ</p>"""))
+
+          old_logic = """    function getSortedReplacementOptions(menuName, excludedItem) {\n      const menuBaseIngredients = Object.keys(originalMenu[menuName] || {});\n      const rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(excludedItem).trim());\n      const options = [];\n\n      if (rule?.replace) {\n        Object.entries(rule.replace).forEach(([repItem, repQty]) => {\n          if (repItem === excludedItem) return;\n          const qty = Number(repQty);\n          if (menuBaseIngredients.includes(repItem) && excludedItemsMap[repItem] === undefined && repQty !== undefined && !Number.isNaN(qty)) {\n            options.push({ name: repItem, qty, selectable: qty > 0 });\n          }\n        });\n      }\n\n      if (veggieGroups.includes(excludedItem)) {\n        options.sort((a, b) => Number(veggieGroups.includes(b.name)) - Number(veggieGroups.includes(a.name)));\n      }\n      return options;\n    }\n\n    function getSortedValidReplacements(menuName, excludedItem) {\n      return getSortedReplacementOptions(menuName, excludedItem).filter(x => x.selectable).map(x => x.name);\n    }\n\n    function checkAndFixFallbacks() {\n      Object.keys(excludedItemsMap).forEach(ex => {\n        const currentRep = excludedItemsMap[ex];\n        const valid = getSortedValidReplacements(currentActiveMenu, ex);\n        if (excludedItemsMap[currentRep] !== undefined || !valid.includes(currentRep)) excludedItemsMap[ex] = valid[0] || '';\n      });\n    }\n"""
+
+          new_logic = """    function isVegSideReplacementCategory(item) {\n      return veggieGroups.includes(item);\n    }\n\n    function getSortedReplacementOptions(menuName, excludedItem) {\n      const menuBaseIngredients = Object.keys(originalMenu[menuName] || {});\n      const rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(excludedItem).trim());\n      const options = [];\n\n      if (rule?.replace) {\n        Object.entries(rule.replace).forEach(([repItem, repQty]) => {\n          if (repItem === excludedItem) return;\n          const qty = Number(repQty);\n          if (menuBaseIngredients.includes(repItem) && excludedItemsMap[repItem] === undefined && repQty !== undefined && !Number.isNaN(qty)) {\n            options.push({ name: repItem, qty, selectable: qty > 0 });\n          }\n        });\n      }\n\n      const excludedIsVegSide = isVegSideReplacementCategory(excludedItem);\n      options.sort((a, b) =>\n        Number(isVegSideReplacementCategory(b.name) === excludedIsVegSide) -\n        Number(isVegSideReplacementCategory(a.name) === excludedIsVegSide)\n      );\n      return options;\n    }\n\n    function getSortedValidReplacements(menuName, excludedItem) {\n      return getSortedReplacementOptions(menuName, excludedItem).filter(x => x.selectable).map(x => x.name);\n    }\n\n    function getAutoReplacementPool(menuName, excludedItem) {\n      const valid = getSortedValidReplacements(menuName, excludedItem);\n      const excludedIsVegSide = isVegSideReplacementCategory(excludedItem);\n      const sameCategory = valid.filter(name => isVegSideReplacementCategory(name) === excludedIsVegSide);\n      return sameCategory.length ? sameCategory : valid;\n    }\n\n    function pickRandomReplacement(items) {\n      if (!items.length) return '';\n      return items[Math.floor(Math.random() * items.length)] || '';\n    }\n\n    function checkAndFixFallbacks() {\n      Object.keys(excludedItemsMap).forEach(ex => {\n        const currentRep = excludedItemsMap[ex];\n        const valid = getSortedValidReplacements(currentActiveMenu, ex);\n        if (manualReplacementOverrides.has(ex) && valid.includes(currentRep)) return;\n\n        const autoPool = getAutoReplacementPool(currentActiveMenu, ex);\n        if (!autoPool.includes(currentRep)) {\n          excludedItemsMap[ex] = pickRandomReplacement(autoPool);\n          manualReplacementOverrides.delete(ex);\n        }\n      });\n    }\n"""
+          replacements.append((old_logic, new_logic))
+
+          replacements.append((
+          """      excludedItemsMap = {};\n      openReplacementPicker = null;\n      el('calcMenuTitle').textContent = menuName;\n""",
+          """      excludedItemsMap = {};\n      openReplacementPicker = null;\n      manualReplacementOverrides = new Set();\n      el('calcMenuTitle').textContent = menuName;\n"""))
+
+          old_toggle = """    function toggleExclude(item) {\n      if (excludedItemsMap[item] !== undefined) {\n        delete excludedItemsMap[item];\n        if (openReplacementPicker === item) openReplacementPicker = null;\n      } else {\n        const valid = getSortedValidReplacements(currentActiveMenu, item);\n        excludedItemsMap[item] = valid[0] || '';\n        openReplacementPicker = item;\n      }\n      checkAndFixFallbacks();\n      renderExcludeOptions();\n      renderNetResults();\n    }\n"""
+          new_toggle = """    function toggleExclude(item) {\n      openReplacementPicker = null;\n      if (excludedItemsMap[item] !== undefined) {\n        delete excludedItemsMap[item];\n        manualReplacementOverrides.delete(item);\n      } else {\n        excludedItemsMap[item] = '';\n        manualReplacementOverrides.delete(item);\n      }\n      checkAndFixFallbacks();\n      renderExcludeOptions();\n      renderNetResults();\n    }\n"""
+          replacements.append((old_toggle, new_toggle))
+
+          old_set = """    function setReplacement(excludedItem, replacementItem) {\n      const valid = getSortedValidReplacements(currentActiveMenu, excludedItem);\n      if (!valid.includes(replacementItem)) return;\n      excludedItemsMap[excludedItem] = replacementItem;\n      openReplacementPicker = null;\n      renderExcludeOptions();\n      renderNetResults();\n    }\n"""
+          new_set = """    function setReplacement(excludedItem, replacementItem) {\n      const valid = getSortedValidReplacements(currentActiveMenu, excludedItem);\n      if (!valid.includes(replacementItem)) return;\n      excludedItemsMap[excludedItem] = replacementItem;\n      manualReplacementOverrides.add(excludedItem);\n      openReplacementPicker = null;\n      renderExcludeOptions();\n      renderNetResults();\n    }\n"""
+          replacements.append((old_set, new_set))
+
+          replacements.append((
+          """          hint.textContent = 'เลือกวัตถุดิบทดแทน';""",
+          """          hint.textContent = 'แตะเพื่อเปลี่ยนเอง';"""))
+
+          for old, new in replacements:
+              count = src.count(old)
+              if count != 1:
+                  raise SystemExit(f'exact patch guard failed: expected 1 occurrence, found {count}: {old[:80]!r}')
+              src = src.replace(old, new, 1)
+
+          path.write_text(src, encoding='utf-8')
+          PY
+
+      - name: Verify exact product invariants
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          s = Path('index.html').read_text(encoding='utf-8')
+          assert 'let manualReplacementOverrides = new Set();' in s
+          assert 'function getAutoReplacementPool(menuName, excludedItem)' in s
+          assert 'function pickRandomReplacement(items)' in s
+          assert 'openReplacementPicker = item;' not in s
+          assert "menuBaseIngredients.includes(repItem)" in s
+          assert "manualReplacementOverrides.add(excludedItem);" in s
+          assert "ติ๊กสิ่งที่ไม่รับ ระบบจะเลือกวัตถุดิบทดแทนให้อัตโนมัติ" in s
+          PY
+          git diff --check
+          test "$(git diff --name-only | wc -l)" -eq 1
+          test "$(git diff --name-only)" = "index.html"
+
+      - name: Commit exact product fix
+        run: |
+          if git diff --quiet; then
+            echo 'No product diff to commit'
+            exit 1
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Restore category-first automatic replacements'
+          git push origin HEAD:main
