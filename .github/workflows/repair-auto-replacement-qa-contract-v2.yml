@@ -16,29 +16,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Patch reopen persistence and regression coverage
+      - name: Patch deterministic auto-replacement regression coverage
         run: |
           python3 repair-staging/auto-replacement/patch_state_coverage.py
           git diff --check
-          test "$(git diff --name-only | sort | tr '\n' ' ')" = "CURRENT_HANDOFF.md index.html qa/auto-replacement-flow-contract.mjs "
+          test "$(git diff --name-only | sort | tr '\n' ' ')" = "CURRENT_HANDOFF.md qa/auto-replacement-flow-contract.mjs "
 
       - name: Verify scoped invariants
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          s = Path('index.html').read_text(encoding='utf-8')
           q = Path('qa/auto-replacement-flow-contract.mjs').read_text(encoding='utf-8')
-          assert 'const preserveSelectionState = currentActiveMenu === menuName;' in s
-          assert "if (!preserveSelectionState) {" in s
-          assert 'replacement quantities did not aggregate correctly into the sole survivor' in q
-          assert 'exclusion/auto-replacement state changed after close/reopen' in q
-          assert 'replacement picker reopened without explicit user action' in q
+          h = Path('CURRENT_HANDOFF.md').read_text(encoding='utf-8')
+          assert 'const rngSequence = [0.01, 0.74, 0.38, 0.92, 0.21, 0.57];' in q
+          assert 'Math.random = () => sequence[(rngIndex++) % sequence.length];' in q
+          assert '## DETERMINISTIC RNG COVERAGE — IMPLEMENTED' in h
           PY
 
-      - name: Commit product and permanent regression fix
+      - name: Commit permanent deterministic contract
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html qa/auto-replacement-flow-contract.mjs CURRENT_HANDOFF.md
-          git commit -m 'Preserve automatic replacement state across reopen'
+          git add qa/auto-replacement-flow-contract.mjs CURRENT_HANDOFF.md
+          git commit -m 'Make auto replacement regression deterministic'
           git push origin HEAD:main
