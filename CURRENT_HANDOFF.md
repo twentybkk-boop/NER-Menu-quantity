@@ -86,10 +86,20 @@ QA-only correction:
 - do not perform repo-wide investigation
 - do not poll UI QA `36838266125` in a tight loop
 
+## QUANTITY / REOPEN STATE COVERAGE — IMPLEMENTED
+- verified existing `calculateNetRecipe()` already aggregates multiple replacement credits into the same surviving item using the current `replaceUseRules`; no recipe/business ratio change was needed
+- verified prior `openCalculator()` reset `excludedItemsMap` + manual override state on every open, so close/reopen of the same menu lost the active exclusion/replacement state
+- minimum product correction: preserve state only when reopening the same active menu; switching to a different menu still resets, so state cannot leak across menus
+- `qa/auto-replacement-flow-contract.mjs` now verifies:
+  - sequential non-blocking exclusions
+  - same-category survivor convergence
+  - automatic selection never leaves the current set
+  - explicit manual picker remains optional
+  - replacement quantities aggregate correctly when multiple exclusions converge
+  - close/reopen of the same menu preserves exclusion/replacement/result state and does not auto-open the picker
+
 ## EXACT NEXT ACTION
-1. Read UI QA run `36838266125` once.
-2. If still running: checkpoint status only and stop polling.
-3. If failure: inspect only first failed required step/log, persist root cause, make minimum correction.
-4. If success: verify Pages/live deployment, then delete only the temporary repair/trigger files listed above.
-5. Verify cleanup scope and, if marker deletion triggers UI QA, perform one bounded final status read.
-6. Persist `READY FOR USER REAL-USAGE RE-REVIEW` and send the live URL with focused checks: rapid multiple exclusions, 4-of-5 same-category convergence, no premature cross-category, cross-category only after exhaustion, never outside set, manual override still works.
+1. Read the permanent UI QA run for the commit containing this state/coverage correction once.
+2. If it fails, inspect only the first failed required step and make the minimum correction in this auto-replacement scope.
+3. If it succeeds, confirm the deployed automatic-replacement contract and same-menu reopen persistence.
+4. Remove all temporary auto-replacement repair workflows/trigger markers and persist `READY FOR USER REAL-USAGE RE-REVIEW`.

@@ -890,10 +890,13 @@ body{isolation:isolate}
 
     function openCalculator(menuName) {
       if (!originalMenu[menuName]) return;
+      const preserveSelectionState = currentActiveMenu === menuName;
       currentActiveMenu = menuName;
-      excludedItemsMap = {};
+      if (!preserveSelectionState) {
+        excludedItemsMap = {};
+        manualReplacementOverrides = new Set();
+      }
       openReplacementPicker = null;
-      manualReplacementOverrides = new Set();
       el('calcMenuTitle').textContent = menuName;
 
       const single = Object.keys(originalMenu[menuName]).length === 1;

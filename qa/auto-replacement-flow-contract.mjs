@@ -94,7 +94,13 @@ async function run(browserType, browserName) {
     await assertPickerClosed(page, `${scope}/manual-close`);
 
     // Reset and reproduce the real kitchen flow: reject 4 of 5 meats in sequence.
-    await page.evaluate(menu => openCalculator(menu), fixture.menu);
+    await page.evaluate(menu => {
+      currentActiveMenu = null;
+      excludedItemsMap = {};
+      openReplacementPicker = null;
+      manualReplacementOverrides = new Set();
+      openCalculator(menu);
+    }, fixture.menu);
     for (const meat of fixture.meats.slice(0, 4)) {
       await exclusionButton(page, meat).click();
       await assertPickerClosed(page, `${scope}/multi-exclude/${meat}`);
@@ -106,6 +112,40 @@ async function run(browserType, browserName) {
     }
     assert.ok(!Object.values(state.excluded).includes(fixture.outside), `${scope}: auto replacement selected an out-of-set item`);
     assert.ok(!Object.values(state.excluded).some(name => fixture.vegs.includes(name)), `${scope}: auto replacement crossed category before meat category was exhausted`);
+
+    // Quantity aggregation: when four exclusions converge to the only surviving meat,
+    // every replacement quantity must be added exactly once to the survivor's base quantity.
+    const quantityCheck = await page.evaluate(({ menu, survivor, excluded }) => {
+      const expectedRaw = (Number(originalMenu[menu]?.[survivor]) || 0) + excluded.reduce((sum, ex) => {
+        const rule = replaceUseRules.find(r => String(r.menu).trim() === String(menu).trim() && String(r.exclude).trim() === String(ex).trim());
+        return sum + (Number(rule?.replace?.[survivor]) || 0);
+      }, 0);
+      const actual = calculateNetRecipe(menu).find(row => row.name === survivor)?.qty ?? null;
+      return { expected: Math.round(expectedRaw), actual };
+    }, { menu: fixture.menu, survivor, excluded: fixture.meats.slice(0, 4) });
+    assert.equal(quantityCheck.actual, quantityCheck.expected, `${scope}: replacement quantities did not aggregate correctly into the sole survivor`);
+
+    // Closing and reopening the same menu must preserve exclusions, automatic mappings,
+    // manual-override bookkeeping, and the resulting quantities without opening the picker.
+    const beforeReopen = await page.evaluate(() => ({
+      excluded: { ...excludedItemsMap },
+      open: openReplacementPicker,
+      overrides: [...manualReplacementOverrides].sort(),
+      result: calculateNetRecipe(currentActiveMenu).map(({ name, qty, unit }) => ({ name, qty, unit })),
+    }));
+    await page.evaluate(() => closeCalculator());
+    await page.evaluate(menu => openCalculator(menu), fixture.menu);
+    await assertPickerClosed(page, `${scope}/reopen`);
+    const afterReopen = await page.evaluate(() => ({
+      excluded: { ...excludedItemsMap },
+      open: openReplacementPicker,
+      overrides: [...manualReplacementOverrides].sort(),
+      result: calculateNetRecipe(currentActiveMenu).map(({ name, qty, unit }) => ({ name, qty, unit })),
+    }));
+    assert.deepEqual(afterReopen.excluded, beforeReopen.excluded, `${scope}: exclusion/auto-replacement state changed after close/reopen`);
+    assert.deepEqual(afterReopen.overrides, beforeReopen.overrides, `${scope}: manual replacement override bookkeeping changed after close/reopen`);
+    assert.deepEqual(afterReopen.result, beforeReopen.result, `${scope}: resulting quantities changed after close/reopen`);
+    assert.equal(afterReopen.open, null, `${scope}: replacement picker reopened without explicit user action`);
 
     // Once every meat in the set is rejected, cross-category fallback becomes legal.
     await exclusionButton(page, survivor).click();
