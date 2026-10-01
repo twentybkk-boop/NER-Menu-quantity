@@ -152,18 +152,17 @@ async function tapFlow(page, scope, candidate) {
   const afterExcludeResult = await page.locator('#netResultList').innerText();
   assert.notEqual(afterExcludeResult, beforeResult, `${scope}: net quantity did not react to exclusion`);
 
-  const trigger = page.locator('.replacement-trigger').filter({hasText:candidate.replacement}).first();
-  assert.equal(await trigger.count(), 1, `${scope}: replacement trigger missing for ${candidate.replacement}`);
+  const trigger = exclude.locator('..').locator('.replacement-trigger');
+  assert.equal(await trigger.count(), 1, `${scope}: replacement trigger missing after exclusion`);
+  assert.equal(await trigger.getAttribute('aria-expanded'), 'false', `${scope}: replacement picker auto-opened and interrupted exclusion flow`);
+  assert.equal(await page.locator('.replacement-menu').count(), 0, `${scope}: replacement menu must stay closed until explicitly requested`);
+
+  await trigger.click();
+  assert.equal(await trigger.getAttribute('aria-expanded'), 'true', `${scope}: replacement trigger did not open explicitly`);
   const option = page.locator('.replacement-option.selectable').filter({hasText:candidate.replacement}).first();
-  // toggleExclude intentionally opens the replacement picker. Do not click the
-  // trigger again when it is already expanded, because that would close the
-  // very menu this interaction gate is trying to exercise.
-  if (await option.count() === 0 && (await trigger.getAttribute('aria-expanded')) !== 'true') {
-    await trigger.click();
-  }
   assert.equal(await option.count(), 1, `${scope}: selectable replacement option missing: ${candidate.replacement}`);
   await option.click();
-  assert.match(await page.locator('.replacement-trigger').first().innerText(), new RegExp(candidate.replacement), `${scope}: selected replacement is not reflected in trigger`);
+  assert.match(await exclude.locator('..').locator('.replacement-trigger').innerText(), new RegExp(candidate.replacement), `${scope}: selected replacement is not reflected in trigger`);
 
   const quantities = page.locator('#netResultList .net-card');
   assert.ok(await quantities.count() > 0, `${scope}: net quantity list is empty`);
@@ -237,6 +236,7 @@ async function run(browserType, browserName) {
     const rotatedExclude = page.locator('#excludeOptions .exclude-btn').filter({hasText:candidate.exclude}).first();
     await rotatedExclude.click();
     assert.ok(await rotatedExclude.evaluate(el => el.classList.contains('is-excluded')), `${scope}: exclusion is blocked after portrait→landscape rotation`);
+    assert.equal(await page.locator('.replacement-menu').count(), 0, `${scope}: rotated exclusion unexpectedly auto-opened replacement picker`);
     await page.locator('#closeCalculatorButton').click();
     await context.close();
     console.log(`PASS ${scope} candidate=${JSON.stringify(candidate)}`);
