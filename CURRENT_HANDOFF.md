@@ -3,91 +3,93 @@
 > CRASH-SAFE CONTINUATION — CURRENT GITHUB `main` WINS.
 > Source of truth: current GitHub `main` + actual code/assets + `recipe_master.json` + GitHub Actions + durable artifacts + latest user review.
 
-## CURRENT WORK HEAD — AUTO REPLACEMENT PRODUCT FIX DURABLE; FIRST FULL QA FALSE-FAIL ISOLATED
+## CURRENT WORK HEAD — AUTO REPLACEMENT FIX DURABLE; FINAL FULL QA RUNNING
 
-User's real-usage requirement remains:
-- tapping multiple `ไม่เอา` choices must not be interrupted by an auto-open replacement dropdown
-- automatic replacement stays in the same category while an eligible same-category item remains in the current set
-- cross-category fallback is allowed only after the same category is exhausted
+User real-usage requirement:
+- repeated `ไม่เอา` taps must not be interrupted by an auto-open replacement dropdown
+- automatic replacement stays in the same category while any eligible same-category item remains in the current set
+- cross-category fallback is allowed only after the excluded item's category is exhausted
 - automatic replacement never leaves the current menu/set
 - explicit manual replacement remains available
 
 ## VERIFIED PRODUCT FIX — DURABLE
-- guarded repair run `36837106598` — completed/success
-- production commit `c36488a27d51e9fb7169fd4dd834a822c25eeebc` — `Restore category-first automatic replacements`
+- repair run `36837106598` — completed/success
+- product commit `c36488a27d51e9fb7169fd4dd834a822c25eeebc` — `Restore category-first automatic replacements`
 - product diff changed exactly `index.html`
 - `recipe_master.json` unchanged
 
 Implemented behavior:
-- `manualReplacementOverrides` separates automatic mappings from explicit manual choices
-- existing `menuBaseIngredients.includes(repItem)` continues to enforce no-outside-set
-- same-category automatic pool is preferred first
-- cross-category in-set pool is used only when same-category pool is empty
-- automatic selection is randomized within the currently preferred pool
-- automatic mappings return to same category when a same-category option becomes available again
-- `toggleExclude()` no longer auto-opens the picker
-- manual replacement trigger/picker remains explicit and available
+- automatic/manual mapping state separated via `manualReplacementOverrides`
+- existing `menuBaseIngredients.includes(repItem)` preserves no-outside-set invariant
+- same-category automatic pool preferred first
+- cross-category valid in-set fallback only when same-category pool is empty
+- automatic choice randomized within preferred pool
+- auto mappings return to same category if one becomes available again
+- `toggleExclude()` no longer opens picker automatically
+- explicit manual picker/selection remains available
 
-## PERMANENT REGRESSION WORK — DURABLE
+## PERMANENT REGRESSION COVERAGE — DURABLE
 - `qa/auto-replacement-flow-contract.mjs`
   - commit `ce0908c8b3a47ca55b60d06a979b556a61bd8291`
-- `qa/landscape-calculator-v4-contract.mjs` updated for silent auto replacement
+  - covers silent repeated exclusions, 4-of-5 convergence, category exhaustion, return to same category, explicit manual picker, no-outside-set
+- `qa/landscape-calculator-v4-contract.mjs`
   - commit `d9906fa652137640947d4635df36882342101d02`
-- `.github/workflows/ui-qa.yml` wires auto-replacement contract LOCAL + DEPLOYED
+  - updated for silent auto replacement while preserving landscape tap/scroll/rotation gates
+- `.github/workflows/ui-qa.yml`
   - commit `d1a47e02c064c51ed60c09028e7c8611f7c2d54e`
-- durable pre-CI checkpoint `1d5978c0321c8a43a1ba16f0f4f363f1792eaf2`
+  - wires automatic replacement contract LOCAL + DEPLOYED
 
-## FIRST FULL UI QA RESULT — VERIFIED FAILURE
-UI QA run `36837389765`:
-- head `d1a47e02c064c51ed60c09028e7c8611f7c2d54e`
-- final `completed/failure`
-- base Chromium/WebKit UI QA PASS
-- P0-A PASS
-- P0-B PASS
-- P0-D top PASS
-- P0-D long-list PASS
-- V4 thumbnail semantics/density PASS
-- first failed required step: `Verify V4 Chunk 4 character scale, detail density and safety locally`
+## FIRST FULL QA FALSE-FAIL — CLOSED
+UI QA run `36837389765` failed only because `qa/chunk4-polish-v4-contract.mjs` located the replacement trigger by a fixed replacement label, which is no longer deterministic because accepted auto replacement is randomized within the same-category pool.
 
-### EXACT ROOT CAUSE
-Failure:
-`chromium/phone-portrait/local/safety: replacement trigger missing (สามชั้นหมูสไลซ์)`
+QA-only correction:
+- bot commit `e720043666ca4831fac0e749cdbbac1373de0500` — `Align Chunk 4 safety with silent auto replacement`
+- changed exactly `qa/chunk4-polish-v4-contract.mjs`
+- trigger is now located from the actual excluded row
+- contract asserts picker is initially closed after exclusion
+- contract explicitly opens picker before the existing interaction-safety sweep, preserving old safety intent
 
-This is a stale QA assumption, not evidence of a product regression:
-- `qa/chunk4-polish-v4-contract.mjs::interactionSafety()` locates `.replacement-trigger` by `candidate.replacement`, a fixed first replacement name selected from `replaceUseRules`.
-- the new accepted product behavior randomizes automatic selection within the preferred same-category pool.
-- therefore the row's replacement trigger still exists, but its displayed selected name can legitimately differ from `candidate.replacement`.
-- Chunk 4 contract must identify the trigger belonging to the excluded row, not identify it by a now-nondeterministic auto-selected label.
+## FINAL FULL QA TRIGGER
+- marker `qa/RUN_AUTO_REPLACEMENT_FINAL_QA`
+- commit `6edaf35080e3ff617c1035e8a50e6843d6aca036`
+- UI QA run `36838266125`
+  - run number 168
+  - bounded-read status: `in_progress`
+  - conclusion: none yet
+- Pages run `36838264227`
+  - bounded-read status from same trigger head was `pending`
+- no tight polling performed after this checkpoint
 
-Artifact from failed run (not yet needed for this false-fail):
-- `ui-qa-screenshots` artifact ID `11149333323`
-- digest `sha256:584590b306e3734dbdfe97b378d05ebc9bdf397317dfb63d646e4bb002da47f7`
+## TEMPORARY REPAIR INFRASTRUCTURE — REMOVE ONLY AFTER FULL QA SUCCESS
+- `.github/workflows/repair-auto-replacement-flow.yml`
+- `repair-staging/auto-replacement/RUN_FIX`
+- `.github/workflows/repair-auto-replacement-qa-contract.yml` (first invalid repair workflow; no target changes)
+- `repair-staging/auto-replacement/RUN_QA_FIX`
+- `.github/workflows/repair-auto-replacement-qa-contract-v2.yml`
+- `repair-staging/auto-replacement/RUN_QA_FIX_V2`
+- `qa/RUN_AUTO_REPLACEMENT_FINAL_QA`
 
 ## ACCEPTED / DO NOT REOPEN
-- V4 visual acceptance remains closed; this failure is a stale test locator
-- product auto replacement implementation above remains accepted pending permanent contract pass
+- product auto replacement implementation above unless new concrete evidence contradicts it
+- V4 UAT-001–UAT-014 visual work
 - multi-item shrimp pooling
 - bundled import integrity
 - transactional Excel import validation
 - Matrix numeric edit validation
-- startup recipe runtime integrity
+- startup recipe master runtime integrity
 - authoritative recipe data
 
-## TEMPORARY REPAIR INFRASTRUCTURE
-Remove only after full permanent QA succeeds:
-- `.github/workflows/repair-auto-replacement-flow.yml`
-- `repair-staging/auto-replacement/RUN_FIX`
-
 ## DO NOT REPEAT
-- do not rerun the product repair
+- do not rerun product repair
 - do not change `recipe_master.json`
-- do not change product replacement behavior in response to this stale test locator
 - do not reopen visual/background work
 - do not perform repo-wide investigation
+- do not poll UI QA `36838266125` in a tight loop
 
 ## EXACT NEXT ACTION
-1. Update only `qa/chunk4-polish-v4-contract.mjs::interactionSafety()` so it finds the replacement trigger in the same exclusion row as `candidate.exclude`, independent of the randomized selected label.
-2. Preserve the old safety intent by asserting the picker is initially closed, explicitly opening it, and then performing the interaction/coverage safety sweep with the picker open.
-3. Commit the QA-only correction.
-4. Read the newly triggered full UI QA once; if it fails, inspect only the first failed required step.
-5. If full QA succeeds, clean the temporary repair workflow + trigger marker and persist READY FOR USER REAL-USAGE RE-REVIEW.
+1. Read UI QA run `36838266125` once.
+2. If still running: checkpoint status only and stop polling.
+3. If failure: inspect only first failed required step/log, persist root cause, make minimum correction.
+4. If success: verify Pages/live deployment, then delete only the temporary repair/trigger files listed above.
+5. Verify cleanup scope and, if marker deletion triggers UI QA, perform one bounded final status read.
+6. Persist `READY FOR USER REAL-USAGE RE-REVIEW` and send the live URL with focused checks: rapid multiple exclusions, 4-of-5 same-category convergence, no premature cross-category, cross-category only after exhaustion, never outside set, manual override still works.
