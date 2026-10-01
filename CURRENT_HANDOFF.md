@@ -104,6 +104,13 @@ QA-only correction:
 - Scenario C therefore exercises multiple-candidate automatic selection deterministically while still asserting same-category membership and exclusion/out-of-set safety
 - no production selection semantics were changed for test determinism
 
+## LANDSCAPE REOPEN CONTRACT CORRECTION — IMPLEMENTED
+- UI QA run `36838859184` proved the expanded auto-replacement contract PASS in Chromium + WebKit before failing the phone-landscape interaction contract
+- root cause was a stale test assumption, not a product click defect: the landscape test excluded an item in `tapFlow()`, closed/reopened the same menu, then clicked that already-excluded item again and expected it to remain excluded
+- same-menu reopen now intentionally preserves exclusion/replacement state, so that second click correctly un-excluded the item
+- landscape regression now first asserts the prior exclusion persists after close/reopen and portrait→landscape rotation, then excludes a different still-eligible item and asserts the picker remains closed and the prior exclusion remains intact
+- no production behavior or recipe data changed in this correction
+
 ## EXACT NEXT ACTION
 1. Read the permanent UI QA run for the commit containing this state/coverage correction once.
 2. If it fails, inspect only the first failed required step and make the minimum correction in this auto-replacement scope.
