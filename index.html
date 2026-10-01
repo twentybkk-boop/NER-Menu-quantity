@@ -615,7 +615,7 @@ body{isolation:isolate}
       <header class="modal-header">
         <div>
           <h2 id="calcMenuTitle" class="modal-title">ชื่อเมนู</h2>
-          <p class="modal-subtitle">ติ๊กเลือกสิ่งที่ไม่รับ และเลือกวัตถุดิบทดแทน</p>
+          <p class="modal-subtitle">ติ๊กสิ่งที่ไม่รับ ระบบจะเลือกวัตถุดิบทดแทนให้อัตโนมัติ</p>
         </div>
         <button id="closeCalculatorButton" class="close-btn" type="button" aria-label="ปิด">✕</button>
       </header>
@@ -684,6 +684,7 @@ body{isolation:isolate}
     let currentActiveMenu = null;
     let excludedItemsMap = {};
     let openReplacementPicker = null;
+    let manualReplacementOverrides = new Set();
 
     const veggieGroups = [
       "กะหล่ำปลี", "ผักบุ้ง", "ผักชีฝรั่ง", "โหระพา", "ใบชะพลู", "วุ้นเส้น",
@@ -778,6 +779,10 @@ body{isolation:isolate}
       });
     }
 
+    function isVegSideReplacementCategory(item) {
+      return veggieGroups.includes(item);
+    }
+
     function getSortedReplacementOptions(menuName, excludedItem) {
       const menuBaseIngredients = Object.keys(originalMenu[menuName] || {});
       const rule = replaceUseRules.find(r => String(r.menu).trim() === String(menuName).trim() && String(r.exclude).trim() === String(excludedItem).trim());
@@ -793,9 +798,11 @@ body{isolation:isolate}
         });
       }
 
-      if (veggieGroups.includes(excludedItem)) {
-        options.sort((a, b) => Number(veggieGroups.includes(b.name)) - Number(veggieGroups.includes(a.name)));
-      }
+      const excludedIsVegSide = isVegSideReplacementCategory(excludedItem);
+      options.sort((a, b) =>
+        Number(isVegSideReplacementCategory(b.name) === excludedIsVegSide) -
+        Number(isVegSideReplacementCategory(a.name) === excludedIsVegSide)
+      );
       return options;
     }
 
@@ -803,11 +810,29 @@ body{isolation:isolate}
       return getSortedReplacementOptions(menuName, excludedItem).filter(x => x.selectable).map(x => x.name);
     }
 
+    function getAutoReplacementPool(menuName, excludedItem) {
+      const valid = getSortedValidReplacements(menuName, excludedItem);
+      const excludedIsVegSide = isVegSideReplacementCategory(excludedItem);
+      const sameCategory = valid.filter(name => isVegSideReplacementCategory(name) === excludedIsVegSide);
+      return sameCategory.length ? sameCategory : valid;
+    }
+
+    function pickRandomReplacement(items) {
+      if (!items.length) return '';
+      return items[Math.floor(Math.random() * items.length)] || '';
+    }
+
     function checkAndFixFallbacks() {
       Object.keys(excludedItemsMap).forEach(ex => {
         const currentRep = excludedItemsMap[ex];
         const valid = getSortedValidReplacements(currentActiveMenu, ex);
-        if (excludedItemsMap[currentRep] !== undefined || !valid.includes(currentRep)) excludedItemsMap[ex] = valid[0] || '';
+        if (manualReplacementOverrides.has(ex) && valid.includes(currentRep)) return;
+
+        const autoPool = getAutoReplacementPool(currentActiveMenu, ex);
+        if (!autoPool.includes(currentRep)) {
+          excludedItemsMap[ex] = pickRandomReplacement(autoPool);
+          manualReplacementOverrides.delete(ex);
+        }
       });
     }
 
@@ -868,6 +893,7 @@ body{isolation:isolate}
       currentActiveMenu = menuName;
       excludedItemsMap = {};
       openReplacementPicker = null;
+      manualReplacementOverrides = new Set();
       el('calcMenuTitle').textContent = menuName;
 
       const single = Object.keys(originalMenu[menuName]).length === 1;
@@ -885,13 +911,13 @@ body{isolation:isolate}
     }
 
     function toggleExclude(item) {
+      openReplacementPicker = null;
       if (excludedItemsMap[item] !== undefined) {
         delete excludedItemsMap[item];
-        if (openReplacementPicker === item) openReplacementPicker = null;
+        manualReplacementOverrides.delete(item);
       } else {
-        const valid = getSortedValidReplacements(currentActiveMenu, item);
-        excludedItemsMap[item] = valid[0] || '';
-        openReplacementPicker = item;
+        excludedItemsMap[item] = '';
+        manualReplacementOverrides.delete(item);
       }
       checkAndFixFallbacks();
       renderExcludeOptions();
@@ -907,6 +933,7 @@ body{isolation:isolate}
       const valid = getSortedValidReplacements(currentActiveMenu, excludedItem);
       if (!valid.includes(replacementItem)) return;
       excludedItemsMap[excludedItem] = replacementItem;
+      manualReplacementOverrides.add(excludedItem);
       openReplacementPicker = null;
       renderExcludeOptions();
       renderNetResults();
@@ -961,7 +988,7 @@ body{isolation:isolate}
           const mainLabel = document.createElement('span');
           mainLabel.textContent = selected || 'ไม่มีรายการที่แทนได้';
           const hint = document.createElement('small');
-          hint.textContent = 'เลือกวัตถุดิบทดแทน';
+          hint.textContent = 'แตะเพื่อเปลี่ยนเอง';
           label.append(mainLabel, hint);
           const chevron = document.createElement('span');
           chevron.className = 'chevron';
